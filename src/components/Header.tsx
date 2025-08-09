@@ -15,7 +15,7 @@ export const Header = ({ streak, hearts, xp, dailyGoalProgress }: HeaderProps) =
       <div className="flex items-center gap-4">
         <img src={raccoonMascot} alt="Raccoon mascot" className="w-12 h-12" />
         <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-          БулгарскиRaccoon
+          Raccoonie
         </h1>
       </div>
       

@@ -23,7 +23,7 @@ export const HeroSection = () => {
             <h1 className="text-5xl lg:text-6xl font-bold mb-6">
               Learn Bulgarian with{" "}
               <span className="bg-gradient-primary bg-clip-text text-transparent">
-                РакунBG
+                Raccoonie
               </span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-lg">
@@ -72,7 +72,7 @@ export const HeroSection = () => {
                   alt="Raccoon mascot" 
                   className="w-40 h-40 mx-auto mb-6 drop-shadow-lg" 
                 />
-                <h3 className="text-2xl font-bold mb-3">Meet Рачо!</h3>
+                <h3 className="text-2xl font-bold mb-3">Meet Raccoonie!</h3>
                 <p className="text-muted-foreground mb-6">
                   Your Bulgarian learning companion. I'll guide you through every lesson 
                   and celebrate your progress!
