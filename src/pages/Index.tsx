@@ -34,7 +34,13 @@ const Index = () => {
                   progress={lesson.progress}
                   status={lesson.status}
                   difficulty={lesson.difficulty}
-                  onClick={() => console.log(`Starting lesson: ${lesson.title}`)}
+                  onClick={() => {
+                    if (lesson.id === "1") {
+                      window.location.href = "/lesson/cyrillic";
+                    } else {
+                      console.log(`Starting lesson: ${lesson.title}`);
+                    }
+                  }}
                 />
               ))}
             </div>
