@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Play, Users, Trophy, Zap } from "lucide-react";
+import { Play, Trophy, Zap } from "lucide-react";
 import raccoonMascot from "@/assets/raccoon-mascot.png";
 import heroBackground from "@/assets/hero-background.jpg";
 
@@ -48,13 +48,7 @@ export const HeroSection = () => {
               </Button>
             </div>
             
-            <div className="grid grid-cols-3 gap-6 max-w-md mx-auto lg:mx-0">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                  <Users className="w-6 h-6 text-primary" />
-                </div>
-                <p className="text-sm text-muted-foreground">10K+ Learners</p>
-              </div>
+            <div className="grid grid-cols-2 gap-6 max-w-md mx-auto lg:mx-0">
               <div className="text-center">
                 <div className="w-12 h-12 bg-warning/10 rounded-lg flex items-center justify-center mx-auto mb-2">
                   <Trophy className="w-6 h-6 text-warning" />

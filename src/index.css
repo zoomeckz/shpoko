@@ -17,11 +17,11 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    /* Learning app primary colors - vibrant green like Duolingo */
-    --primary: 120 95% 35%;
+    /* Learning app primary colors - Facebook-inspired blue */
+    --primary: 221 44% 41%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 120 95% 45%;
-    --primary-dark: 120 95% 25%;
+    --primary-light: 221 44% 51%;
+    --primary-dark: 221 44% 31%;
 
     /* Bulgarian flag inspired colors */
     --bulgarian-green: 120 100% 25%;
@@ -29,32 +29,32 @@ All colors MUST be HSL.
     --bulgarian-white: 0 0% 98%;
 
     /* Learning progress colors */
-    --success: 120 95% 35%;
+    --success: 221 44% 41%;
     --success-foreground: 0 0% 100%;
     --warning: 45 100% 60%;
     --warning-foreground: 0 0% 100%;
     --error: 0 85% 50%;
     --error-foreground: 0 0% 100%;
 
-    --secondary: 120 20% 95%;
-    --secondary-foreground: 120 95% 25%;
+    --secondary: 221 20% 95%;
+    --secondary-foreground: 221 44% 25%;
 
-    --muted: 120 10% 95%;
+    --muted: 221 10% 95%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 45 100% 92%;
-    --accent-foreground: 45 100% 30%;
+    --accent: 221 44% 92%;
+    --accent-foreground: 221 44% 30%;
 
     --destructive: 0 85% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 120 15% 90%;
-    --input: 120 15% 95%;
-    --ring: 120 95% 35%;
+    --border: 221 15% 90%;
+    --input: 221 15% 95%;
+    --ring: 221 44% 41%;
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
-    --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(120 95% 45%));
+    --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(221 44% 51%));
     --gradient-hero: linear-gradient(135deg, hsl(var(--primary-light)), hsl(var(--accent)));
     
     /* Shadows */
@@ -91,12 +91,12 @@ All colors MUST be HSL.
     --popover: 220 25% 10%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 120 95% 45%;
+    --primary: 221 44% 51%;
     --primary-foreground: 220 25% 8%;
-    --primary-light: 120 95% 55%;
-    --primary-dark: 120 95% 35%;
+    --primary-light: 221 44% 61%;
+    --primary-dark: 221 44% 41%;
 
-    --success: 120 95% 45%;
+    --success: 221 44% 51%;
     --success-foreground: 220 25% 8%;
     --warning: 45 100% 65%;
     --warning-foreground: 220 25% 8%;
@@ -109,15 +109,15 @@ All colors MUST be HSL.
     --muted: 220 25% 12%;
     --muted-foreground: 0 0% 65%;
 
-    --accent: 45 100% 20%;
-    --accent-foreground: 45 100% 90%;
+    --accent: 221 44% 20%;
+    --accent-foreground: 221 44% 90%;
 
     --destructive: 0 85% 55%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 25% 20%;
     --input: 220 25% 15%;
-    --ring: 120 95% 45%;
+    --ring: 221 44% 51%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
