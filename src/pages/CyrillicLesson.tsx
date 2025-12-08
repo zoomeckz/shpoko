@@ -59,7 +59,7 @@ export const CyrillicLesson = () => {
           correct_answers: cyrillicAlphabet.length,
           total_answers: cyrillicAlphabet.length,
           completed_at: new Date().toISOString(),
-        });
+        }, { onConflict: 'user_id,lesson_id' });
       }
       
       toast({

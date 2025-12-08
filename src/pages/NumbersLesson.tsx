@@ -65,7 +65,7 @@ export const NumbersLesson = () => {
           correct_answers: numbers.length,
           total_answers: numbers.length,
           completed_at: new Date().toISOString(),
-        });
+        }, { onConflict: 'user_id,lesson_id' });
       }
       
       toast({
