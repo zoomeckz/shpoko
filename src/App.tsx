@@ -17,6 +17,7 @@ import ChooseWordLesson from "./pages/ChooseWordLesson";
 import Leaderboard from "./pages/Leaderboard";
 import Premium from "./pages/Premium";
 import NotFound from "./pages/NotFound";
+import Stories from "./pages/Stories";
 // Topic Lessons
 import ColorsLesson from "./pages/topic/ColorsLesson";
 import NumbersTopicLesson from "./pages/topic/NumbersTopicLesson";
@@ -47,6 +48,9 @@ const App = () => (
             <Route path="/lesson/fill-blanks" element={<FillBlanksLesson />} />
             <Route path="/lesson/match-cyrillic" element={<MatchCyrillicLesson />} />
             <Route path="/lesson/choose-word" element={<ChooseWordLesson />} />
+            {/* Stories */}
+            <Route path="/stories" element={<Stories />} />
+            <Route path="/stories/:storyId" element={<Stories />} />
             {/* Topic Lessons (no XP) */}
             <Route path="/topic/colors" element={<ColorsLesson />} />
             <Route path="/topic/numbers" element={<NumbersTopicLesson />} />

@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { LessonComplete } from "@/components/LessonComplete";
 import { getLessonNavigation } from "@/lib/lessonNavigation";
+import { ShpokoMascot } from "@/components/ShpokoMascot";
 
 interface Question {
   sentence: string;
@@ -179,6 +180,14 @@ export const FillBlanksLesson = () => {
     }
   };
 
+  // Determine Shpoko's expression based on state
+  const getShpokoExpression = () => {
+    if (isCorrect === true) return "correct";
+    if (isCorrect === false) return "wrong";
+    if (correctAnswers >= 5) return "excited";
+    return "thinking";
+  };
+
   if (isComplete) {
     return (
       <LessonComplete
@@ -228,7 +237,14 @@ export const FillBlanksLesson = () => {
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-center">Fill in the blank</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-center flex-1">Fill in the blank</CardTitle>
+              <ShpokoMascot 
+                expression={getShpokoExpression()} 
+                size="sm" 
+                showEmoji={true}
+              />
+            </div>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="text-center">
@@ -242,7 +258,7 @@ export const FillBlanksLesson = () => {
                   <Volume2 className="w-6 h-6" />
                 </Button>
               </div>
-              <p className="text-muted-foreground">{currentQuestion.translation}</p>
+              <p className="text-lg font-bold text-primary">{currentQuestion.translation}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -266,21 +282,26 @@ export const FillBlanksLesson = () => {
 
             {isCorrect !== null && (
               <div className={cn(
-                "flex items-center justify-center gap-2 p-4 rounded-lg animate-fade-in",
-                isCorrect ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
+                "flex items-center justify-center gap-3 p-4 rounded-lg animate-fade-in",
+                isCorrect ? "bg-green-500/20 text-green-600" : "bg-red-500/20 text-red-600"
               )}>
+                <ShpokoMascot 
+                  expression={isCorrect ? "celebrating" : "sad"} 
+                  size="xs" 
+                  showEmoji={true}
+                />
                 {isCorrect ? (
-                  <>
+                  <div className="flex items-center gap-2">
                     <Check className="w-6 h-6" />
                     <span className="font-bold">Correct! +10 XP</span>
-                  </>
+                  </div>
                 ) : (
-                  <>
+                  <div className="flex items-center gap-2">
                     <X className="w-6 h-6" />
                     <span className="font-bold">
                       The answer is: {currentQuestion.options[currentQuestion.correctIndex]}
                     </span>
-                  </>
+                  </div>
                 )}
               </div>
             )}
