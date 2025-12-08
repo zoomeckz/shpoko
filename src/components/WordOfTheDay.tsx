@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
-import raccoonMascot from "@/assets/raccoon-mascot.png";
+import { ShpokoMascot } from "@/components/ShpokoMascot";
 
 interface DailyWord {
   word: string;
@@ -96,7 +96,7 @@ export const WordOfTheDay = () => {
   return (
     <Card className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
       <div className="flex items-center gap-3 mb-4">
-        <img src={raccoonMascot} alt="Shpoko" className="w-12 h-12" />
+        <ShpokoMascot expression="studying" size="sm" />
         <div className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-primary" />
           <h2 className="text-xl font-bold">Shpoko's Word of the Day</h2>
