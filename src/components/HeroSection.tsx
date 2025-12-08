@@ -1,10 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Play, Trophy, Zap } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import raccoonMascot from "@/assets/raccoon-mascot.png";
 import heroBackground from "@/assets/hero-background.jpg";
 
 export const HeroSection = () => {
+  const navigate = useNavigate();
+  
   return (
     <section 
       className="relative py-20 px-4 overflow-hidden"
@@ -35,6 +38,7 @@ export const HeroSection = () => {
               <Button 
                 size="lg" 
                 className="bg-gradient-primary text-lg px-8 py-6 hover:opacity-90 shadow-strong"
+                onClick={() => navigate("/lesson/cyrillic")}
               >
                 <Play className="w-5 h-5 mr-2" />
                 Start Learning

@@ -28,7 +28,7 @@ export const lessons: Lesson[] = [
     description: "Master essential greetings and polite expressions",
     level: 2,
     xpReward: 75,
-    progress: 60,
+    progress: 0,
     status: "available",
     difficulty: "beginner",
     category: "Basics"
