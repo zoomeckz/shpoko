@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, ArrowRight, Home } from "lucide-react";
-import { getNextLesson, lessonRouteToId } from "@/lib/lessonNavigation";
+import { Trophy, ArrowRight, ArrowLeft, Home } from "lucide-react";
+import { getLessonNavigation, lessonRouteToId } from "@/lib/lessonNavigation";
 
 interface LessonCompleteProps {
   lessonKey: string;
@@ -21,7 +21,7 @@ export const LessonComplete = ({
 }: LessonCompleteProps) => {
   const navigate = useNavigate();
   const lessonId = lessonRouteToId[lessonKey] || lessonKey;
-  const nextLesson = getNextLesson(lessonId);
+  const nav = getLessonNavigation(lessonId);
 
   return (
     <div className="min-h-screen bg-background p-4 flex items-center justify-center">
@@ -43,19 +43,31 @@ export const LessonComplete = ({
           </div>
 
           <div className="flex flex-col gap-3">
-            {nextLesson.hasNext && nextLesson.nextRoute ? (
+            {nav.hasNext && nav.nextRoute ? (
               <Button 
                 size="lg" 
                 className="w-full"
-                onClick={() => navigate(nextLesson.nextRoute!)}
+                onClick={() => navigate(nav.nextRoute!)}
               >
-                Next: {nextLesson.nextTitle}
+                Next: {nav.nextTitle}
                 <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            ) : null}
+
+            {nav.hasPrev && nav.prevRoute ? (
+              <Button 
+                variant="outline"
+                size="lg" 
+                className="w-full"
+                onClick={() => navigate(nav.prevRoute!)}
+              >
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Previous: {nav.prevTitle}
               </Button>
             ) : null}
             
             <Button 
-              variant={nextLesson.hasNext ? "outline" : "default"}
+              variant={nav.hasNext ? "ghost" : "default"}
               size="lg" 
               className="w-full"
               onClick={() => navigate("/")}

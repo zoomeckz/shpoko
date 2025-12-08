@@ -10,6 +10,7 @@ import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { LessonComplete } from "@/components/LessonComplete";
+import { getLessonNavigation } from "@/lib/lessonNavigation";
 
 interface Greeting {
   bulgarian: string;
@@ -43,6 +44,7 @@ export const GreetingsLesson = () => {
 
   const currentGreeting = greetings[currentStep];
   const progress = ((currentStep + 1) / greetings.length) * 100;
+  const nav = getLessonNavigation("basic-greetings");
 
   const nextStep = async () => {
     if (currentStep < greetings.length - 1) {
@@ -63,7 +65,7 @@ export const GreetingsLesson = () => {
       }
       
       toast({
-        title: "Lesson Complete! 🎉",
+        title: "Lesson Complete!",
         description: "You've mastered basic greetings! +75 XP",
       });
       setIsComplete(true);
@@ -89,11 +91,33 @@ export const GreetingsLesson = () => {
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
-            <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+            <Button variant="outline" size="sm" onClick={() => navigate("/")}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Lessons
             </Button>
             <h1 className="text-3xl font-bold">Basic Greetings</h1>
+          </div>
+
+          {/* Lesson Navigation */}
+          <div className="flex justify-between mb-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => nav.prevRoute && navigate(nav.prevRoute)}
+              disabled={!nav.hasPrev}
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              {nav.prevTitle || "Previous Lesson"}
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => nav.nextRoute && navigate(nav.nextRoute)}
+              disabled={!nav.hasNext}
+            >
+              {nav.nextTitle || "Next Lesson"}
+              <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
           </div>
           
           <div className="mb-4">

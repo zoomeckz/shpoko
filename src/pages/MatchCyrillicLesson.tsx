@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Crown, Lock } from "lucide-react";
+import { ArrowLeft, ArrowRight, Crown, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { LessonComplete } from "@/components/LessonComplete";
+import { getLessonNavigation } from "@/lib/lessonNavigation";
 
 interface MatchPair {
   cyrillic: string;
@@ -28,6 +29,10 @@ const allPairs: MatchPair[] = [
   { cyrillic: "Й", latin: "Y" },
   { cyrillic: "К", latin: "K" },
   { cyrillic: "Л", latin: "L" },
+  { cyrillic: "М", latin: "M" },
+  { cyrillic: "Н", latin: "N" },
+  { cyrillic: "О", latin: "O" },
+  { cyrillic: "П", latin: "P" },
 ];
 
 export const MatchCyrillicLesson = () => {
@@ -43,9 +48,10 @@ export const MatchCyrillicLesson = () => {
   const { toast } = useToast();
   const { user, profile, updateXP } = useAuth();
 
-  const totalRounds = 3;
+  const totalRounds = 4;
   const pairsPerRound = 4;
   const progress = ((round * pairsPerRound + matchedPairs.length) / (totalRounds * pairsPerRound)) * 100;
+  const nav = getLessonNavigation("match-cyrillic-premium");
 
   // Check if user has premium access
   const hasPremiumAccess = profile?.is_premium;
@@ -114,7 +120,7 @@ export const MatchCyrillicLesson = () => {
     }
     
     toast({
-      title: "Lesson Complete! 🎉",
+      title: "Lesson Complete!",
       description: `You scored ${score} XP!`,
     });
     setIsComplete(true);
@@ -173,6 +179,28 @@ export const MatchCyrillicLesson = () => {
             <Crown className="w-4 h-4 text-yellow-500" />
             <span className="text-sm font-medium">Premium</span>
           </div>
+        </div>
+
+        {/* Lesson Navigation */}
+        <div className="flex justify-between mb-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => nav.prevRoute && navigate(nav.prevRoute)}
+            disabled={!nav.hasPrev}
+          >
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            {nav.prevTitle || "Previous"}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => nav.nextRoute && navigate(nav.nextRoute)}
+            disabled={!nav.hasNext}
+          >
+            {nav.nextTitle || "Next"}
+            <ArrowRight className="w-4 h-4 ml-1" />
+          </Button>
         </div>
 
         <Card className="mb-6">

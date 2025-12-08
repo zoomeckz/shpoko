@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Check, X, Crown, Lock, Volume2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, X, Crown, Lock, Volume2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { LessonComplete } from "@/components/LessonComplete";
+import { getLessonNavigation } from "@/lib/lessonNavigation";
 
 interface Question {
   bulgarian: string;
@@ -57,6 +58,26 @@ const questions: Question[] = [
     options: ["Space", "Time", "Place", "Way"],
     correctIndex: 1,
   },
+  {
+    bulgarian: "Котка",
+    options: ["Dog", "Bird", "Cat", "Fish"],
+    correctIndex: 2,
+  },
+  {
+    bulgarian: "Куче",
+    options: ["Dog", "Cat", "Horse", "Cow"],
+    correctIndex: 0,
+  },
+  {
+    bulgarian: "Дърво",
+    options: ["Flower", "Grass", "Tree", "Bush"],
+    correctIndex: 2,
+  },
+  {
+    bulgarian: "Небе",
+    options: ["Ground", "Sea", "Mountain", "Sky"],
+    correctIndex: 3,
+  },
 ];
 
 export const ChooseWordLesson = () => {
@@ -65,12 +86,14 @@ export const ChooseWordLesson = () => {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [score, setScore] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, profile, updateXP } = useAuth();
 
   const currentQuestion = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
+  const nav = getLessonNavigation("choose-word-premium");
   
   // Check if user has premium access
   const hasPremiumAccess = profile?.is_premium;
@@ -127,12 +150,24 @@ export const ChooseWordLesson = () => {
       }
       
       toast({
-        title: "Lesson Complete! 🎉",
+        title: "Lesson Complete!",
         description: `You scored ${score} XP with ${correctAnswers}/${questions.length} correct answers!`,
       });
-      navigate("/");
+      setIsComplete(true);
     }
   };
+
+  if (isComplete) {
+    return (
+      <LessonComplete
+        lessonKey="choose-word"
+        score={score}
+        correctAnswers={correctAnswers}
+        totalQuestions={questions.length}
+        xpEarned={score}
+      />
+    );
+  }
 
   if (!hasPremiumAccess) {
     return (
@@ -175,6 +210,28 @@ export const ChooseWordLesson = () => {
             <Crown className="w-4 h-4 text-yellow-500" />
             <span className="text-sm font-medium">Premium</span>
           </div>
+        </div>
+
+        {/* Lesson Navigation */}
+        <div className="flex justify-between mb-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => nav.prevRoute && navigate(nav.prevRoute)}
+            disabled={!nav.hasPrev}
+          >
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            {nav.prevTitle || "Previous"}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => nav.nextRoute && navigate(nav.nextRoute)}
+            disabled={!nav.hasNext}
+          >
+            {nav.nextTitle || "Next"}
+            <ArrowRight className="w-4 h-4 ml-1" />
+          </Button>
         </div>
 
         <Card className="mb-6">

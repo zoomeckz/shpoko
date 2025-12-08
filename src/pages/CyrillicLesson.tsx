@@ -10,6 +10,7 @@ import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { LessonComplete } from "@/components/LessonComplete";
+import { getLessonNavigation } from "@/lib/lessonNavigation";
 
 interface CyrillicLetter {
   cyrillic: string;
@@ -31,7 +32,7 @@ const cyrillicAlphabet: CyrillicLetter[] = [
   { cyrillic: "И", latin: "I", pronunciation: "ee", example: "игра", exampleTranslation: "game" },
   { cyrillic: "Й", latin: "Y", pronunciation: "ee kratko", example: "май", exampleTranslation: "May" },
   { cyrillic: "К", latin: "K", pronunciation: "kah", example: "кот", exampleTranslation: "cat" },
-  { cyrillic: "Л", latin: "L", pronunciation: "leh", example: "лимон", exampleTranslation: "lemon" }
+  { cyrillic: "Л", latin: "L", pronunciation: "leh", example: "лимон", exampleTranslation: "lemon" },
 ];
 
 export const CyrillicLesson = () => {
@@ -44,6 +45,7 @@ export const CyrillicLesson = () => {
 
   const currentLetter = cyrillicAlphabet[currentStep];
   const progress = ((currentStep + 1) / cyrillicAlphabet.length) * 100;
+  const nav = getLessonNavigation("cyrillic-alphabet");
 
   const nextStep = async () => {
     if (currentStep < cyrillicAlphabet.length - 1) {
@@ -65,7 +67,7 @@ export const CyrillicLesson = () => {
       }
       
       toast({
-        title: "Lesson Complete! 🎉",
+        title: "Lesson Complete!",
         description: "You've mastered the Cyrillic alphabet! +50 XP",
       });
       setIsComplete(true);
@@ -97,11 +99,33 @@ export const CyrillicLesson = () => {
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
-            <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+            <Button variant="outline" size="sm" onClick={() => navigate("/")}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Lessons
             </Button>
             <h1 className="text-3xl font-bold">Cyrillic Alphabet</h1>
+          </div>
+
+          {/* Lesson Navigation */}
+          <div className="flex justify-between mb-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => nav.prevRoute && navigate(nav.prevRoute)}
+              disabled={!nav.hasPrev}
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              {nav.prevTitle || "Previous Lesson"}
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => nav.nextRoute && navigate(nav.nextRoute)}
+              disabled={!nav.hasNext}
+            >
+              {nav.nextTitle || "Next Lesson"}
+              <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
           </div>
           
           <div className="mb-4">
