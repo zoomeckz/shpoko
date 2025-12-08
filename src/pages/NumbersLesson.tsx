@@ -6,6 +6,7 @@ import { Volume2, RotateCcw, ArrowLeft, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 
 interface BulgarianNumber {
   number: number;
@@ -38,61 +39,12 @@ const numbers: BulgarianNumber[] = [
 
 export const NumbersLesson = () => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [apiKey, setApiKey] = useState("");
+  const { isPlaying, playPronunciation } = useTextToSpeech();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const currentNumber = numbers[currentStep];
   const progress = ((currentStep + 1) / numbers.length) * 100;
-
-  const playPronunciation = async (text: string) => {
-    if (!apiKey) {
-      toast({
-        title: "API Key Required",
-        description: "Please enter your ElevenLabs API key to hear pronunciations.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsPlaying(true);
-    try {
-      const response = await fetch('https://api.elevenlabs.io/v1/text-to-speech/pFZP5JQG7iQjIQuC4Bku', {
-        method: 'POST',
-        headers: {
-          'Accept': 'audio/mpeg',
-          'Content-Type': 'application/json',
-          'xi-api-key': apiKey
-        },
-        body: JSON.stringify({
-          text: text,
-          model_id: 'eleven_multilingual_v2',
-          voice_settings: { stability: 0.5, similarity_boost: 0.75 }
-        })
-      });
-
-      if (!response.ok) throw new Error('Failed to generate speech');
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      
-      audio.onended = () => {
-        setIsPlaying(false);
-        URL.revokeObjectURL(audioUrl);
-      };
-      
-      await audio.play();
-    } catch (error) {
-      toast({
-        title: "Pronunciation Error",
-        description: "Failed to play pronunciation. Please check your API key.",
-        variant: "destructive",
-      });
-      setIsPlaying(false);
-    }
-  };
 
   const nextStep = () => {
     if (currentStep < numbers.length - 1) {
@@ -131,32 +83,6 @@ export const NumbersLesson = () => {
             </div>
             <Progress value={progress} className="h-2" />
           </div>
-
-          {!apiKey && (
-            <Card className="p-4 mb-6 border-warning">
-              <div className="flex items-center gap-4">
-                <Volume2 className="w-5 h-5 text-warning" />
-                <div className="flex-1">
-                  <h3 className="font-medium">Enable Pronunciation</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Enter your ElevenLabs API key to hear pronunciations
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <input
-                    type="password"
-                    placeholder="API Key"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    className="px-3 py-2 border rounded-md text-sm"
-                  />
-                  <Button size="sm" onClick={() => toast({ title: "API Key saved!" })}>
-                    Save
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          )}
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
@@ -182,14 +108,14 @@ export const NumbersLesson = () => {
             <div className="flex justify-center gap-4">
               <Button
                 onClick={() => playPronunciation(currentNumber.bulgarian)}
-                disabled={isPlaying || !apiKey}
+                disabled={isPlaying}
                 className="bg-gradient-primary hover:opacity-90"
               >
                 <Volume2 className="w-4 h-4 mr-2" />
                 {isPlaying ? "Playing..." : "Hear Number"}
               </Button>
               
-              <Button variant="outline" onClick={() => playPronunciation(currentNumber.bulgarian)}>
+              <Button variant="outline" onClick={() => playPronunciation(currentNumber.bulgarian)} disabled={isPlaying}>
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Repeat
               </Button>
