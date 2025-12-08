@@ -12,6 +12,12 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+// Product IDs mapped to premium duration in days
+const PREPAID_PRODUCTS: Record<string, number> = {
+  "prod_TZAtUCVfnO1NaO": 90,  // 3 months
+  "prod_TZAu48Qeb8wbC4": 180, // 6 months
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -53,23 +59,61 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
+    // Check for active subscriptions first
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
       limit: 1,
     });
 
-    const hasActiveSub = subscriptions.data.length > 0;
-    let subscriptionEnd = null;
-    let productId = null;
+    let hasActivePremium = false;
+    let subscriptionEnd: string | null = null;
+    let productId: string | null = null;
 
-    if (hasActiveSub) {
+    if (subscriptions.data.length > 0) {
       const subscription = subscriptions.data[0];
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      productId = subscription.items.data[0].price.product;
+      productId = subscription.items.data[0].price.product as string;
+      hasActivePremium = true;
       logStep("Active subscription found", { subscriptionId: subscription.id, productId, endDate: subscriptionEnd });
+    } else {
+      // Check for one-time payments (prepaid plans)
+      logStep("No active subscription, checking one-time payments");
+      
+      const checkoutSessions = await stripe.checkout.sessions.list({
+        customer: customerId,
+        limit: 10,
+      });
 
-      // Update user's premium status in profiles
+      for (const session of checkoutSessions.data) {
+        if (session.payment_status === "paid" && session.mode === "payment") {
+          const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+          
+          for (const item of lineItems.data) {
+            const priceProductId = item.price?.product as string;
+            const daysToAdd = PREPAID_PRODUCTS[priceProductId];
+            
+            if (daysToAdd) {
+              const purchaseDate = new Date(session.created * 1000);
+              const endDate = new Date(purchaseDate);
+              endDate.setDate(endDate.getDate() + daysToAdd);
+              
+              if (endDate > new Date()) {
+                subscriptionEnd = endDate.toISOString();
+                productId = priceProductId;
+                hasActivePremium = true;
+                logStep("Active prepaid plan found", { productId, endDate: subscriptionEnd });
+                break;
+              }
+            }
+          }
+          if (hasActivePremium) break;
+        }
+      }
+    }
+
+    // Update user's premium status in profiles
+    if (hasActivePremium) {
       await supabaseClient
         .from("profiles")
         .update({ 
@@ -79,8 +123,7 @@ serve(async (req) => {
         .eq("id", user.id);
       logStep("Profile updated with premium status");
     } else {
-      logStep("No active subscription found");
-      // Ensure premium is false if no subscription
+      logStep("No active premium found");
       await supabaseClient
         .from("profiles")
         .update({ 
@@ -91,7 +134,7 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({
-      subscribed: hasActiveSub,
+      subscribed: hasActivePremium,
       product_id: productId,
       subscription_end: subscriptionEnd
     }), {
