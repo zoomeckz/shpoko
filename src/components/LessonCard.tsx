@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Lock, Check } from "lucide-react";
+import { Star, Lock, Check, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LessonCardProps {
@@ -12,6 +12,7 @@ interface LessonCardProps {
   progress: number; // 0-100
   status: "locked" | "available" | "completed";
   difficulty: "beginner" | "intermediate" | "advanced";
+  isPremium?: boolean;
   onClick?: () => void;
 }
 
@@ -23,6 +24,7 @@ export const LessonCard = ({
   progress,
   status,
   difficulty,
+  isPremium,
   onClick
 }: LessonCardProps) => {
   const getDifficultyColor = (difficulty: string) => {
@@ -67,9 +69,17 @@ export const LessonCard = ({
             <p className="text-sm text-muted-foreground">Level {level}</p>
           </div>
         </div>
-        <Badge className={getDifficultyColor(difficulty)}>
-          {difficulty}
-        </Badge>
+        <div className="flex flex-col items-end gap-1">
+          {isPremium && (
+            <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-black">
+              <Crown className="w-3 h-3 mr-1" />
+              Premium
+            </Badge>
+          )}
+          <Badge className={getDifficultyColor(difficulty)}>
+            {difficulty}
+          </Badge>
+        </div>
       </div>
       
       <p className="text-sm text-muted-foreground mb-4">{description}</p>
