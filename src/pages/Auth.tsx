@@ -111,7 +111,7 @@ const Auth = () => {
         } else {
           toast({
             title: "Account Created!",
-            description: "Welcome to Raccoonie! Your progress will be saved.",
+            description: "Welcome to Shpoko! Your progress will be saved.",
           });
           navigate("/");
         }
@@ -122,14 +122,14 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-2xl border-0">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <img src={raccoonMascot} alt="Raccoon mascot" className="w-24 h-24" />
           </div>
-          <CardTitle className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            {isLogin ? "Welcome Back!" : "Join Raccoonie"}
+          <CardTitle className="text-3xl font-bold text-blue-600">
+            {isLogin ? "Welcome Back!" : "Join Shpoko"}
           </CardTitle>
           <CardDescription>
             {isLogin
@@ -148,10 +148,10 @@ const Auth = () => {
                   placeholder="Choose a username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className={errors.username ? "border-error" : ""}
+                  className={errors.username ? "border-red-500" : ""}
                 />
                 {errors.username && (
-                  <p className="text-sm text-error">{errors.username}</p>
+                  <p className="text-sm text-red-500">{errors.username}</p>
                 )}
               </div>
             )}
@@ -164,10 +164,10 @@ const Auth = () => {
                 placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={errors.email ? "border-error" : ""}
+                className={errors.email ? "border-red-500" : ""}
               />
               {errors.email && (
-                <p className="text-sm text-error">{errors.email}</p>
+                <p className="text-sm text-red-500">{errors.email}</p>
               )}
             </div>
             
@@ -179,14 +179,14 @@ const Auth = () => {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={errors.password ? "border-error" : ""}
+                className={errors.password ? "border-red-500" : ""}
               />
               {errors.password && (
-                <p className="text-sm text-error">{errors.password}</p>
+                <p className="text-sm text-red-500">{errors.password}</p>
               )}
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
               {loading ? "Loading..." : isLogin ? "Log In" : "Create Account"}
             </Button>
           </form>
@@ -201,7 +201,7 @@ const Auth = () => {
                 setIsLogin(!isLogin);
                 setErrors({});
               }}
-              className="text-primary"
+              className="text-blue-600"
             >
               {isLogin ? "Sign up for free" : "Log in"}
             </Button>
