@@ -524,7 +524,7 @@ const Stories = () => {
               <h1 className="text-2xl font-bold">Short Stories</h1>
               <p className="text-muted-foreground">Read stories and answer questions to earn XP</p>
             </div>
-            <ShpokoMascot expression="studying" size="sm" className="ml-auto" />
+            <ShpokoMascot size="sm" className="ml-auto" />
           </div>
 
           {["beginner", "intermediate", "advanced"].map((level) => {
@@ -598,7 +598,7 @@ const Stories = () => {
                 {selectedStory.level}
               </Badge>
             </div>
-            <ShpokoMascot expression="studying" size="sm" />
+            <ShpokoMascot size="sm" />
           </div>
 
           <Card className="mb-6">
@@ -655,10 +655,7 @@ const Stories = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Question about "{selectedStory.title}"</CardTitle>
-                <ShpokoMascot 
-                  expression={isCorrect === true ? "correct" : isCorrect === false ? "wrong" : "question"} 
-                  size="sm" 
-                />
+                <ShpokoMascot size="sm" />
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -723,7 +720,7 @@ const Stories = () => {
     <div className="min-h-screen bg-background p-4 flex items-center justify-center">
       <Card className="max-w-md w-full text-center">
         <CardHeader>
-          <ShpokoMascot expression="celebrating" size="lg" className="mx-auto mb-4" />
+          <ShpokoMascot size="lg" className="mx-auto mb-4" />
           <CardTitle className="text-2xl">Story Complete!</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">

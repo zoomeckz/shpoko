@@ -62,7 +62,7 @@ export const ShortStories = () => {
             <BookOpen className="w-5 h-5 text-primary" />
             <CardTitle className="text-lg">Short Stories</CardTitle>
           </div>
-          <ShpokoMascot expression="studying" size="xs" />
+          <ShpokoMascot size="xs" />
         </div>
         <p className="text-sm text-muted-foreground">
           Read stories & answer questions to earn XP!

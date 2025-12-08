@@ -23,6 +23,7 @@ export type Database = {
           last_username_change: string | null
           level: number
           premium_until: string | null
+          profile_picture: string | null
           streak: number
           updated_at: string
           username: string
@@ -36,6 +37,7 @@ export type Database = {
           last_username_change?: string | null
           level?: number
           premium_until?: string | null
+          profile_picture?: string | null
           streak?: number
           updated_at?: string
           username: string
@@ -49,6 +51,7 @@ export type Database = {
           last_username_change?: string | null
           level?: number
           premium_until?: string | null
+          profile_picture?: string | null
           streak?: number
           updated_at?: string
           username?: string
@@ -157,6 +160,7 @@ export type Database = {
           id: string
           is_premium: boolean
           level: number
+          profile_picture: string
           streak: number
           username: string
           xp: number
