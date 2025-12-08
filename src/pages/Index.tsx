@@ -6,6 +6,7 @@ import { HeroSection } from "@/components/HeroSection";
 import { LessonCard } from "@/components/LessonCard";
 import { WordOfTheDay } from "@/components/WordOfTheDay";
 import { LeaderboardRankTracker } from "@/components/LeaderboardRankTracker";
+import { TopicLessonsMenu } from "@/components/TopicLessonsMenu";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { lessons } from "@/data/lessons";
 
@@ -59,6 +60,12 @@ const Index = () => {
         <section className="py-8 px-4">
           <div className="max-w-6xl mx-auto">
             <LeaderboardRankTracker />
+          </div>
+        </section>
+
+        <section className="px-4">
+          <div className="max-w-6xl mx-auto">
+            <TopicLessonsMenu />
           </div>
         </section>
         

@@ -5,9 +5,8 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Crown, Check, ArrowLeft, Sparkles, Zap, BookOpen, Settings } from "lucide-react";
+import { Crown, ArrowLeft, Sparkles, Zap, BookOpen, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { AddEmailDialog } from "@/components/AddEmailDialog";
 
 const PRICING_TIERS = [
   {
@@ -54,13 +53,11 @@ const PRICING_TIERS = [
 ];
 
 const Premium = () => {
-  const { profile, refreshProfile, hasRealEmail } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
-  const [showEmailDialog, setShowEmailDialog] = useState(false);
-  const [pendingPurchase, setPendingPurchase] = useState<{ priceId: string; tierId: string; mode: "subscription" | "payment" } | null>(null);
 
   useEffect(() => {
     if (searchParams.get("success") === "true") {
@@ -91,17 +88,6 @@ const Premium = () => {
   };
 
   const handleSubscribe = async (priceId: string, tierId: string, mode: "subscription" | "payment") => {
-    // Check if user has a real email first
-    if (!hasRealEmail()) {
-      setPendingPurchase({ priceId, tierId, mode });
-      setShowEmailDialog(true);
-      return;
-    }
-    
-    await proceedWithCheckout(priceId, tierId, mode);
-  };
-
-  const proceedWithCheckout = async (priceId: string, tierId: string, mode: "subscription" | "payment") => {
     setLoading(tierId);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
@@ -120,13 +106,6 @@ const Premium = () => {
       });
     } finally {
       setLoading(null);
-    }
-  };
-
-  const handleEmailSuccess = () => {
-    if (pendingPurchase) {
-      proceedWithCheckout(pendingPurchase.priceId, pendingPurchase.tierId, pendingPurchase.mode);
-      setPendingPurchase(null);
     }
   };
 
@@ -310,12 +289,6 @@ const Premium = () => {
           By subscribing, you agree to our terms of service. Payments are processed securely via Stripe.
         </p>
       </main>
-
-      <AddEmailDialog
-        open={showEmailDialog}
-        onOpenChange={setShowEmailDialog}
-        onSuccess={handleEmailSuccess}
-      />
     </div>
   );
 };
