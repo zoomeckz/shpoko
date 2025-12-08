@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Check, X, Volume2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, X, Volume2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { LessonComplete } from "@/components/LessonComplete";
+import { getLessonNavigation } from "@/lib/lessonNavigation";
 
 interface Question {
   sentence: string;
@@ -61,6 +62,48 @@ const questions: Question[] = [
     correctIndex: 2,
     translation: "Nice to meet you",
   },
+  {
+    sentence: "Колко ____ това?",
+    blank: "струва",
+    options: ["струва", "тежи", "има", "е"],
+    correctIndex: 0,
+    translation: "How much does this cost?",
+  },
+  {
+    sentence: "Искам ____ вода",
+    blank: "една",
+    options: ["много", "една", "две", "малко"],
+    correctIndex: 1,
+    translation: "I want one water",
+  },
+  {
+    sentence: "Къде е ____?",
+    blank: "тоалетната",
+    options: ["ресторантът", "хотелът", "тоалетната", "гарата"],
+    correctIndex: 2,
+    translation: "Where is the bathroom?",
+  },
+  {
+    sentence: "Не ____ български",
+    blank: "разбирам",
+    options: ["говоря", "разбирам", "уча", "знам"],
+    correctIndex: 1,
+    translation: "I do not understand Bulgarian",
+  },
+  {
+    sentence: "Обичам ____ храна",
+    blank: "българска",
+    options: ["добра", "българска", "голяма", "нова"],
+    correctIndex: 1,
+    translation: "I love Bulgarian food",
+  },
+  {
+    sentence: "Днес е ____ ден",
+    blank: "хубав",
+    options: ["лош", "студен", "хубав", "дълъг"],
+    correctIndex: 2,
+    translation: "Today is a nice day",
+  },
 ];
 
 export const FillBlanksLesson = () => {
@@ -76,6 +119,7 @@ export const FillBlanksLesson = () => {
 
   const currentQuestion = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
+  const nav = getLessonNavigation("fill-blanks-basics");
 
   const playPronunciation = async (text: string) => {
     try {
@@ -128,7 +172,7 @@ export const FillBlanksLesson = () => {
       }
       
       toast({
-        title: "Lesson Complete! 🎉",
+        title: "Lesson Complete!",
         description: `You scored ${score} XP with ${correctAnswers}/${questions.length} correct answers!`,
       });
       setIsComplete(true);
@@ -158,6 +202,28 @@ export const FillBlanksLesson = () => {
             <Progress value={progress} className="h-3" />
           </div>
           <span className="text-sm font-medium">{currentStep + 1}/{questions.length}</span>
+        </div>
+
+        {/* Lesson Navigation */}
+        <div className="flex justify-between mb-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => nav.prevRoute && navigate(nav.prevRoute)}
+            disabled={!nav.hasPrev}
+          >
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            {nav.prevTitle || "Previous"}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => nav.nextRoute && navigate(nav.nextRoute)}
+            disabled={!nav.hasNext}
+          >
+            {nav.nextTitle || "Next"}
+            <ArrowRight className="w-4 h-4 ml-1" />
+          </Button>
         </div>
 
         <Card className="mb-6">

@@ -4,12 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Check, X, Volume2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, X, Volume2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { LessonComplete } from "@/components/LessonComplete";
+import { getLessonNavigation } from "@/lib/lessonNavigation";
 
 interface Question {
   bulgarian: string;
@@ -26,6 +27,10 @@ const questions: Question[] = [
   { bulgarian: "Не", answer: "ne", hint: "No" },
   { bulgarian: "Извинете", answer: "izvinete", hint: "Excuse me" },
   { bulgarian: "Довиждане", answer: "dovizhdane", hint: "Goodbye" },
+  { bulgarian: "Добър ден", answer: "dobar den", hint: "Good day/afternoon" },
+  { bulgarian: "Лека нощ", answer: "leka nosht", hint: "Good night" },
+  { bulgarian: "Как сте", answer: "kak ste", hint: "How are you? (formal)" },
+  { bulgarian: "Добре съм", answer: "dobre sam", hint: "I am fine" },
 ];
 
 export const TypeInLesson = () => {
@@ -42,6 +47,7 @@ export const TypeInLesson = () => {
 
   const currentQuestion = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
+  const nav = getLessonNavigation("type-in-basics");
 
   const playPronunciation = async (text: string) => {
     try {
@@ -93,7 +99,7 @@ export const TypeInLesson = () => {
       }
       
       toast({
-        title: "Lesson Complete! 🎉",
+        title: "Lesson Complete!",
         description: `You scored ${score} XP with ${correctAnswers}/${questions.length} correct answers!`,
       });
       setIsComplete(true);
@@ -123,6 +129,28 @@ export const TypeInLesson = () => {
             <Progress value={progress} className="h-3" />
           </div>
           <span className="text-sm font-medium">{currentStep + 1}/{questions.length}</span>
+        </div>
+
+        {/* Lesson Navigation */}
+        <div className="flex justify-between mb-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => nav.prevRoute && navigate(nav.prevRoute)}
+            disabled={!nav.hasPrev}
+          >
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            {nav.prevTitle || "Previous"}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => nav.nextRoute && navigate(nav.nextRoute)}
+            disabled={!nav.hasNext}
+          >
+            {nav.nextTitle || "Next"}
+            <ArrowRight className="w-4 h-4 ml-1" />
+          </Button>
         </div>
 
         <Card className="mb-6">
