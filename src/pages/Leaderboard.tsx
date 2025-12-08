@@ -26,11 +26,9 @@ const Leaderboard = () => {
   }, []);
 
   const fetchLeaderboard = async () => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, username, xp, level, is_premium")
-      .order("xp", { ascending: false })
-      .limit(50);
+    const { data, error } = await supabase.rpc("get_leaderboard", {
+      limit_count: 50,
+    });
 
     if (!error && data) {
       setEntries(data);

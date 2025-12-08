@@ -145,33 +145,7 @@ export type Database = {
       }
     }
     Views: {
-      leaderboard_view: {
-        Row: {
-          id: string | null
-          is_premium: boolean | null
-          level: number | null
-          streak: number | null
-          username: string | null
-          xp: number | null
-        }
-        Insert: {
-          id?: string | null
-          is_premium?: boolean | null
-          level?: number | null
-          streak?: number | null
-          username?: string | null
-          xp?: number | null
-        }
-        Update: {
-          id?: string | null
-          is_premium?: boolean | null
-          level?: number | null
-          streak?: number | null
-          username?: string | null
-          xp?: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       get_leaderboard: {
