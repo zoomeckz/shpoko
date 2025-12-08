@@ -4,13 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, BookOpen, Star, Check, X } from "lucide-react";
+import { ArrowLeft, BookOpen, Star, Check, X, CheckCircle } from "lucide-react";
 import { Header } from "@/components/Header";
 import { ShpokoMascot } from "@/components/ShpokoMascot";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useUserProgress } from "@/hooks/useUserProgress";
 import {
   Tooltip,
   TooltipContent,
@@ -39,6 +40,7 @@ interface Story {
 }
 
 const stories: Story[] = [
+  // BEGINNER STORIES
   {
     id: "morning",
     title: "Good Morning",
@@ -65,16 +67,8 @@ const stories: Story[] = [
       ],
     ],
     questions: [
-      {
-        question: "What does the person drink in the morning?",
-        options: ["Tea", "Coffee", "Water", "Juice"],
-        correctIndex: 1,
-      },
-      {
-        question: "Where does the person go?",
-        options: ["School", "Home", "Work", "Market"],
-        correctIndex: 2,
-      },
+      { question: "What does the person drink in the morning?", options: ["Tea", "Coffee", "Water", "Juice"], correctIndex: 1 },
+      { question: "Where does the person go?", options: ["School", "Home", "Work", "Market"], correctIndex: 2 },
     ],
   },
   {
@@ -104,16 +98,8 @@ const stories: Story[] = [
       ],
     ],
     questions: [
-      {
-        question: "What fruit is bought at the market?",
-        options: ["Oranges", "Bananas", "Apples", "Grapes"],
-        correctIndex: 2,
-      },
-      {
-        question: "What color are the apples?",
-        options: ["Green", "Yellow", "Red", "Blue"],
-        correctIndex: 2,
-      },
+      { question: "What fruit is bought at the market?", options: ["Oranges", "Bananas", "Apples", "Grapes"], correctIndex: 2 },
+      { question: "What color are the apples?", options: ["Green", "Yellow", "Red", "Blue"], correctIndex: 2 },
     ],
   },
   {
@@ -145,16 +131,8 @@ const stories: Story[] = [
       ],
     ],
     questions: [
-      {
-        question: "How is the family described?",
-        options: ["Small", "Big", "Happy", "Sad"],
-        correctIndex: 1,
-      },
-      {
-        question: "Who does the person have?",
-        options: ["Two brothers", "Two sisters", "A brother and a sister", "No siblings"],
-        correctIndex: 2,
-      },
+      { question: "How is the family described?", options: ["Small", "Big", "Happy", "Sad"], correctIndex: 1 },
+      { question: "Who does the person have?", options: ["Two brothers", "Two sisters", "A brother and a sister", "No siblings"], correctIndex: 2 },
     ],
   },
   {
@@ -185,16 +163,231 @@ const stories: Story[] = [
       ],
     ],
     questions: [
-      {
-        question: "What is the weather like today?",
-        options: ["Rainy", "Cloudy", "Sunny", "Snowy"],
-        correctIndex: 2,
-      },
-      {
-        question: "How does the person feel?",
-        options: ["Sad", "Angry", "Tired", "Happy"],
-        correctIndex: 3,
-      },
+      { question: "What is the weather like today?", options: ["Rainy", "Cloudy", "Sunny", "Snowy"], correctIndex: 2 },
+      { question: "How does the person feel?", options: ["Sad", "Angry", "Tired", "Happy"], correctIndex: 3 },
+    ],
+  },
+  // INTERMEDIATE STORIES
+  {
+    id: "restaurant",
+    title: "At the Restaurant",
+    level: "intermediate",
+    xpReward: 25,
+    sentences: [
+      [
+        { bulgarian: "Влизам", romanized: "Vlizam", meaning: "I enter" },
+        { bulgarian: "в", romanized: "v", meaning: "in" },
+        { bulgarian: "ресторанта.", romanized: "restoranta.", meaning: "the restaurant." },
+      ],
+      [
+        { bulgarian: "Сядам", romanized: "Syadam", meaning: "I sit" },
+        { bulgarian: "на", romanized: "na", meaning: "at" },
+        { bulgarian: "маса", romanized: "masa", meaning: "a table" },
+        { bulgarian: "до", romanized: "do", meaning: "near" },
+        { bulgarian: "прозореца.", romanized: "prozoretsa.", meaning: "the window." },
+      ],
+      [
+        { bulgarian: "Поръчвам", romanized: "Porachvam", meaning: "I order" },
+        { bulgarian: "салата", romanized: "salata", meaning: "a salad" },
+        { bulgarian: "и", romanized: "i", meaning: "and" },
+        { bulgarian: "супа.", romanized: "supa.", meaning: "soup." },
+      ],
+      [
+        { bulgarian: "Храната", romanized: "Hranata", meaning: "The food" },
+        { bulgarian: "е", romanized: "e", meaning: "is" },
+        { bulgarian: "много", romanized: "mnogo", meaning: "very" },
+        { bulgarian: "вкусна.", romanized: "vkusna.", meaning: "delicious." },
+      ],
+    ],
+    questions: [
+      { question: "Where does the person sit?", options: ["Near the door", "Near the window", "At the bar", "Outside"], correctIndex: 1 },
+      { question: "What does the person order?", options: ["Pizza and pasta", "Salad and soup", "Meat and rice", "Fish and chips"], correctIndex: 1 },
+    ],
+  },
+  {
+    id: "bus-ride",
+    title: "The Bus Ride",
+    level: "intermediate",
+    xpReward: 25,
+    sentences: [
+      [
+        { bulgarian: "Чакам", romanized: "Chakam", meaning: "I wait" },
+        { bulgarian: "на", romanized: "na", meaning: "at" },
+        { bulgarian: "спирката.", romanized: "spirkata.", meaning: "the bus stop." },
+      ],
+      [
+        { bulgarian: "Автобусът", romanized: "Avtobusat", meaning: "The bus" },
+        { bulgarian: "пристига", romanized: "pristiga", meaning: "arrives" },
+        { bulgarian: "след", romanized: "sled", meaning: "after" },
+        { bulgarian: "пет", romanized: "pet", meaning: "five" },
+        { bulgarian: "минути.", romanized: "minuti.", meaning: "minutes." },
+      ],
+      [
+        { bulgarian: "Качвам", romanized: "Kachvam", meaning: "I get on" },
+        { bulgarian: "се", romanized: "se", meaning: "myself" },
+        { bulgarian: "и", romanized: "i", meaning: "and" },
+        { bulgarian: "плащам.", romanized: "plashtam.", meaning: "pay." },
+      ],
+      [
+        { bulgarian: "Пътуването", romanized: "Patuvaneto", meaning: "The journey" },
+        { bulgarian: "е", romanized: "e", meaning: "is" },
+        { bulgarian: "кратко.", romanized: "kratko.", meaning: "short." },
+      ],
+    ],
+    questions: [
+      { question: "How long does the person wait?", options: ["Ten minutes", "Five minutes", "One hour", "Two minutes"], correctIndex: 1 },
+      { question: "How is the journey described?", options: ["Long", "Short", "Boring", "Exciting"], correctIndex: 1 },
+    ],
+  },
+  {
+    id: "new-friend",
+    title: "A New Friend",
+    level: "intermediate",
+    xpReward: 25,
+    sentences: [
+      [
+        { bulgarian: "Срещам", romanized: "Sreshtam", meaning: "I meet" },
+        { bulgarian: "нов", romanized: "nov", meaning: "a new" },
+        { bulgarian: "приятел", romanized: "priyatel", meaning: "friend" },
+        { bulgarian: "в", romanized: "v", meaning: "in" },
+        { bulgarian: "парка.", romanized: "parka.", meaning: "the park." },
+      ],
+      [
+        { bulgarian: "Той", romanized: "Toy", meaning: "He" },
+        { bulgarian: "се", romanized: "se", meaning: "himself" },
+        { bulgarian: "казва", romanized: "kazva", meaning: "is called" },
+        { bulgarian: "Петър.", romanized: "Petar.", meaning: "Peter." },
+      ],
+      [
+        { bulgarian: "Разговаряме", romanized: "Razgovaryame", meaning: "We talk" },
+        { bulgarian: "за", romanized: "za", meaning: "about" },
+        { bulgarian: "музика.", romanized: "muzika.", meaning: "music." },
+      ],
+      [
+        { bulgarian: "Ще", romanized: "Shte", meaning: "Will" },
+        { bulgarian: "се", romanized: "se", meaning: "ourselves" },
+        { bulgarian: "видим", romanized: "vidim", meaning: "see" },
+        { bulgarian: "пак.", romanized: "pak.", meaning: "again." },
+      ],
+    ],
+    questions: [
+      { question: "Where does the person meet their new friend?", options: ["At school", "In the park", "At work", "At home"], correctIndex: 1 },
+      { question: "What is the friend's name?", options: ["Ivan", "Georgi", "Peter", "Dimitar"], correctIndex: 2 },
+    ],
+  },
+  // ADVANCED STORIES
+  {
+    id: "job-interview",
+    title: "The Job Interview",
+    level: "advanced",
+    xpReward: 40,
+    sentences: [
+      [
+        { bulgarian: "Имам", romanized: "Imam", meaning: "I have" },
+        { bulgarian: "интервю", romanized: "intervyu", meaning: "an interview" },
+        { bulgarian: "за", romanized: "za", meaning: "for" },
+        { bulgarian: "нова", romanized: "nova", meaning: "a new" },
+        { bulgarian: "работа.", romanized: "rabota.", meaning: "job." },
+      ],
+      [
+        { bulgarian: "Подготвям", romanized: "Podgotvyam", meaning: "I prepare" },
+        { bulgarian: "се", romanized: "se", meaning: "myself" },
+        { bulgarian: "внимателно", romanized: "vnimatelno", meaning: "carefully" },
+        { bulgarian: "цяла", romanized: "tsyala", meaning: "the whole" },
+        { bulgarian: "седмица.", romanized: "sedmitsa.", meaning: "week." },
+      ],
+      [
+        { bulgarian: "Интервюто", romanized: "Intervyuto", meaning: "The interview" },
+        { bulgarian: "е", romanized: "e", meaning: "is" },
+        { bulgarian: "трудно,", romanized: "trudno,", meaning: "difficult," },
+        { bulgarian: "но", romanized: "no", meaning: "but" },
+        { bulgarian: "се", romanized: "se", meaning: "I" },
+        { bulgarian: "справям.", romanized: "spravyam.", meaning: "manage." },
+      ],
+      [
+        { bulgarian: "Получавам", romanized: "Poluchavam", meaning: "I receive" },
+        { bulgarian: "работата!", romanized: "rabotata!", meaning: "the job!" },
+      ],
+    ],
+    questions: [
+      { question: "How long did the person prepare?", options: ["One day", "One week", "One month", "One hour"], correctIndex: 1 },
+      { question: "What was the result of the interview?", options: ["They failed", "They got the job", "They have to wait", "They declined"], correctIndex: 1 },
+    ],
+  },
+  {
+    id: "mountain-trip",
+    title: "Mountain Adventure",
+    level: "advanced",
+    xpReward: 40,
+    sentences: [
+      [
+        { bulgarian: "Изкачваме", romanized: "Izkachvame", meaning: "We climb" },
+        { bulgarian: "планината", romanized: "planinata", meaning: "the mountain" },
+        { bulgarian: "от", romanized: "ot", meaning: "since" },
+        { bulgarian: "сутринта.", romanized: "sutrintata.", meaning: "morning." },
+      ],
+      [
+        { bulgarian: "Пътеката", romanized: "Patekata", meaning: "The trail" },
+        { bulgarian: "е", romanized: "e", meaning: "is" },
+        { bulgarian: "стръмна", romanized: "stramna", meaning: "steep" },
+        { bulgarian: "и", romanized: "i", meaning: "and" },
+        { bulgarian: "каменлива.", romanized: "kamenliva.", meaning: "rocky." },
+      ],
+      [
+        { bulgarian: "Гледката", romanized: "Gledkata", meaning: "The view" },
+        { bulgarian: "от", romanized: "ot", meaning: "from" },
+        { bulgarian: "върха", romanized: "varha", meaning: "the peak" },
+        { bulgarian: "е", romanized: "e", meaning: "is" },
+        { bulgarian: "невероятна.", romanized: "neveroyatna.", meaning: "incredible." },
+      ],
+      [
+        { bulgarian: "Чувствам", romanized: "Chuvstvam", meaning: "I feel" },
+        { bulgarian: "се", romanized: "se", meaning: "myself" },
+        { bulgarian: "свободен.", romanized: "svoboden.", meaning: "free." },
+      ],
+    ],
+    questions: [
+      { question: "When did they start climbing?", options: ["In the evening", "At noon", "In the morning", "At night"], correctIndex: 2 },
+      { question: "How is the view from the peak?", options: ["Boring", "Ordinary", "Incredible", "Foggy"], correctIndex: 2 },
+    ],
+  },
+  {
+    id: "childhood-memory",
+    title: "A Childhood Memory",
+    level: "advanced",
+    xpReward: 40,
+    sentences: [
+      [
+        { bulgarian: "Спомням", romanized: "Spomnyam", meaning: "I remember" },
+        { bulgarian: "си", romanized: "si", meaning: "myself" },
+        { bulgarian: "лятото", romanized: "lyatoto", meaning: "the summer" },
+        { bulgarian: "при", romanized: "pri", meaning: "at" },
+        { bulgarian: "баба.", romanized: "baba.", meaning: "grandmother's." },
+      ],
+      [
+        { bulgarian: "Тя", romanized: "Tya", meaning: "She" },
+        { bulgarian: "правеше", romanized: "praveshe", meaning: "used to make" },
+        { bulgarian: "най-вкусната", romanized: "nay-vkusnata", meaning: "the tastiest" },
+        { bulgarian: "баница.", romanized: "banitsa.", meaning: "banitsa." },
+      ],
+      [
+        { bulgarian: "Играех", romanized: "Igraeh", meaning: "I used to play" },
+        { bulgarian: "с", romanized: "s", meaning: "with" },
+        { bulgarian: "братовчедите", romanized: "bratovtchedite", meaning: "the cousins" },
+        { bulgarian: "си", romanized: "si", meaning: "my" },
+        { bulgarian: "всеки", romanized: "vseki", meaning: "every" },
+        { bulgarian: "ден.", romanized: "den.", meaning: "day." },
+      ],
+      [
+        { bulgarian: "Това", romanized: "Tova", meaning: "Those" },
+        { bulgarian: "бяха", romanized: "byaha", meaning: "were" },
+        { bulgarian: "щастливи", romanized: "shtastlivi", meaning: "happy" },
+        { bulgarian: "времена.", romanized: "vremena.", meaning: "times." },
+      ],
+    ],
+    questions: [
+      { question: "What did grandmother make?", options: ["Cake", "Banitsa", "Soup", "Bread"], correctIndex: 1 },
+      { question: "Who did the person play with?", options: ["Friends", "Siblings", "Cousins", "Neighbors"], correctIndex: 2 },
     ],
   },
 ];
@@ -226,6 +419,7 @@ const Stories = () => {
   const { storyId } = useParams();
   const { profile, user, updateXP } = useAuth();
   const { toast } = useToast();
+  const { isLessonCompleted, refetch: refetchProgress } = useUserProgress();
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const [phase, setPhase] = useState<"reading" | "questions" | "complete">("reading");
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -293,6 +487,8 @@ const Stories = () => {
           total_answers: selectedStory.questions.length,
           completed_at: new Date().toISOString(),
         }, { onConflict: "user_id,lesson_id" });
+        
+        refetchProgress();
       }
       
       toast({
@@ -339,34 +535,45 @@ const Stories = () => {
               <div key={level} className="mb-8">
                 <h2 className="text-xl font-semibold capitalize mb-4">{level}</h2>
                 <div className="grid md:grid-cols-2 gap-4">
-                  {levelStories.map((story) => (
-                    <Card
-                      key={story.id}
-                      onClick={() => handleStorySelect(story)}
-                      className="cursor-pointer hover:border-primary hover:shadow-md transition-all"
-                    >
-                      <CardHeader className="pb-2">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg">{story.title}</CardTitle>
-                          <Badge variant="outline" className={levelColors[story.level]}>
-                            {story.level}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <BookOpen className="w-4 h-4" />
-                            <span>{story.sentences.length} sentences</span>
+                  {levelStories.map((story) => {
+                    const isCompleted = isLessonCompleted(`story-${story.id}`);
+                    return (
+                      <Card
+                        key={story.id}
+                        onClick={() => handleStorySelect(story)}
+                        className={cn(
+                          "cursor-pointer hover:border-primary hover:shadow-md transition-all relative",
+                          isCompleted && "border-green-500/50 bg-green-500/5"
+                        )}
+                      >
+                        {isCompleted && (
+                          <div className="absolute top-2 right-2">
+                            <CheckCircle className="w-5 h-5 text-green-500 fill-green-500/20" />
                           </div>
-                          <Badge className="bg-primary/10 text-primary border-0">
-                            <Star className="w-3 h-3 mr-1 fill-current" />
-                            {story.xpReward} XP
-                          </Badge>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        )}
+                        <CardHeader className="pb-2">
+                          <div className="flex items-center justify-between pr-6">
+                            <CardTitle className="text-lg">{story.title}</CardTitle>
+                            <Badge variant="outline" className={levelColors[story.level]}>
+                              {story.level}
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <BookOpen className="w-4 h-4" />
+                              <span>{story.sentences.length} sentences</span>
+                            </div>
+                            <Badge className="bg-primary/10 text-primary border-0">
+                              <Star className="w-3 h-3 mr-1 fill-current" />
+                              {story.xpReward} XP
+                            </Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
             );
