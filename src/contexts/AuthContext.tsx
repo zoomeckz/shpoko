@@ -12,6 +12,7 @@ interface Profile {
   streak: number;
   is_premium: boolean;
   premium_until: string | null;
+  last_username_change: string | null;
 }
 
 interface AuthContextType {
