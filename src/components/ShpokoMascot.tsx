@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import raccoonExpressions from "@/assets/raccoon-expressions.png";
+import raccoonMascot from "@/assets/raccoon-mascot.png";
 
 export type ShpokoExpression = 
   | "happy" 
@@ -75,40 +75,6 @@ const expressionAnimations: Record<ShpokoExpression, string> = {
   wrong: "animate-tilt",
   streak: "animate-bounce",
   levelup: "animate-jump",
-};
-
-// Sprite positions: 4 columns x 3 rows
-// Row 1: surprised, thinking, excited, waving-shocked
-// Row 2: disappointed, sad, waving, studying
-// Row 3: reading, writing-sad, writing-confused, sleeping
-const spritePositions: Record<ShpokoExpression, { x: number; y: number }> = {
-  surprised: { x: 0, y: 0 },
-  thinking: { x: 1, y: 0 },
-  excited: { x: 2, y: 0 },
-  happy: { x: 2, y: 0 },
-  sad: { x: 1, y: 1 },
-  waving: { x: 2, y: 1 },
-  studying: { x: 3, y: 1 },
-  confused: { x: 2, y: 2 },
-  sleeping: { x: 3, y: 2 },
-  celebrating: { x: 2, y: 0 },
-  proud: { x: 3, y: 1 },
-  love: { x: 2, y: 0 },
-  cool: { x: 1, y: 0 },
-  nervous: { x: 0, y: 0 },
-  angry: { x: 0, y: 1 },
-  laughing: { x: 2, y: 0 },
-  wink: { x: 1, y: 0 },
-  determined: { x: 0, y: 2 },
-  tired: { x: 3, y: 2 },
-  hungry: { x: 1, y: 1 },
-  cheering: { x: 2, y: 1 },
-  pointing: { x: 3, y: 0 },
-  question: { x: 2, y: 2 },
-  correct: { x: 2, y: 0 },
-  wrong: { x: 1, y: 1 },
-  streak: { x: 2, y: 0 },
-  levelup: { x: 3, y: 1 },
 };
 
 const expressionEmojis: Record<ShpokoExpression, { emoji: string; position: string; animation?: string }[]> = {
@@ -201,11 +167,6 @@ export const ShpokoMascot = ({
   message
 }: ShpokoMascotProps) => {
   const emojis = expressionEmojis[expression];
-  const pos = spritePositions[expression] || spritePositions.happy;
-  
-  // Calculate background position percentages for sprite
-  const bgPosX = pos.x * 33.33;
-  const bgPosY = pos.y * 50;
 
   return (
     <div className={cn("relative inline-flex flex-col items-center", className)}>
@@ -214,14 +175,10 @@ export const ShpokoMascot = ({
         sizeClasses[size],
         animate && expressionAnimations[expression],
       )}>
-        <div 
-          className="w-full h-full bg-no-repeat"
-          style={{
-            backgroundImage: `url(${raccoonExpressions})`,
-            backgroundSize: "400% 300%",
-            backgroundPosition: `${bgPosX}% ${bgPosY}%`,
-          }}
-          aria-label={`Shpoko mascot - ${expression}`}
+        <img 
+          src={raccoonMascot} 
+          alt="Shpoko mascot" 
+          className="w-full h-full object-contain"
         />
         
         {/* Expression emoji overlays */}
