@@ -1,5 +1,14 @@
 import { cn } from "@/lib/utils";
-import raccoonMascot from "@/assets/raccoon-mascot.png";
+
+// Import all expression images
+import shpokoHappy from "@/assets/shpoko-happy.png";
+import shpokoSad from "@/assets/shpoko-sad.png";
+import shpokoExcited from "@/assets/shpoko-excited.png";
+import shpokoThinking from "@/assets/shpoko-thinking.png";
+import shpokoAngry from "@/assets/shpoko-angry.png";
+import shpokoSmug from "@/assets/shpoko-smug.png";
+import shpokoStudying from "@/assets/shpoko-studying.png";
+import shpokoReading from "@/assets/shpoko-reading.png";
 
 export type ShpokoExpression = 
   | "happy" 
@@ -28,7 +37,8 @@ export type ShpokoExpression =
   | "correct"
   | "wrong"
   | "streak"
-  | "levelup";
+  | "levelup"
+  | "reading";
 
 interface ShpokoMascotProps {
   expression?: ShpokoExpression;
@@ -45,6 +55,38 @@ const sizeClasses = {
   md: "w-20 h-20",
   lg: "w-32 h-32",
   xl: "w-48 h-48",
+};
+
+// Map expressions to their corresponding images
+const expressionImages: Record<ShpokoExpression, string> = {
+  happy: shpokoHappy,
+  thinking: shpokoThinking,
+  excited: shpokoExcited,
+  confused: shpokoThinking,
+  celebrating: shpokoExcited,
+  sleeping: shpokoSad,
+  waving: shpokoExcited,
+  studying: shpokoStudying,
+  proud: shpokoSmug,
+  sad: shpokoSad,
+  surprised: shpokoExcited,
+  love: shpokoHappy,
+  cool: shpokoSmug,
+  nervous: shpokoSad,
+  angry: shpokoAngry,
+  laughing: shpokoHappy,
+  wink: shpokoSmug,
+  determined: shpokoExcited,
+  tired: shpokoSad,
+  hungry: shpokoThinking,
+  cheering: shpokoExcited,
+  pointing: shpokoExcited,
+  question: shpokoThinking,
+  correct: shpokoHappy,
+  wrong: shpokoSad,
+  streak: shpokoExcited,
+  levelup: shpokoExcited,
+  reading: shpokoReading,
 };
 
 const expressionAnimations: Record<ShpokoExpression, string> = {
@@ -75,10 +117,11 @@ const expressionAnimations: Record<ShpokoExpression, string> = {
   wrong: "animate-tilt",
   streak: "animate-bounce",
   levelup: "animate-jump",
+  reading: "animate-nod",
 };
 
 const expressionEmojis: Record<ShpokoExpression, { emoji: string; position: string; animation?: string }[]> = {
-  happy: [{ emoji: "😊", position: "absolute -top-1 -right-1 text-sm", animation: "animate-bounce" }],
+  happy: [{ emoji: "✨", position: "absolute -top-1 -right-1 text-sm", animation: "animate-bounce" }],
   thinking: [{ emoji: "💭", position: "absolute -top-2 -right-2 text-lg", animation: "animate-pulse" }],
   excited: [
     { emoji: "✨", position: "absolute -top-1 -right-1 text-sm", animation: "animate-ping" },
@@ -88,18 +131,15 @@ const expressionEmojis: Record<ShpokoExpression, { emoji: string; position: stri
   celebrating: [
     { emoji: "🎉", position: "absolute -top-2 left-0 text-sm", animation: "animate-bounce" },
     { emoji: "🎊", position: "absolute -top-2 right-0 text-sm", animation: "animate-bounce delay-100" },
-    { emoji: "🥳", position: "absolute -bottom-1 right-0 text-xs", animation: "animate-jump" },
   ],
   sleeping: [{ emoji: "💤", position: "absolute -top-1 right-0 text-lg", animation: "animate-pulse" }],
   waving: [{ emoji: "👋", position: "absolute -right-2 top-1/2 text-sm", animation: "animate-wave" }],
-  studying: [{ emoji: "📚", position: "absolute -bottom-1 -right-1 text-sm" }],
+  studying: [{ emoji: "📖", position: "absolute -bottom-1 -right-1 text-sm" }],
   proud: [
     { emoji: "🏆", position: "absolute -top-2 right-0 text-sm", animation: "animate-bounce" },
-    { emoji: "✨", position: "absolute -top-1 left-0 text-xs", animation: "animate-ping" },
   ],
-  sad: [{ emoji: "😢", position: "absolute -top-1 right-0 text-sm", animation: "animate-nod" }],
+  sad: [{ emoji: "💧", position: "absolute -top-1 right-0 text-sm", animation: "animate-nod" }],
   surprised: [
-    { emoji: "😮", position: "absolute -top-1 -right-1 text-sm", animation: "animate-jump" },
     { emoji: "!", position: "absolute -top-3 right-1 text-lg font-bold text-yellow-500", animation: "animate-bounce" },
   ],
   love: [
@@ -108,44 +148,36 @@ const expressionEmojis: Record<ShpokoExpression, { emoji: string; position: stri
   ],
   cool: [{ emoji: "😎", position: "absolute -top-1 -right-1 text-sm" }],
   nervous: [
-    { emoji: "😰", position: "absolute -top-1 -right-1 text-sm", animation: "animate-wiggle" },
     { emoji: "💦", position: "absolute top-0 -left-1 text-xs", animation: "animate-bounce" },
   ],
-  angry: [{ emoji: "😤", position: "absolute -top-1 -right-1 text-sm", animation: "animate-tilt" }],
+  angry: [{ emoji: "💢", position: "absolute -top-1 -right-1 text-sm", animation: "animate-tilt" }],
   laughing: [
     { emoji: "😂", position: "absolute -top-1 -right-1 text-sm", animation: "animate-wiggle" },
-    { emoji: "🤣", position: "absolute -bottom-1 right-0 text-xs", animation: "animate-bounce" },
   ],
-  wink: [{ emoji: "😉", position: "absolute -top-1 -right-1 text-sm" }],
+  wink: [{ emoji: "✨", position: "absolute -top-1 -right-1 text-sm" }],
   determined: [
     { emoji: "💪", position: "absolute -right-2 top-1/2 text-sm", animation: "animate-bounce" },
     { emoji: "🔥", position: "absolute -top-1 -left-1 text-xs", animation: "animate-pulse" },
   ],
   tired: [
-    { emoji: "😴", position: "absolute -top-1 -right-1 text-sm", animation: "animate-float" },
     { emoji: "💤", position: "absolute top-0 -left-1 text-xs", animation: "animate-pulse" },
   ],
   hungry: [
     { emoji: "🍕", position: "absolute -top-1 -right-1 text-sm", animation: "animate-bounce" },
-    { emoji: "😋", position: "absolute -bottom-1 right-0 text-xs" },
   ],
   cheering: [
     { emoji: "🙌", position: "absolute -top-2 right-0 text-sm", animation: "animate-jump" },
-    { emoji: "👏", position: "absolute -top-1 left-0 text-xs", animation: "animate-bounce" },
   ],
   pointing: [{ emoji: "👉", position: "absolute -right-3 top-1/2 text-lg" }],
   question: [
-    { emoji: "🤔", position: "absolute -top-1 -right-1 text-sm", animation: "animate-pulse" },
     { emoji: "?", position: "absolute -top-3 right-1 text-lg font-bold text-primary", animation: "animate-bounce" },
   ],
   correct: [
     { emoji: "✅", position: "absolute -top-2 -right-1 text-sm", animation: "animate-jump" },
-    { emoji: "🎯", position: "absolute -bottom-1 right-0 text-xs", animation: "animate-bounce" },
     { emoji: "⭐", position: "absolute -top-1 -left-1 text-xs", animation: "animate-ping" },
   ],
   wrong: [
     { emoji: "❌", position: "absolute -top-2 -right-1 text-sm", animation: "animate-tilt" },
-    { emoji: "😅", position: "absolute -bottom-1 right-0 text-xs" },
   ],
   streak: [
     { emoji: "🔥", position: "absolute -top-2 -right-1 text-lg", animation: "animate-pulse" },
@@ -154,8 +186,8 @@ const expressionEmojis: Record<ShpokoExpression, { emoji: string; position: stri
   levelup: [
     { emoji: "🆙", position: "absolute -top-3 right-0 text-sm", animation: "animate-jump" },
     { emoji: "🌟", position: "absolute -top-1 -left-1 text-sm", animation: "animate-ping" },
-    { emoji: "✨", position: "absolute -bottom-1 right-0 text-xs", animation: "animate-bounce" },
   ],
+  reading: [{ emoji: "📚", position: "absolute -bottom-1 -right-1 text-sm" }],
 };
 
 export const ShpokoMascot = ({ 
@@ -167,6 +199,7 @@ export const ShpokoMascot = ({
   message
 }: ShpokoMascotProps) => {
   const emojis = expressionEmojis[expression];
+  const imageSrc = expressionImages[expression];
 
   return (
     <div className={cn("relative inline-flex flex-col items-center", className)}>
@@ -176,8 +209,8 @@ export const ShpokoMascot = ({
         animate && expressionAnimations[expression],
       )}>
         <img 
-          src={raccoonMascot} 
-          alt="Shpoko mascot" 
+          src={imageSrc} 
+          alt={`Shpoko mascot - ${expression}`} 
           className="w-full h-full object-contain"
         />
         
