@@ -88,7 +88,7 @@ export const TypeInLesson = () => {
           correct_answers: correctAnswers,
           total_answers: questions.length,
           completed_at: new Date().toISOString(),
-        });
+        }, { onConflict: 'user_id,lesson_id' });
       }
       
       toast({

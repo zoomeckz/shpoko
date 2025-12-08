@@ -58,7 +58,7 @@ export const GreetingsLesson = () => {
           correct_answers: greetings.length,
           total_answers: greetings.length,
           completed_at: new Date().toISOString(),
-        });
+        }, { onConflict: 'user_id,lesson_id' });
       }
       
       toast({

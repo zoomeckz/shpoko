@@ -108,7 +108,7 @@ export const MatchCyrillicLesson = () => {
         correct_answers: correctAnswers,
         total_answers: totalRounds * pairsPerRound,
         completed_at: new Date().toISOString(),
-      });
+      }, { onConflict: 'user_id,lesson_id' });
     }
     
     toast({
