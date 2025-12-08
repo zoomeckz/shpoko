@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Volume2, RotateCcw, ArrowLeft, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 interface Greeting {
@@ -33,6 +34,7 @@ export const GreetingsLesson = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [apiKey, setApiKey] = useState("");
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const currentGreeting = greetings[currentStep];
   const progress = ((currentStep + 1) / greetings.length) * 100;
@@ -93,6 +95,7 @@ export const GreetingsLesson = () => {
         title: "Lesson Complete! 🎉",
         description: "You've mastered basic greetings! +75 XP",
       });
+      navigate("/");
     }
   };
 
