@@ -149,6 +149,32 @@ export default {
 					'50%': {
 						boxShadow: '0 0 40px hsl(var(--primary) / 0.6)'
 					}
+				},
+				'wiggle': {
+					'0%, 100%': { transform: 'rotate(-3deg)' },
+					'50%': { transform: 'rotate(3deg)' }
+				},
+				'tilt': {
+					'0%, 100%': { transform: 'rotate(0deg)' },
+					'25%': { transform: 'rotate(-10deg)' },
+					'75%': { transform: 'rotate(10deg)' }
+				},
+				'jump': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' }
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-5px)' }
+				},
+				'wave': {
+					'0%, 100%': { transform: 'rotate(0deg)' },
+					'25%': { transform: 'rotate(20deg)' },
+					'75%': { transform: 'rotate(-20deg)' }
+				},
+				'nod': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(3px)' }
 				}
 			},
 			animation: {
@@ -157,7 +183,13 @@ export default {
 				'fade-in': 'fade-in 0.3s ease-out',
 				'scale-in': 'scale-in 0.2s ease-out',
 				'bounce-gentle': 'bounce-gentle 1s ease-in-out infinite',
-				'glow': 'glow 2s ease-in-out infinite'
+				'glow': 'glow 2s ease-in-out infinite',
+				'wiggle': 'wiggle 0.5s ease-in-out infinite',
+				'tilt': 'tilt 1s ease-in-out infinite',
+				'jump': 'jump 0.6s ease-in-out infinite',
+				'float': 'float 3s ease-in-out infinite',
+				'wave': 'wave 1s ease-in-out infinite',
+				'nod': 'nod 2s ease-in-out infinite'
 			}
 		}
 	},

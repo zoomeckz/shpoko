@@ -5,7 +5,6 @@ import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
 import { WordOfTheDay } from "@/components/WordOfTheDay";
 import { LeaderboardRankTracker } from "@/components/LeaderboardRankTracker";
-import { TopicLessonsMenu } from "@/components/TopicLessonsMenu";
 import { LessonTopicSelector } from "@/components/LessonTopicSelector";
 import { ShortStories } from "@/components/ShortStories";
 import { useUserProgress } from "@/hooks/useUserProgress";
@@ -78,11 +77,6 @@ const Index = () => {
             <WordOfTheDay />
           </div>
         )}
-
-        {/* Topic practice lessons dropdown */}
-        <div className="mb-6">
-          <TopicLessonsMenu />
-        </div>
 
         {/* Main content grid */}
         <div className="grid lg:grid-cols-3 gap-6">

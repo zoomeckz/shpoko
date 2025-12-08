@@ -1,20 +1,19 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Star, Lock, Check } from "lucide-react";
+import { Crown, Star, Lock, Check, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { lessons, Lesson } from "@/data/lessons";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useAuth } from "@/contexts/AuthContext";
 
 const categories = [
-  { id: "beginner", label: "Beginner", color: "bg-green-500" },
-  { id: "intermediate", label: "Intermediate", color: "bg-yellow-500" },
-  { id: "advanced", label: "Advanced", color: "bg-orange-500" },
-  { id: "premium", label: "Premium", color: "bg-gradient-to-r from-yellow-500 to-amber-500" },
+  { id: "beginner", label: "Beginner" },
+  { id: "intermediate", label: "Intermediate" },
+  { id: "advanced", label: "Advanced" },
+  { id: "premium", label: "Premium" },
 ];
 
 const getLessonsByDifficulty = (difficulty: string) => {
@@ -48,10 +47,12 @@ const LessonItem = ({ lesson, isCompleted, onClick }: LessonItemProps) => {
         "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
         isCompleted ? "bg-green-500 text-white" : 
         isPremiumLocked ? "bg-muted text-muted-foreground" : 
+        lesson.isTopicLesson ? "bg-blue-500/20 text-blue-500" :
         "bg-primary/10 text-primary"
       )}>
         {isCompleted ? <Check className="w-4 h-4" /> : 
          isPremiumLocked ? <Lock className="w-4 h-4" /> : 
+         lesson.isTopicLesson ? <BookOpen className="w-4 h-4" /> :
          <Star className="w-4 h-4" />}
       </div>
       <div className="flex-1 min-w-0">
@@ -63,9 +64,15 @@ const LessonItem = ({ lesson, isCompleted, onClick }: LessonItemProps) => {
         </div>
         <p className="text-xs text-muted-foreground truncate">{lesson.description}</p>
       </div>
-      <Badge variant="secondary" className="flex-shrink-0">
-        {lesson.xpReward} XP
-      </Badge>
+      {lesson.isTopicLesson ? (
+        <Badge variant="outline" className="flex-shrink-0 text-xs">
+          Practice
+        </Badge>
+      ) : (
+        <Badge variant="secondary" className="flex-shrink-0">
+          {lesson.xpReward} XP
+        </Badge>
+      )}
     </div>
   );
 };
@@ -81,6 +88,9 @@ export const LessonTopicSelector = () => {
     }
   };
 
+  // Get max count to set consistent height
+  const maxLessons = Math.max(...categories.map(cat => getLessonsByDifficulty(cat.id).length));
+
   return (
     <Card className="p-4">
       <h2 className="text-lg font-bold mb-3">Lessons</h2>
@@ -94,23 +104,25 @@ export const LessonTopicSelector = () => {
           ))}
         </TabsList>
 
-        {categories.map((cat) => (
-          <TabsContent key={cat.id} value={cat.id} className="space-y-2 mt-0">
-            {getLessonsByDifficulty(cat.id).map((lesson) => (
-              <LessonItem
-                key={lesson.id}
-                lesson={lesson}
-                isCompleted={isLessonCompleted(lesson.id)}
-                onClick={() => handleLessonClick(lesson)}
-              />
-            ))}
-            {getLessonsByDifficulty(cat.id).length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No lessons available in this category yet.
-              </p>
-            )}
-          </TabsContent>
-        ))}
+        <div style={{ minHeight: `${maxLessons * 72 + 16}px` }}>
+          {categories.map((cat) => (
+            <TabsContent key={cat.id} value={cat.id} className="space-y-2 mt-0">
+              {getLessonsByDifficulty(cat.id).map((lesson) => (
+                <LessonItem
+                  key={lesson.id}
+                  lesson={lesson}
+                  isCompleted={isLessonCompleted(lesson.id)}
+                  onClick={() => handleLessonClick(lesson)}
+                />
+              ))}
+              {getLessonsByDifficulty(cat.id).length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No lessons available in this category yet.
+                </p>
+              )}
+            </TabsContent>
+          ))}
+        </div>
       </Tabs>
     </Card>
   );
