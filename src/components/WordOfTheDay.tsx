@@ -112,9 +112,9 @@ export const WordOfTheDay = () => {
 
       <div className="grid md:grid-cols-2 gap-6 items-start">
         <div className="flex flex-col justify-center items-center text-center h-full">
-          <div className="text-4xl font-bold text-primary mb-2">{word.word}</div>
-          <div className="text-xl text-muted-foreground mb-1">{word.pronunciation}</div>
-          <div className="text-lg font-medium text-foreground">{word.meaning}</div>
+          <div className="text-7xl font-bold text-primary mb-4">{word.word}</div>
+          <div className="text-3xl text-muted-foreground mb-2">{word.pronunciation}</div>
+          <div className="text-2xl font-medium text-foreground">{word.meaning}</div>
         </div>
 
         <div className="space-y-2">
