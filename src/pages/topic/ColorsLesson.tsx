@@ -16,17 +16,18 @@ interface Question {
   color: string;
 }
 
+// Colors when naming (not describing) end with -o in Bulgarian
 const questions: Question[] = [
-  { bulgarian: "Червен", answer: "cherven", hint: "Red", color: "#ef4444" },
-  { bulgarian: "Син", answer: "sin", hint: "Blue", color: "#3b82f6" },
-  { bulgarian: "Зелен", answer: "zelen", hint: "Green", color: "#22c55e" },
-  { bulgarian: "Жълт", answer: "zhalt", hint: "Yellow", color: "#eab308" },
-  { bulgarian: "Оранжев", answer: "oranzhev", hint: "Orange", color: "#f97316" },
-  { bulgarian: "Лилав", answer: "lilav", hint: "Purple", color: "#a855f7" },
-  { bulgarian: "Розов", answer: "rozov", hint: "Pink", color: "#ec4899" },
-  { bulgarian: "Кафяв", answer: "kafyav", hint: "Brown", color: "#92400e" },
-  { bulgarian: "Черен", answer: "cheren", hint: "Black", color: "#171717" },
-  { bulgarian: "Бял", answer: "byal", hint: "White", color: "#f5f5f5" },
+  { bulgarian: "Червено", answer: "cherveno", hint: "Red", color: "#ef4444" },
+  { bulgarian: "Синьо", answer: "sinyo", hint: "Blue", color: "#3b82f6" },
+  { bulgarian: "Зелено", answer: "zeleno", hint: "Green", color: "#22c55e" },
+  { bulgarian: "Жълто", answer: "zhalto", hint: "Yellow", color: "#eab308" },
+  { bulgarian: "Оранжево", answer: "oranzhevo", hint: "Orange", color: "#f97316" },
+  { bulgarian: "Лилаво", answer: "lilavo", hint: "Purple", color: "#a855f7" },
+  { bulgarian: "Розово", answer: "rozovo", hint: "Pink", color: "#ec4899" },
+  { bulgarian: "Кафяво", answer: "kafyavo", hint: "Brown", color: "#92400e" },
+  { bulgarian: "Черно", answer: "cherno", hint: "Black", color: "#171717" },
+  { bulgarian: "Бяло", answer: "byalo", hint: "White", color: "#f5f5f5" },
 ];
 
 export const ColorsLesson = () => {
@@ -126,7 +127,7 @@ export const ColorsLesson = () => {
         <Alert className="mb-4 bg-amber-500/10 border-amber-500/30">
           <Info className="h-4 w-4 text-amber-600" />
           <AlertDescription className="text-amber-700">
-            This is a practice lesson. No XP will be awarded.
+            This is a practice lesson. No XP will be awarded. Note: Colors when naming (not describing something) end with -o.
           </AlertDescription>
         </Alert>
 
