@@ -8,6 +8,8 @@ export interface Lesson {
   status: "locked" | "available" | "completed";
   difficulty: "beginner" | "intermediate" | "advanced";
   category: string;
+  isPremium?: boolean;
+  route?: string;
 }
 
 export const lessons: Lesson[] = [
@@ -17,10 +19,11 @@ export const lessons: Lesson[] = [
     description: "Learn the Bulgarian Cyrillic alphabet and basic pronunciation",
     level: 1,
     xpReward: 50,
-    progress: 100,
-    status: "completed",
+    progress: 0,
+    status: "available",
     difficulty: "beginner",
-    category: "Basics"
+    category: "Basics",
+    route: "/lesson/cyrillic",
   },
   {
     id: "2", 
@@ -31,7 +34,8 @@ export const lessons: Lesson[] = [
     progress: 0,
     status: "available",
     difficulty: "beginner",
-    category: "Basics"
+    category: "Basics",
+    route: "/lesson/greetings",
   },
   {
     id: "3",
@@ -42,81 +46,66 @@ export const lessons: Lesson[] = [
     progress: 0,
     status: "available",
     difficulty: "beginner",
-    category: "Numbers"
+    category: "Numbers",
+    route: "/lesson/numbers",
   },
   {
     id: "4",
-    title: "Family Members",
-    description: "Learn words for family relationships",
+    title: "Type & Learn",
+    description: "Practice typing Bulgarian transliterations",
     level: 4,
     xpReward: 80,
     progress: 0,
-    status: "locked",
+    status: "available",
     difficulty: "beginner",
-    category: "Family"
+    category: "Practice",
+    route: "/lesson/type-in",
   },
   {
     id: "5",
-    title: "Colors & Shapes",
-    description: "Describe the world around you with colors and shapes",
+    title: "Fill the Blanks",
+    description: "Complete sentences with the correct word",
     level: 5,
     xpReward: 70,
     progress: 0,
-    status: "locked",
+    status: "available",
     difficulty: "beginner",
-    category: "Descriptive"
+    category: "Practice",
+    route: "/lesson/fill-blanks",
   },
   {
     id: "6",
-    title: "Food & Drinks",
-    description: "Order food and drinks like a local",
+    title: "Match Cyrillic",
+    description: "Match Cyrillic letters with their Latin equivalents",
     level: 6,
     xpReward: 90,
     progress: 0,
-    status: "locked",
+    status: "available",
     difficulty: "intermediate",
-    category: "Daily Life"
+    category: "Premium",
+    isPremium: true,
+    route: "/lesson/match-cyrillic",
   },
   {
     id: "7",
-    title: "Past Tense Verbs",
-    description: "Talk about things that happened in the past",
+    title: "Vocabulary Quiz",
+    description: "Choose the correct translation for Bulgarian words",
     level: 7,
     xpReward: 100,
     progress: 0,
-    status: "locked",
+    status: "available",
     difficulty: "intermediate",
-    category: "Grammar"
+    category: "Premium",
+    isPremium: true,
+    route: "/lesson/choose-word",
   },
-  {
-    id: "8",
-    title: "Directions & Places",
-    description: "Navigate Bulgarian cities and find your way around",
-    level: 8,
-    xpReward: 95,
-    progress: 0,
-    status: "locked",
-    difficulty: "intermediate",
-    category: "Travel"
-  },
-  {
-    id: "9",
-    title: "Advanced Grammar",
-    description: "Master complex grammatical structures",
-    level: 9,
-    xpReward: 120,
-    progress: 0,
-    status: "locked",
-    difficulty: "advanced",
-    category: "Grammar"
-  }
 ];
 
 export const getUserStats = () => ({
-  streak: 7,
+  streak: 0,
   hearts: 5,
-  xp: 1250,
-  dailyGoalProgress: 65,
-  completedLessons: lessons.filter(l => l.status === "completed").length,
-  totalLessons: lessons.length
+  xp: 0,
+  dailyGoalProgress: 0,
+  completedLessons: 0,
+  totalLessons: lessons.length,
 });

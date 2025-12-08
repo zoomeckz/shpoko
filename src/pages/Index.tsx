@@ -1,30 +1,49 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
 import { LessonCard } from "@/components/LessonCard";
 import { WordOfTheDay } from "@/components/WordOfTheDay";
-import { lessons, getUserStats } from "@/data/lessons";
-import { useNavigate } from "react-router-dom";
-
-const lessonRoutes: Record<string, string> = {
-  "1": "/lesson/cyrillic",
-  "2": "/lesson/greetings",
-  "3": "/lesson/numbers",
-};
+import { lessons } from "@/data/lessons";
 
 const Index = () => {
-  const userStats = getUserStats();
+  const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/auth");
+    }
+  }, [user, loading, navigate]);
+
   const handleLessonClick = (lessonId: string) => {
-    const route = lessonRoutes[lessonId];
-    if (route) {
-      navigate(route);
+    const lesson = lessons.find((l) => l.id === lessonId);
+    if (lesson?.route) {
+      navigate(lesson.route);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      <Header {...userStats} />
+      <Header 
+        streak={profile?.streak || 0}
+        hearts={5}
+        xp={profile?.xp || 0}
+        dailyGoalProgress={65}
+      />
       
       <main>
         <HeroSection />
@@ -37,7 +56,6 @@ const Index = () => {
               <h2 className="text-4xl font-bold mb-4">Your Learning Path</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 Progress through carefully crafted lessons designed to build your Bulgarian skills step by step.
-                Each lesson is designed to be completed in just 15 minutes!
               </p>
             </div>
             
@@ -52,6 +70,7 @@ const Index = () => {
                   progress={lesson.progress}
                   status={lesson.status}
                   difficulty={lesson.difficulty}
+                  isPremium={lesson.isPremium}
                   onClick={() => handleLessonClick(lesson.id)}
                 />
               ))}
