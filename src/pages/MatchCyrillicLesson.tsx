@@ -131,7 +131,6 @@ export const MatchCyrillicLesson = () => {
       />
     );
   }
-  };
 
   if (!hasPremiumAccess) {
     return (
