@@ -102,7 +102,7 @@ export const WordOfTheDay = () => {
 
   return (
     <Card className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center justify-center gap-3 mb-4">
         <ShpokoMascot expression="studying" size="sm" />
         <div className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-primary" />
