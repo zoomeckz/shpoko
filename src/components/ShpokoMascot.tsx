@@ -9,6 +9,9 @@ import shpokoAngry from "@/assets/shpoko-angry.png";
 import shpokoSmug from "@/assets/shpoko-smug.png";
 import shpokoStudying from "@/assets/shpoko-studying.png";
 import shpokoReading from "@/assets/shpoko-reading.png";
+import shpokoWriting from "@/assets/shpoko-writing.png";
+import shpokoWritingExcited from "@/assets/shpoko-writing-excited.png";
+import shpokoSleeping from "@/assets/shpoko-sleeping.png";
 
 export type ShpokoExpression = 
   | "happy" 
@@ -38,7 +41,8 @@ export type ShpokoExpression =
   | "wrong"
   | "streak"
   | "levelup"
-  | "reading";
+  | "reading"
+  | "writing";
 
 interface ShpokoMascotProps {
   expression?: ShpokoExpression;
@@ -64,7 +68,7 @@ const expressionImages: Record<ShpokoExpression, string> = {
   excited: shpokoExcited,
   confused: shpokoThinking,
   celebrating: shpokoExcited,
-  sleeping: shpokoSad,
+  sleeping: shpokoSleeping,
   waving: shpokoExcited,
   studying: shpokoStudying,
   proud: shpokoSmug,
@@ -77,7 +81,7 @@ const expressionImages: Record<ShpokoExpression, string> = {
   laughing: shpokoHappy,
   wink: shpokoSmug,
   determined: shpokoExcited,
-  tired: shpokoSad,
+  tired: shpokoSleeping,
   hungry: shpokoThinking,
   cheering: shpokoExcited,
   pointing: shpokoExcited,
@@ -87,6 +91,7 @@ const expressionImages: Record<ShpokoExpression, string> = {
   streak: shpokoExcited,
   levelup: shpokoExcited,
   reading: shpokoReading,
+  writing: shpokoWriting,
 };
 
 const expressionAnimations: Record<ShpokoExpression, string> = {
@@ -118,6 +123,7 @@ const expressionAnimations: Record<ShpokoExpression, string> = {
   streak: "animate-bounce",
   levelup: "animate-jump",
   reading: "animate-nod",
+  writing: "animate-nod",
 };
 
 const expressionEmojis: Record<ShpokoExpression, { emoji: string; position: string; animation?: string }[]> = {
@@ -188,6 +194,7 @@ const expressionEmojis: Record<ShpokoExpression, { emoji: string; position: stri
     { emoji: "🌟", position: "absolute -top-1 -left-1 text-sm", animation: "animate-ping" },
   ],
   reading: [{ emoji: "📚", position: "absolute -bottom-1 -right-1 text-sm" }],
+  writing: [{ emoji: "✏️", position: "absolute -bottom-1 -right-1 text-sm" }],
 };
 
 export const ShpokoMascot = ({ 
