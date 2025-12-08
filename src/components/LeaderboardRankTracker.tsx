@@ -66,27 +66,29 @@ export const LeaderboardRankTracker = () => {
       onClick={() => navigate("/leaderboard")}
     >
       <CardContent className="p-2">
-        <div className="flex flex-col items-center justify-center text-center gap-1">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <Trophy className="w-4 h-4 text-primary" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Your Leaderboard Rank</p>
-            <div className="flex items-center justify-center gap-1">
-              <span className={`text-xl font-bold ${getRankColor()}`}>
-                {getRankDisplay()}
-              </span>
-              {profile.is_premium && (
-                <Crown className="w-3 h-3 text-yellow-500" />
+        <div className="flex items-center justify-between">
+          <div className="flex-1 flex flex-col items-center justify-center text-center gap-1">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <Trophy className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Your Leaderboard Rank</p>
+              <div className="flex items-center justify-center gap-1">
+                <span className={`text-xl font-bold ${getRankColor()}`}>
+                  {getRankDisplay()}
+                </span>
+                {profile.is_premium && (
+                  <Crown className="w-3 h-3 text-yellow-500" />
+                )}
+              </div>
+              {totalUsers > 0 && userRank && (
+                <p className="text-xs text-muted-foreground">
+                  out of {totalUsers} learners
+                </p>
               )}
             </div>
-            {totalUsers > 0 && userRank && (
-              <p className="text-xs text-muted-foreground">
-                out of {totalUsers} learners
-              </p>
-            )}
           </div>
-          <ArrowRight className="w-3 h-3 text-muted-foreground" />
+          <ArrowRight className="w-4 h-4 text-muted-foreground" />
         </div>
       </CardContent>
     </Card>
