@@ -15,7 +15,7 @@ export interface Lesson {
 export const lessons: Lesson[] = [
   // Beginner Lessons
   {
-    id: "1",
+    id: "cyrillic-alphabet",
     title: "Cyrillic Alphabet",
     description: "Learn the Bulgarian Cyrillic alphabet and basic pronunciation",
     level: 1,
@@ -27,7 +27,7 @@ export const lessons: Lesson[] = [
     route: "/lesson/cyrillic",
   },
   {
-    id: "2", 
+    id: "basic-greetings", 
     title: "Basic Greetings",
     description: "Master essential greetings and polite expressions",
     level: 2,
@@ -39,7 +39,7 @@ export const lessons: Lesson[] = [
     route: "/lesson/greetings",
   },
   {
-    id: "3",
+    id: "numbers-1-20",
     title: "Numbers 1-20",
     description: "Count from one to twenty in Bulgarian",
     level: 3,
@@ -51,7 +51,7 @@ export const lessons: Lesson[] = [
     route: "/lesson/numbers",
   },
   {
-    id: "4",
+    id: "type-in-basics",
     title: "Type & Learn",
     description: "Practice typing Bulgarian transliterations",
     level: 4,
@@ -63,7 +63,7 @@ export const lessons: Lesson[] = [
     route: "/lesson/type-in",
   },
   {
-    id: "5",
+    id: "fill-blanks-basics",
     title: "Fill the Blanks",
     description: "Complete sentences with the correct word",
     level: 5,
@@ -75,7 +75,7 @@ export const lessons: Lesson[] = [
     route: "/lesson/fill-blanks",
   },
   {
-    id: "6",
+    id: "common-phrases",
     title: "Common Phrases",
     description: "Learn everyday phrases used in Bulgarian conversations",
     level: 6,
@@ -86,7 +86,7 @@ export const lessons: Lesson[] = [
     category: "Vocabulary",
   },
   {
-    id: "7",
+    id: "family-members",
     title: "Family Members",
     description: "Learn words for family relationships in Bulgarian",
     level: 7,
@@ -97,7 +97,7 @@ export const lessons: Lesson[] = [
     category: "Vocabulary",
   },
   {
-    id: "8",
+    id: "colors",
     title: "Colors",
     description: "Master the names of colors in Bulgarian",
     level: 8,
@@ -109,7 +109,7 @@ export const lessons: Lesson[] = [
   },
   // Intermediate Lessons
   {
-    id: "9",
+    id: "match-cyrillic-premium",
     title: "Match Cyrillic",
     description: "Match Cyrillic letters with their Latin equivalents",
     level: 9,
@@ -122,7 +122,7 @@ export const lessons: Lesson[] = [
     route: "/lesson/match-cyrillic",
   },
   {
-    id: "10",
+    id: "choose-word-premium",
     title: "Vocabulary Quiz",
     description: "Choose the correct translation for Bulgarian words",
     level: 10,
@@ -135,7 +135,7 @@ export const lessons: Lesson[] = [
     route: "/lesson/choose-word",
   },
   {
-    id: "11",
+    id: "days-months",
     title: "Days & Months",
     description: "Learn days of the week and months of the year",
     level: 11,
@@ -146,7 +146,7 @@ export const lessons: Lesson[] = [
     category: "Time",
   },
   {
-    id: "12",
+    id: "food-drinks",
     title: "Food & Drinks",
     description: "Essential vocabulary for restaurants and shopping",
     level: 12,
@@ -157,7 +157,7 @@ export const lessons: Lesson[] = [
     category: "Vocabulary",
   },
   {
-    id: "13",
+    id: "at-the-restaurant",
     title: "At the Restaurant",
     description: "Learn to order food and interact with waiters",
     level: 13,
@@ -168,7 +168,7 @@ export const lessons: Lesson[] = [
     category: "Conversation",
   },
   {
-    id: "14",
+    id: "directions",
     title: "Directions",
     description: "Ask for and give directions in Bulgarian",
     level: 14,
@@ -179,7 +179,7 @@ export const lessons: Lesson[] = [
     category: "Conversation",
   },
   {
-    id: "15",
+    id: "weather-talk",
     title: "Weather Talk",
     description: "Discuss weather conditions and seasons",
     level: 15,
@@ -191,7 +191,7 @@ export const lessons: Lesson[] = [
   },
   // Advanced Lessons
   {
-    id: "16",
+    id: "past-tense-verbs",
     title: "Past Tense Verbs",
     description: "Master the Bulgarian past tense conjugations",
     level: 16,
@@ -203,7 +203,7 @@ export const lessons: Lesson[] = [
     isPremium: true,
   },
   {
-    id: "17",
+    id: "future-tense",
     title: "Future Tense",
     description: "Learn to express future actions in Bulgarian",
     level: 17,
