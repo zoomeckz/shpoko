@@ -65,28 +65,28 @@ export const LeaderboardRankTracker = () => {
       className="cursor-pointer hover:shadow-soft transition-all duration-200 border-2 hover:border-primary bg-gradient-to-r from-primary/5 to-primary/10"
       onClick={() => navigate("/leaderboard")}
     >
-      <CardContent className="p-4">
-        <div className="flex flex-col items-center justify-center text-center gap-3">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-            <Trophy className="w-8 h-8 text-primary" />
+      <CardContent className="p-2">
+        <div className="flex flex-col items-center justify-center text-center gap-1">
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <Trophy className="w-4 h-4 text-primary" />
           </div>
           <div>
-            <p className="text-lg text-muted-foreground">Your Leaderboard Rank</p>
-            <div className="flex items-center justify-center gap-2">
-              <span className={`text-4xl font-bold ${getRankColor()}`}>
+            <p className="text-xs text-muted-foreground">Your Leaderboard Rank</p>
+            <div className="flex items-center justify-center gap-1">
+              <span className={`text-xl font-bold ${getRankColor()}`}>
                 {getRankDisplay()}
               </span>
               {profile.is_premium && (
-                <Crown className="w-6 h-6 text-yellow-500" />
+                <Crown className="w-3 h-3 text-yellow-500" />
               )}
             </div>
             {totalUsers > 0 && userRank && (
-              <p className="text-base text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground">
                 out of {totalUsers} learners
               </p>
             )}
           </div>
-          <ArrowRight className="w-6 h-6 text-muted-foreground" />
+          <ArrowRight className="w-3 h-3 text-muted-foreground" />
         </div>
       </CardContent>
     </Card>
