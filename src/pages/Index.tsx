@@ -1,10 +1,26 @@
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
 import { LessonCard } from "@/components/LessonCard";
+import { WordOfTheDay } from "@/components/WordOfTheDay";
 import { lessons, getUserStats } from "@/data/lessons";
+import { useNavigate } from "react-router-dom";
+
+const lessonRoutes: Record<string, string> = {
+  "1": "/lesson/cyrillic",
+  "2": "/lesson/greetings",
+  "3": "/lesson/numbers",
+};
 
 const Index = () => {
   const userStats = getUserStats();
+  const navigate = useNavigate();
+
+  const handleLessonClick = (lessonId: string) => {
+    const route = lessonRoutes[lessonId];
+    if (route) {
+      navigate(route);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -12,6 +28,8 @@ const Index = () => {
       
       <main>
         <HeroSection />
+        
+        <WordOfTheDay />
         
         <section className="py-16 px-4">
           <div className="max-w-6xl mx-auto">
@@ -34,13 +52,7 @@ const Index = () => {
                   progress={lesson.progress}
                   status={lesson.status}
                   difficulty={lesson.difficulty}
-                  onClick={() => {
-                    if (lesson.id === "1") {
-                      window.location.href = "/lesson/cyrillic";
-                    } else {
-                      console.log(`Starting lesson: ${lesson.title}`);
-                    }
-                  }}
+                  onClick={() => handleLessonClick(lesson.id)}
                 />
               ))}
             </div>
