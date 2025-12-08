@@ -1,19 +1,34 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
-import { LessonCard } from "@/components/LessonCard";
 import { WordOfTheDay } from "@/components/WordOfTheDay";
 import { LeaderboardRankTracker } from "@/components/LeaderboardRankTracker";
 import { TopicLessonsMenu } from "@/components/TopicLessonsMenu";
+import { LessonTopicSelector } from "@/components/LessonTopicSelector";
+import { ShortStories } from "@/components/ShortStories";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { lessons } from "@/data/lessons";
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
-  const { isLessonCompleted, getLessonProgress, progress } = useUserProgress();
+  const { progress } = useUserProgress();
   const navigate = useNavigate();
+  
+  // Check if it's the user's first visit
+  const [isFirstVisit, setIsFirstVisit] = useState(false);
+  
+  useEffect(() => {
+    if (user) {
+      const visitKey = `shpoko_first_visit_${user.id}`;
+      const hasVisited = localStorage.getItem(visitKey);
+      if (!hasVisited) {
+        setIsFirstVisit(true);
+        localStorage.setItem(visitKey, "true");
+      }
+    }
+  }, [user]);
   
   // Calculate daily goal progress based on completed lessons
   const totalLessons = lessons.length;
@@ -25,13 +40,6 @@ const Index = () => {
       navigate("/auth");
     }
   }, [user, loading, navigate]);
-
-  const handleLessonClick = (lessonId: string) => {
-    const lesson = lessons.find((l) => l.id === lessonId);
-    if (lesson?.route) {
-      navigate(lesson.route);
-    }
-  };
 
   if (loading) {
     return (
@@ -54,56 +62,40 @@ const Index = () => {
         dailyGoalProgress={dailyGoalProgress}
       />
       
-      <main>
-        <HeroSection />
-        
-        <section className="py-8 px-4">
-          <div className="max-w-6xl mx-auto">
-            <LeaderboardRankTracker />
-          </div>
-        </section>
+      <main className="max-w-6xl mx-auto px-4 py-6">
+        {/* Leaderboard at top */}
+        <div className="mb-6">
+          <LeaderboardRankTracker />
+        </div>
 
-        <section className="px-4">
-          <div className="max-w-6xl mx-auto">
-            <TopicLessonsMenu />
+        {/* Show hero only on first visit, otherwise Word of the Day */}
+        {isFirstVisit ? (
+          <div className="mb-6">
+            <HeroSection />
           </div>
-        </section>
-        
-        <WordOfTheDay />
-        
-        <section className="py-16 px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold mb-4">Your Learning Path</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Progress through carefully crafted lessons designed to build your Bulgarian skills step by step.
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {lessons.map((lesson) => {
-                const completed = isLessonCompleted(lesson.id);
-                const progress = getLessonProgress(lesson.id);
-                const status = completed ? "completed" : lesson.status;
-                
-                return (
-                  <LessonCard
-                    key={lesson.id}
-                    title={lesson.title}
-                    description={lesson.description}
-                    level={lesson.level}
-                    xpReward={lesson.xpReward}
-                    progress={progress}
-                    status={status}
-                    difficulty={lesson.difficulty}
-                    isPremium={lesson.isPremium}
-                    onClick={() => handleLessonClick(lesson.id)}
-                  />
-                );
-              })}
-            </div>
+        ) : (
+          <div className="mb-6">
+            <WordOfTheDay />
           </div>
-        </section>
+        )}
+
+        {/* Topic practice lessons dropdown */}
+        <div className="mb-6">
+          <TopicLessonsMenu />
+        </div>
+
+        {/* Main content grid */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Lessons selector - takes 2 columns */}
+          <div className="lg:col-span-2">
+            <LessonTopicSelector />
+          </div>
+
+          {/* Short Stories sidebar */}
+          <div>
+            <ShortStories />
+          </div>
+        </div>
       </main>
     </div>
   );

@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
+import raccoonMascot from "@/assets/raccoon-mascot.png";
 
 interface DailyWord {
   word: string;
@@ -93,34 +94,32 @@ export const WordOfTheDay = () => {
   const word = getWordOfTheDay();
 
   return (
-    <section className="py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        <Card className="p-8 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-          <div className="flex items-center gap-2 mb-6">
-            <Sparkles className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl font-bold">Word of the Day</h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            <div>
-              <div className="text-4xl font-bold text-primary mb-2">{word.word}</div>
-              <div className="text-xl text-muted-foreground mb-2">{word.pronunciation}</div>
-              <div className="text-lg font-medium">{word.meaning}</div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="font-semibold text-muted-foreground">Example sentences:</h3>
-              {word.examples.map((example, index) => (
-                <div key={index} className="p-3 bg-background/60 rounded-lg">
-                  <div className="font-medium text-primary">{example.bulgarian}</div>
-                  <div className="text-sm text-muted-foreground">{example.pronunciation}</div>
-                  <div className="text-sm">{example.english}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Card>
+    <Card className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+      <div className="flex items-center gap-3 mb-4">
+        <img src={raccoonMascot} alt="Shpoko" className="w-12 h-12" />
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-primary" />
+          <h2 className="text-xl font-bold">Shpoko's Word of the Day</h2>
+        </div>
       </div>
-    </section>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        <div>
+          <div className="text-3xl font-bold text-primary mb-1">{word.word}</div>
+          <div className="text-lg text-muted-foreground mb-1">{word.pronunciation}</div>
+          <div className="text-base font-medium">{word.meaning}</div>
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="font-semibold text-sm text-muted-foreground">Examples:</h3>
+          {word.examples.map((example, index) => (
+            <div key={index} className="p-2 bg-background/60 rounded-lg text-sm">
+              <div className="font-medium text-primary">{example.bulgarian}</div>
+              <div className="text-xs text-muted-foreground">{example.pronunciation} — {example.english}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Card>
   );
 };
