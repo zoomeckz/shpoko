@@ -25,9 +25,9 @@ serve(async (req) => {
   try {
     logStep("Function started");
     
-    const { priceId } = await req.json();
+    const { priceId, mode } = await req.json();
     if (!priceId) throw new Error("Price ID is required");
-    logStep("Price ID received", { priceId });
+    logStep("Request received", { priceId, mode });
 
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
@@ -47,21 +47,29 @@ serve(async (req) => {
       logStep("Existing customer found", { customerId });
     }
 
+    // Use provided mode or default to subscription
+    const checkoutMode = mode === "payment" ? "payment" : "subscription";
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
+      client_reference_id: user.id,
       line_items: [
         {
           price: priceId,
           quantity: 1,
         },
       ],
-      mode: "subscription",
-      success_url: `${req.headers.get("origin")}/premium?success=true`,
+      mode: checkoutMode,
+      success_url: `${req.headers.get("origin")}/premium?success=true&mode=${checkoutMode}`,
       cancel_url: `${req.headers.get("origin")}/premium?canceled=true`,
+      metadata: {
+        user_id: user.id,
+        mode: checkoutMode,
+      },
     });
 
-    logStep("Checkout session created", { sessionId: session.id });
+    logStep("Checkout session created", { sessionId: session.id, mode: checkoutMode });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

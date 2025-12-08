@@ -15,23 +15,29 @@ const PRICING_TIERS = [
     price: "€5",
     period: "/month",
     priceId: "price_1Sc2UlE9cJnDfGke3EPOlyYB",
+    mode: "subscription" as const,
     savings: null,
+    description: "Auto-renews monthly",
   },
   {
     id: "quarterly",
     name: "3 Months",
     price: "€12",
-    period: "/3 months",
-    priceId: "price_1Sc2UzE9cJnDfGkeYUVwF7Kk",
+    period: "one-time",
+    priceId: "price_1Sc2Y7E9cJnDfGkexZokHqUL",
+    mode: "payment" as const,
     savings: "Save 20%",
+    description: "Prepaid, no auto-renewal",
   },
   {
     id: "semiannual",
     name: "6 Months",
     price: "€25",
-    period: "/6 months",
-    priceId: "price_1Sc2VFE9cJnDfGkewydL0nkG",
+    period: "one-time",
+    priceId: "price_1Sc2YHE9cJnDfGkeuPYsH1nV",
+    mode: "payment" as const,
     savings: "Save 17%",
+    description: "Prepaid, no auto-renewal",
   },
   {
     id: "yearly",
@@ -39,8 +45,10 @@ const PRICING_TIERS = [
     price: "€50",
     period: "/year",
     priceId: "price_1Sc2VRE9cJnDfGkeiLl6cX12",
+    mode: "subscription" as const,
     savings: "Best Value",
     highlight: true,
+    description: "Auto-renews yearly",
   },
 ];
 
@@ -52,13 +60,11 @@ const Premium = () => {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    // Check for success/cancel params from Stripe redirect
     if (searchParams.get("success") === "true") {
       toast({
         title: "Welcome to Premium!",
         description: "Your subscription is now active. Enjoy your premium benefits!",
       });
-      // Refresh subscription status
       checkSubscription();
     } else if (searchParams.get("canceled") === "true") {
       toast({
@@ -81,11 +87,11 @@ const Premium = () => {
     }
   };
 
-  const handleSubscribe = async (priceId: string, tierId: string) => {
+  const handleSubscribe = async (priceId: string, tierId: string, mode: "subscription" | "payment") => {
     setLoading(tierId);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId },
+        body: { priceId, mode },
       });
 
       if (error) throw error;
@@ -167,6 +173,11 @@ const Premium = () => {
               <CardDescription>
                 Thank you for supporting Shpoko. Enjoy your premium benefits!
               </CardDescription>
+              {profile.premium_until && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Active until: {new Date(profile.premium_until).toLocaleDateString()}
+                </p>
+              )}
             </CardHeader>
             <CardContent className="pt-6">
               <div className="grid md:grid-cols-2 gap-4 mb-6">
@@ -254,10 +265,11 @@ const Premium = () => {
                   <span className="text-3xl font-bold">{tier.price}</span>
                   <span className="text-muted-foreground text-sm">{tier.period}</span>
                 </div>
+                <p className="text-xs text-muted-foreground mt-1">{tier.description}</p>
               </CardHeader>
               <CardContent>
                 <Button
-                  onClick={() => handleSubscribe(tier.priceId, tier.id)}
+                  onClick={() => handleSubscribe(tier.priceId, tier.id, tier.mode)}
                   disabled={loading === tier.id}
                   className={`w-full ${
                     tier.highlight 
@@ -266,7 +278,7 @@ const Premium = () => {
                   }`}
                   variant={tier.highlight ? "default" : "outline"}
                 >
-                  {loading === tier.id ? "Loading..." : "Subscribe"}
+                  {loading === tier.id ? "Loading..." : tier.mode === "payment" ? "Buy Now" : "Subscribe"}
                 </Button>
               </CardContent>
             </Card>
