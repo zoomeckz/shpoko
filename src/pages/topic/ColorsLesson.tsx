@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Check, X, Volume2, Info } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ArrowLeft, Check, X, Volume2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { LessonComplete } from "@/components/LessonComplete";
+import { useUserProgress } from "@/hooks/useUserProgress";
 
 interface Question {
   bulgarian: string;
@@ -16,7 +18,9 @@ interface Question {
   color: string;
 }
 
-// Colors when naming (not describing) end with -o in Bulgarian
+const LESSON_ID = "colors-topic";
+const XP_REWARD = 65;
+
 const questions: Question[] = [
   { bulgarian: "Червено", answer: "cherveno", hint: "Red", color: "#ef4444" },
   { bulgarian: "Синьо", answer: "sinyo", hint: "Blue", color: "#3b82f6" },
@@ -36,8 +40,12 @@ export const ColorsLesson = () => {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [showHint, setShowHint] = useState(false);
+  const [usedHint, setUsedHint] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [earnedXP, setEarnedXP] = useState(0);
   const navigate = useNavigate();
+  const { user, updateXP } = useAuth();
+  const { canEarnXP, refetch } = useUserProgress();
 
   const currentQuestion = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
@@ -63,51 +71,50 @@ export const ColorsLesson = () => {
     }
   };
 
-  const nextQuestion = () => {
+  const nextQuestion = async () => {
     if (currentStep < questions.length - 1) {
       setCurrentStep(currentStep + 1);
       setUserAnswer("");
       setIsCorrect(null);
       setShowHint(false);
+      setUsedHint(false);
     } else {
+      // Lesson complete - calculate and award XP
+      const canEarn = canEarnXP(LESSON_ID);
+      let xpEarned = 0;
+      
+      if (canEarn && user?.id) {
+        const baseXP = Math.round((correctAnswers / questions.length) * XP_REWARD);
+        xpEarned = baseXP;
+        await updateXP(xpEarned);
+        
+        await supabase.from("user_progress").upsert({
+          user_id: user.id,
+          lesson_id: LESSON_ID,
+          completed: true,
+          score: xpEarned,
+          correct_answers: correctAnswers,
+          total_answers: questions.length,
+          completed_at: new Date().toISOString(),
+        }, { onConflict: "user_id,lesson_id" });
+        
+        refetch();
+      }
+      
+      setEarnedXP(xpEarned);
       setIsComplete(true);
     }
   };
 
   if (isComplete) {
     return (
-      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
-        <Card className="max-w-md w-full text-center">
-          <CardHeader>
-            <CardTitle className="text-2xl">Practice Complete!</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">
-              You got {correctAnswers}/{questions.length} correct!
-            </p>
-            <Alert className="bg-amber-500/10 border-amber-500/30">
-              <Info className="h-4 w-4 text-amber-600" />
-              <AlertDescription className="text-amber-700">
-                Topic lessons do not reward XP.
-              </AlertDescription>
-            </Alert>
-            <div className="flex gap-4">
-              <Button variant="outline" onClick={() => navigate("/")} className="flex-1">
-                Back to Lessons
-              </Button>
-              <Button onClick={() => {
-                setCurrentStep(0);
-                setCorrectAnswers(0);
-                setIsComplete(false);
-                setUserAnswer("");
-                setIsCorrect(null);
-              }} className="flex-1">
-                Practice Again
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <LessonComplete
+        lessonKey={LESSON_ID}
+        score={earnedXP}
+        xpEarned={earnedXP}
+        correctAnswers={correctAnswers}
+        totalQuestions={questions.length}
+      />
     );
   }
 
@@ -123,13 +130,6 @@ export const ColorsLesson = () => {
           </div>
           <span className="text-sm font-medium">{currentStep + 1}/{questions.length}</span>
         </div>
-
-        <Alert className="mb-4 bg-amber-500/10 border-amber-500/30">
-          <Info className="h-4 w-4 text-amber-600" />
-          <AlertDescription className="text-amber-700">
-            This is a practice lesson. No XP will be awarded. Note: Colors when naming (not describing something) end with -o.
-          </AlertDescription>
-        </Alert>
 
         <Card className="mb-6">
           <CardHeader>
@@ -194,7 +194,7 @@ export const ColorsLesson = () => {
             <div className="flex gap-4">
               {isCorrect === null ? (
                 <>
-                  <Button variant="outline" onClick={() => setShowHint(true)} disabled={showHint} className="flex-1">
+                  <Button variant="outline" onClick={() => { setShowHint(true); setUsedHint(true); }} disabled={showHint} className="flex-1">
                     Show Hint
                   </Button>
                   <Button onClick={checkAnswer} disabled={!userAnswer.trim()} className="flex-1">
@@ -203,7 +203,7 @@ export const ColorsLesson = () => {
                 </>
               ) : (
                 <Button onClick={nextQuestion} className="w-full">
-                  {currentStep < questions.length - 1 ? "Next" : "Finish Practice"}
+                  {currentStep < questions.length - 1 ? "Next" : "Complete Lesson"}
                 </Button>
               )}
             </div>
