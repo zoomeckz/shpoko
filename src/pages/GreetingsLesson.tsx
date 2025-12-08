@@ -7,6 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Greeting {
   bulgarian: string;
@@ -35,14 +37,30 @@ export const GreetingsLesson = () => {
   const { isPlaying, playPronunciation } = useTextToSpeech();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user, updateXP } = useAuth();
 
   const currentGreeting = greetings[currentStep];
   const progress = ((currentStep + 1) / greetings.length) * 100;
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (currentStep < greetings.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
+      // Lesson complete - save progress and award XP
+      if (user) {
+        await updateXP(75);
+        
+        await supabase.from("user_progress").upsert({
+          user_id: user.id,
+          lesson_id: "basic-greetings",
+          completed: true,
+          score: 75,
+          correct_answers: greetings.length,
+          total_answers: greetings.length,
+          completed_at: new Date().toISOString(),
+        });
+      }
+      
       toast({
         title: "Lesson Complete! 🎉",
         description: "You've mastered basic greetings! +75 XP",
