@@ -331,36 +331,46 @@ const Stories = () => {
             <ShpokoMascot expression="studying" size="sm" className="ml-auto" />
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            {stories.map((story) => (
-              <Card
-                key={story.id}
-                onClick={() => handleStorySelect(story)}
-                className="cursor-pointer hover:border-primary hover:shadow-md transition-all"
-              >
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{story.title}</CardTitle>
-                    <Badge variant="outline" className={levelColors[story.level]}>
-                      {story.level}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <BookOpen className="w-4 h-4" />
-                      <span>{story.sentences.length} sentences</span>
-                    </div>
-                    <Badge className="bg-primary/10 text-primary border-0">
-                      <Star className="w-3 h-3 mr-1 fill-current" />
-                      {story.xpReward} XP
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {["beginner", "intermediate", "advanced"].map((level) => {
+            const levelStories = stories.filter(s => s.level === level);
+            if (levelStories.length === 0) return null;
+            
+            return (
+              <div key={level} className="mb-8">
+                <h2 className="text-xl font-semibold capitalize mb-4">{level}</h2>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {levelStories.map((story) => (
+                    <Card
+                      key={story.id}
+                      onClick={() => handleStorySelect(story)}
+                      className="cursor-pointer hover:border-primary hover:shadow-md transition-all"
+                    >
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-lg">{story.title}</CardTitle>
+                          <Badge variant="outline" className={levelColors[story.level]}>
+                            {story.level}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <BookOpen className="w-4 h-4" />
+                            <span>{story.sentences.length} sentences</span>
+                          </div>
+                          <Badge className="bg-primary/10 text-primary border-0">
+                            <Star className="w-3 h-3 mr-1 fill-current" />
+                            {story.xpReward} XP
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </main>
       </div>
     );
@@ -386,7 +396,7 @@ const Stories = () => {
 
           <Card className="mb-6">
             <CardContent className="pt-6">
-              <div className="space-y-4 text-xl leading-relaxed">
+              <div className="space-y-4 text-xl leading-relaxed text-center">
                 {selectedStory.sentences.map((sentence, sentenceIndex) => (
                   <p key={sentenceIndex}>
                     {sentence.map((word, wordIndex) => (
