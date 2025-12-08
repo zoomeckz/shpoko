@@ -66,29 +66,27 @@ export const LeaderboardRankTracker = () => {
       onClick={() => navigate("/leaderboard")}
     >
       <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <Trophy className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Your Leaderboard Rank</p>
-              <div className="flex items-center gap-2">
-                <span className={`text-2xl font-bold ${getRankColor()}`}>
-                  {getRankDisplay()}
-                </span>
-                {profile.is_premium && (
-                  <Crown className="w-5 h-5 text-yellow-500" />
-                )}
-              </div>
-              {totalUsers > 0 && userRank && (
-                <p className="text-xs text-muted-foreground">
-                  out of {totalUsers} learners
-                </p>
+        <div className="flex flex-col items-center justify-center text-center gap-3">
+          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+            <Trophy className="w-8 h-8 text-primary" />
+          </div>
+          <div>
+            <p className="text-lg text-muted-foreground">Your Leaderboard Rank</p>
+            <div className="flex items-center justify-center gap-2">
+              <span className={`text-4xl font-bold ${getRankColor()}`}>
+                {getRankDisplay()}
+              </span>
+              {profile.is_premium && (
+                <Crown className="w-6 h-6 text-yellow-500" />
               )}
             </div>
+            {totalUsers > 0 && userRank && (
+              <p className="text-base text-muted-foreground mt-1">
+                out of {totalUsers} learners
+              </p>
+            )}
           </div>
-          <ArrowRight className="w-5 h-5 text-muted-foreground" />
+          <ArrowRight className="w-6 h-6 text-muted-foreground" />
         </div>
       </CardContent>
     </Card>
