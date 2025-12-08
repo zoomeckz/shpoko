@@ -5,10 +5,13 @@ import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
 import { LessonCard } from "@/components/LessonCard";
 import { WordOfTheDay } from "@/components/WordOfTheDay";
+import { LeaderboardRankTracker } from "@/components/LeaderboardRankTracker";
+import { useUserProgress } from "@/hooks/useUserProgress";
 import { lessons } from "@/data/lessons";
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
+  const { isLessonCompleted, getLessonProgress } = useUserProgress();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,6 +51,12 @@ const Index = () => {
       <main>
         <HeroSection />
         
+        <section className="py-8 px-4">
+          <div className="max-w-6xl mx-auto">
+            <LeaderboardRankTracker />
+          </div>
+        </section>
+        
         <WordOfTheDay />
         
         <section className="py-16 px-4">
@@ -60,20 +69,26 @@ const Index = () => {
             </div>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {lessons.map((lesson) => (
-                <LessonCard
-                  key={lesson.id}
-                  title={lesson.title}
-                  description={lesson.description}
-                  level={lesson.level}
-                  xpReward={lesson.xpReward}
-                  progress={lesson.progress}
-                  status={lesson.status}
-                  difficulty={lesson.difficulty}
-                  isPremium={lesson.isPremium}
-                  onClick={() => handleLessonClick(lesson.id)}
-                />
-              ))}
+              {lessons.map((lesson) => {
+                const completed = isLessonCompleted(lesson.id);
+                const progress = getLessonProgress(lesson.id);
+                const status = completed ? "completed" : lesson.status;
+                
+                return (
+                  <LessonCard
+                    key={lesson.id}
+                    title={lesson.title}
+                    description={lesson.description}
+                    level={lesson.level}
+                    xpReward={lesson.xpReward}
+                    progress={progress}
+                    status={status}
+                    difficulty={lesson.difficulty}
+                    isPremium={lesson.isPremium}
+                    onClick={() => handleLessonClick(lesson.id)}
+                  />
+                );
+              })}
             </div>
           </div>
         </section>
