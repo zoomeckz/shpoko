@@ -23,9 +23,8 @@ const About = () => {
 
       <main className="container mx-auto px-4 py-16">
         <div className="max-w-2xl mx-auto text-center space-y-8">
-          <h1 className="text-4xl font-bold text-foreground">About</h1>
           
-          <p className="text-xl text-muted-foreground leading-relaxed">
+          <p className="text-2xl text-muted-foreground leading-relaxed italic font-serif">
             I am just a man trying to learn Bulgarian.
           </p>
 
