@@ -43,13 +43,6 @@ export const HeroSection = () => {
                 <Play className="w-5 h-5 mr-2" />
                 Start Learning
               </Button>
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="text-lg px-8 py-6"
-              >
-                Try Demo Lesson
-              </Button>
             </div>
             
             <div className="grid grid-cols-2 gap-6 max-w-md mx-auto lg:mx-0">
