@@ -10,25 +10,23 @@ import raccoonMascot from "@/assets/raccoon-mascot.png";
 import { z } from "zod";
 
 const signUpSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  username: z.string().min(3, "Username must be at least 3 characters").max(20, "Username must be at most 20 characters"),
+  username: z.string()
+    .min(3, "Username must be at least 3 characters")
+    .max(20, "Username must be at most 20 characters")
+    .regex(/^[a-zA-Z0-9 ]+$/, "Username can only contain letters, numbers, and spaces"),
 });
 
 const signInSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
+  username: z.string().min(3, "Username must be at least 3 characters"),
 });
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [isLogin, setIsLogin] = useState(false);
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUpWithUsername, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -41,9 +39,9 @@ const Auth = () => {
   const validateForm = () => {
     try {
       if (isLogin) {
-        signInSchema.parse({ email, password });
+        signInSchema.parse({ username });
       } else {
-        signUpSchema.parse({ email, password, username });
+        signUpSchema.parse({ username });
       }
       setErrors({});
       return true;
@@ -70,21 +68,13 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const { error } = await signIn(email, password);
+        const { error } = await signIn(username);
         if (error) {
-          if (error.message.includes("Invalid login credentials")) {
-            toast({
-              title: "Login Failed",
-              description: "Invalid email or password. Please try again.",
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Login Failed",
-              description: error.message,
-              variant: "destructive",
-            });
-          }
+          toast({
+            title: "Login Failed",
+            description: "Username not found. Please check your username or create a new account.",
+            variant: "destructive",
+          });
         } else {
           toast({
             title: "Welcome back!",
@@ -93,12 +83,12 @@ const Auth = () => {
           navigate("/");
         }
       } else {
-        const { error } = await signUp(email, password, username);
+        const { error } = await signUpWithUsername(username);
         if (error) {
-          if (error.message.includes("User already registered")) {
+          if (error.message.includes("already")) {
             toast({
-              title: "Account Exists",
-              description: "This email is already registered. Please log in instead.",
+              title: "Username Taken",
+              description: "This username is already taken. Please choose another.",
               variant: "destructive",
             });
           } else {
@@ -110,8 +100,8 @@ const Auth = () => {
           }
         } else {
           toast({
-            title: "Account Created!",
-            description: "Welcome to Shpoko! Your progress will be saved.",
+            title: "Welcome to Shpoko!",
+            description: "Your account has been created. Start learning!",
           });
           navigate("/");
         }
@@ -133,67 +123,36 @@ const Auth = () => {
           </CardTitle>
           <CardDescription>
             {isLogin
-              ? "Log in to continue your Bulgarian learning journey"
-              : "Register to save your progress and compete on the leaderboard"}
+              ? "Enter your username to continue learning"
+              : "Choose a username to start your Bulgarian learning journey"}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="Choose a username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className={errors.username ? "border-red-500" : ""}
-                />
-                {errors.username && (
-                  <p className="text-sm text-red-500">{errors.username}</p>
-                )}
-              </div>
-            )}
-            
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={errors.email ? "border-red-500" : ""}
+                id="username"
+                type="text"
+                placeholder="Choose a username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className={errors.username ? "border-red-500" : ""}
+                autoComplete="username"
               />
-              {errors.email && (
-                <p className="text-sm text-red-500">{errors.email}</p>
-              )}
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={errors.password ? "border-red-500" : ""}
-              />
-              {errors.password && (
-                <p className="text-sm text-red-500">{errors.password}</p>
+              {errors.username && (
+                <p className="text-sm text-red-500">{errors.username}</p>
               )}
             </div>
 
             <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
-              {loading ? "Loading..." : isLogin ? "Log In" : "Create Account"}
+              {loading ? "Loading..." : isLogin ? "Log In" : "Start Learning"}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-muted-foreground">
-              {isLogin ? "Don't have an account?" : "Already have an account?"}
+              {isLogin ? "New to Shpoko?" : "Already have an account?"}
             </p>
             <Button
               variant="link"
@@ -203,13 +162,13 @@ const Auth = () => {
               }}
               className="text-blue-600"
             >
-              {isLogin ? "Sign up for free" : "Log in"}
+              {isLogin ? "Create an account" : "Log in"}
             </Button>
           </div>
 
           {!isLogin && (
             <p className="mt-4 text-sm text-center text-muted-foreground">
-              📚 Registration is only to ensure your learning progress is saved and to enable leaderboard features.
+              📚 Your progress will be saved automatically. Add your email later to unlock premium features!
             </p>
           )}
         </CardContent>
