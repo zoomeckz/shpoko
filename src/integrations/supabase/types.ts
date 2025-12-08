@@ -145,9 +145,46 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      leaderboard_view: {
+        Row: {
+          id: string | null
+          is_premium: boolean | null
+          level: number | null
+          streak: number | null
+          username: string | null
+          xp: number | null
+        }
+        Insert: {
+          id?: string | null
+          is_premium?: boolean | null
+          level?: number | null
+          streak?: number | null
+          username?: string | null
+          xp?: number | null
+        }
+        Update: {
+          id?: string | null
+          is_premium?: boolean | null
+          level?: number | null
+          streak?: number | null
+          username?: string | null
+          xp?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      get_leaderboard: {
+        Args: { limit_count?: number }
+        Returns: {
+          id: string
+          is_premium: boolean
+          level: number
+          streak: number
+          username: string
+          xp: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
