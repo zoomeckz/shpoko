@@ -4,16 +4,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Check, X, Volume2, Info } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ArrowLeft, Check, X, Volume2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { LessonComplete } from "@/components/LessonComplete";
+import { useUserProgress } from "@/hooks/useUserProgress";
 
 interface Question {
   bulgarian: string;
   answer: string;
   hint: string;
 }
+
+const LESSON_ID = "adjectives-2-topic";
+const XP_REWARD = 80;
 
 const questions: Question[] = [
   { bulgarian: "Щастлив", answer: "shtastliv", hint: "Happy" },
@@ -35,7 +40,10 @@ export const Adjectives2Lesson = () => {
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [earnedXP, setEarnedXP] = useState(0);
   const navigate = useNavigate();
+  const { user, updateXP } = useAuth();
+  const { canEarnXP, refetch } = useUserProgress();
 
   const currentQuestion = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
@@ -59,35 +67,48 @@ export const Adjectives2Lesson = () => {
     if (isAnswerCorrect) setCorrectAnswers(correctAnswers + 1);
   };
 
-  const nextQuestion = () => {
+  const nextQuestion = async () => {
     if (currentStep < questions.length - 1) {
       setCurrentStep(currentStep + 1);
       setUserAnswer("");
       setIsCorrect(null);
       setShowHint(false);
     } else {
+      const canEarn = canEarnXP(LESSON_ID);
+      let xpEarned = 0;
+      
+      if (canEarn && user?.id) {
+        const baseXP = Math.round((correctAnswers / questions.length) * XP_REWARD);
+        xpEarned = baseXP;
+        await updateXP(xpEarned);
+        
+        await supabase.from("user_progress").upsert({
+          user_id: user.id,
+          lesson_id: LESSON_ID,
+          completed: true,
+          score: xpEarned,
+          correct_answers: correctAnswers,
+          total_answers: questions.length,
+          completed_at: new Date().toISOString(),
+        }, { onConflict: "user_id,lesson_id" });
+        
+        refetch();
+      }
+      
+      setEarnedXP(xpEarned);
       setIsComplete(true);
     }
   };
 
   if (isComplete) {
     return (
-      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
-        <Card className="max-w-md w-full text-center">
-          <CardHeader><CardTitle className="text-2xl">Practice Complete!</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">You got {correctAnswers}/{questions.length} correct!</p>
-            <Alert className="bg-amber-500/10 border-amber-500/30">
-              <Info className="h-4 w-4 text-amber-600" />
-              <AlertDescription className="text-amber-700">Topic lessons do not reward XP.</AlertDescription>
-            </Alert>
-            <div className="flex gap-4">
-              <Button variant="outline" onClick={() => navigate("/")} className="flex-1">Back to Lessons</Button>
-              <Button onClick={() => { setCurrentStep(0); setCorrectAnswers(0); setIsComplete(false); setUserAnswer(""); setIsCorrect(null); }} className="flex-1">Practice Again</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <LessonComplete
+        lessonKey={LESSON_ID}
+        score={earnedXP}
+        xpEarned={earnedXP}
+        correctAnswers={correctAnswers}
+        totalQuestions={questions.length}
+      />
     );
   }
 
@@ -95,42 +116,79 @@ export const Adjectives2Lesson = () => {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")}><ArrowLeft className="w-5 h-5" /></Button>
-          <div className="flex-1"><Progress value={progress} className="h-3" /></div>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div className="flex-1">
+            <Progress value={progress} className="h-3" />
+          </div>
           <span className="text-sm font-medium">{currentStep + 1}/{questions.length}</span>
         </div>
-        <Alert className="mb-4 bg-amber-500/10 border-amber-500/30">
-          <Info className="h-4 w-4 text-amber-600" />
-          <AlertDescription className="text-amber-700">This is a practice lesson. No XP will be awarded.</AlertDescription>
-        </Alert>
+
         <Card className="mb-6">
-          <CardHeader><CardTitle className="text-center">Adjectives 2 - Type the transliteration</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-center">Adjectives 2 - Type the transliteration</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-6">
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-4">
                 <p className="text-5xl font-bold">{currentQuestion.bulgarian}</p>
-                <Button variant="ghost" size="icon" onClick={() => playPronunciation(currentQuestion.bulgarian)}><Volume2 className="w-6 h-6" /></Button>
+                <Button variant="ghost" size="icon" onClick={() => playPronunciation(currentQuestion.bulgarian)}>
+                  <Volume2 className="w-6 h-6" />
+                </Button>
               </div>
               {showHint && <p className="text-muted-foreground animate-fade-in">Hint: {currentQuestion.hint}</p>}
             </div>
             <div className="space-y-4">
-              <Input type="text" placeholder="Type the transliteration..." value={userAnswer} onChange={(e) => setUserAnswer(e.target.value)} disabled={isCorrect !== null} className={cn("text-center text-xl py-6", isCorrect === true && "border-green-500 bg-green-500/10", isCorrect === false && "border-red-500 bg-red-500/10")} onKeyDown={(e) => { if (e.key === "Enter" && isCorrect === null && userAnswer.trim()) checkAnswer(); }} />
+              <Input
+                type="text"
+                placeholder="Type the transliteration..."
+                value={userAnswer}
+                onChange={(e) => setUserAnswer(e.target.value)}
+                disabled={isCorrect !== null}
+                className={cn(
+                  "text-center text-xl py-6",
+                  isCorrect === true && "border-green-500 bg-green-500/10",
+                  isCorrect === false && "border-red-500 bg-red-500/10"
+                )}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && isCorrect === null && userAnswer.trim()) checkAnswer();
+                }}
+              />
               {isCorrect !== null && (
-                <div className={cn("flex items-center justify-center gap-2 p-4 rounded-lg animate-fade-in", isCorrect ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500")}>
-                  {isCorrect ? <><Check className="w-6 h-6" /><span className="font-bold">Correct!</span></> : <><X className="w-6 h-6" /><span className="font-bold">The answer is: {currentQuestion.answer}</span></>}
+                <div className={cn(
+                  "flex items-center justify-center gap-2 p-4 rounded-lg animate-fade-in",
+                  isCorrect ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
+                )}>
+                  {isCorrect ? (
+                    <><Check className="w-6 h-6" /><span className="font-bold">Correct!</span></>
+                  ) : (
+                    <><X className="w-6 h-6" /><span className="font-bold">The answer is: {currentQuestion.answer}</span></>
+                  )}
                 </div>
               )}
             </div>
             <div className="flex gap-4">
               {isCorrect === null ? (
-                <><Button variant="outline" onClick={() => setShowHint(true)} disabled={showHint} className="flex-1">Show Hint</Button><Button onClick={checkAnswer} disabled={!userAnswer.trim()} className="flex-1">Check</Button></>
+                <>
+                  <Button variant="outline" onClick={() => setShowHint(true)} disabled={showHint} className="flex-1">
+                    Show Hint
+                  </Button>
+                  <Button onClick={checkAnswer} disabled={!userAnswer.trim()} className="flex-1">
+                    Check
+                  </Button>
+                </>
               ) : (
-                <Button onClick={nextQuestion} className="w-full">{currentStep < questions.length - 1 ? "Next" : "Finish Practice"}</Button>
+                <Button onClick={nextQuestion} className="w-full">
+                  {currentStep < questions.length - 1 ? "Next" : "Complete Lesson"}
+                </Button>
               )}
             </div>
           </CardContent>
         </Card>
-        <div className="text-center text-muted-foreground"><p>Correct: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}</p></div>
+        <div className="text-center text-muted-foreground">
+          <p>Correct: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}</p>
+        </div>
       </div>
     </div>
   );

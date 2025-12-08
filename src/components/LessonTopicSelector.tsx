@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Star, Lock, Check, BookOpen } from "lucide-react";
+import { Crown, Star, Lock, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { lessons, Lesson } from "@/data/lessons";
 import { useUserProgress } from "@/hooks/useUserProgress";
@@ -47,12 +47,10 @@ const LessonItem = ({ lesson, isCompleted, onClick }: LessonItemProps) => {
         "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
         isCompleted ? "bg-green-500 text-white" : 
         isPremiumLocked ? "bg-muted text-muted-foreground" : 
-        lesson.isTopicLesson ? "bg-blue-500/20 text-blue-500" :
         "bg-primary/10 text-primary"
       )}>
         {isCompleted ? <Check className="w-4 h-4" /> : 
          isPremiumLocked ? <Lock className="w-4 h-4" /> : 
-         lesson.isTopicLesson ? <BookOpen className="w-4 h-4" /> :
          <Star className="w-4 h-4" />}
       </div>
       <div className="flex-1 min-w-0">
@@ -64,15 +62,9 @@ const LessonItem = ({ lesson, isCompleted, onClick }: LessonItemProps) => {
         </div>
         <p className="text-xs text-muted-foreground truncate">{lesson.description}</p>
       </div>
-      {lesson.isTopicLesson ? (
-        <Badge variant="outline" className="flex-shrink-0 text-xs">
-          Practice
-        </Badge>
-      ) : (
-        <Badge variant="secondary" className="flex-shrink-0">
-          {lesson.xpReward} XP
-        </Badge>
-      )}
+      <Badge variant="secondary" className="flex-shrink-0">
+        {lesson.xpReward} XP
+      </Badge>
     </div>
   );
 };
