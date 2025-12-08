@@ -7,6 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BulgarianNumber {
   number: number;
@@ -42,14 +44,30 @@ export const NumbersLesson = () => {
   const { isPlaying, playPronunciation } = useTextToSpeech();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user, updateXP } = useAuth();
 
   const currentNumber = numbers[currentStep];
   const progress = ((currentStep + 1) / numbers.length) * 100;
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (currentStep < numbers.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
+      // Lesson complete - save progress and award XP
+      if (user) {
+        await updateXP(60);
+        
+        await supabase.from("user_progress").upsert({
+          user_id: user.id,
+          lesson_id: "numbers-1-20",
+          completed: true,
+          score: 60,
+          correct_answers: numbers.length,
+          total_answers: numbers.length,
+          completed_at: new Date().toISOString(),
+        });
+      }
+      
       toast({
         title: "Lesson Complete! 🎉",
         description: "You've learned to count to 20 in Bulgarian! +60 XP",

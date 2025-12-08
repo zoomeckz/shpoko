@@ -7,6 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CyrillicLetter {
   cyrillic: string;
@@ -36,14 +38,30 @@ export const CyrillicLesson = () => {
   const { isPlaying, playPronunciation } = useTextToSpeech();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user, updateXP } = useAuth();
 
   const currentLetter = cyrillicAlphabet[currentStep];
   const progress = ((currentStep + 1) / cyrillicAlphabet.length) * 100;
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (currentStep < cyrillicAlphabet.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
+      // Lesson complete - save progress and award XP
+      if (user) {
+        await updateXP(50);
+        
+        await supabase.from("user_progress").upsert({
+          user_id: user.id,
+          lesson_id: "cyrillic-alphabet",
+          completed: true,
+          score: 50,
+          correct_answers: cyrillicAlphabet.length,
+          total_answers: cyrillicAlphabet.length,
+          completed_at: new Date().toISOString(),
+        });
+      }
+      
       toast({
         title: "Lesson Complete! 🎉",
         description: "You've mastered the Cyrillic alphabet! +50 XP",
