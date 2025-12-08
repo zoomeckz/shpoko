@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import raccoonMascot from "@/assets/raccoon-mascot.png";
+import { DarkModeToggle } from "@/components/DarkModeToggle";
 
 interface HeaderProps {
   streak: number;
@@ -77,15 +78,21 @@ export const Header = ({ streak, hearts, xp, dailyGoalProgress }: HeaderProps) =
               </Button>
             )}
 
+            {/* Dark Mode Toggle */}
+            <DarkModeToggle />
+
             {/* Logout */}
             <Button variant="ghost" size="icon" onClick={handleLogout}>
               <LogOut className="w-5 h-5" />
             </Button>
           </>
         ) : (
-          <Button onClick={() => navigate("/auth")}>
-            Sign In
-          </Button>
+          <>
+            <DarkModeToggle />
+            <Button onClick={() => navigate("/auth")}>
+              Sign In
+            </Button>
+          </>
         )}
       </div>
     </header>
