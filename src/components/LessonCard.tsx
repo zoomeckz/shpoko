@@ -49,7 +49,7 @@ export const LessonCard = ({
       className={cn(
         "p-6 cursor-pointer transition-all duration-200 hover:shadow-soft border-2",
         status === "locked" && "opacity-60 cursor-not-allowed",
-        status === "completed" && "border-success bg-success/5",
+        status === "completed" && "border-green-500 bg-green-500/5 ring-2 ring-green-500/30",
         status === "available" && "hover:border-primary hover:shadow-glow"
       )}
       onClick={status !== "locked" ? onClick : undefined}
@@ -58,7 +58,7 @@ export const LessonCard = ({
         <div className="flex items-center gap-3">
           <div className={cn(
             "w-10 h-10 rounded-full flex items-center justify-center",
-            status === "completed" ? "bg-success text-success-foreground" :
+            status === "completed" ? "bg-green-500 text-white" :
             status === "locked" ? "bg-muted text-muted-foreground" :
             "bg-primary text-primary-foreground"
           )}>
@@ -92,7 +92,10 @@ export const LessonCard = ({
           </div>
           <div className="w-full bg-muted rounded-full h-2">
             <div 
-              className="bg-gradient-primary h-2 rounded-full transition-all duration-300"
+              className={cn(
+                "h-2 rounded-full transition-all duration-300",
+                status === "completed" ? "bg-green-500" : "bg-gradient-primary"
+              )}
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -109,7 +112,10 @@ export const LessonCard = ({
           variant={status === "completed" ? "secondary" : "default"}
           size="sm"
           disabled={status === "locked"}
-          className={status === "available" ? "bg-gradient-primary hover:opacity-90" : ""}
+          className={cn(
+            status === "available" && "bg-gradient-primary hover:opacity-90",
+            status === "completed" && "bg-green-500 hover:bg-green-600 text-white"
+          )}
         >
           {status === "completed" ? "Review" : 
            status === "locked" ? "Locked" : "Start"}

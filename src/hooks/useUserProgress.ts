@@ -6,6 +6,7 @@ interface UserProgress {
   lesson_id: string;
   completed: boolean;
   score: number;
+  completed_at: string | null;
 }
 
 export const useUserProgress = () => {
@@ -24,7 +25,7 @@ export const useUserProgress = () => {
 
     const { data, error } = await supabase
       .from("user_progress")
-      .select("lesson_id, completed, score")
+      .select("lesson_id, completed, score, completed_at")
       .eq("user_id", user.id);
 
     if (!error && data) {
@@ -48,11 +49,24 @@ export const useUserProgress = () => {
     return p.score || 0;
   };
 
+  // Check if XP can be earned (only once per week per lesson)
+  const canEarnXP = (lessonId: string): boolean => {
+    const p = progress[lessonId];
+    if (!p?.completed_at) return true;
+    
+    const completedAt = new Date(p.completed_at);
+    const now = new Date();
+    const weekInMs = 7 * 24 * 60 * 60 * 1000;
+    
+    return (now.getTime() - completedAt.getTime()) >= weekInMs;
+  };
+
   return {
     progress,
     loading,
     isLessonCompleted,
     getLessonProgress,
+    canEarnXP,
     refetch: fetchProgress,
   };
 };
