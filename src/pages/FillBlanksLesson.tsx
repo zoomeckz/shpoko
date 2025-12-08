@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { LessonComplete } from "@/components/LessonComplete";
 
 interface Question {
   sentence: string;
@@ -68,6 +69,7 @@ export const FillBlanksLesson = () => {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [score, setScore] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, updateXP } = useAuth();
@@ -111,7 +113,6 @@ export const FillBlanksLesson = () => {
       setSelectedAnswer(null);
       setIsCorrect(null);
     } else {
-      // Lesson complete
       if (user) {
         await updateXP(score);
         
@@ -130,9 +131,21 @@ export const FillBlanksLesson = () => {
         title: "Lesson Complete! 🎉",
         description: `You scored ${score} XP with ${correctAnswers}/${questions.length} correct answers!`,
       });
-      navigate("/");
+      setIsComplete(true);
     }
   };
+
+  if (isComplete) {
+    return (
+      <LessonComplete
+        lessonKey="fill-blanks"
+        score={score}
+        correctAnswers={correctAnswers}
+        totalQuestions={questions.length}
+        xpEarned={score}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4">

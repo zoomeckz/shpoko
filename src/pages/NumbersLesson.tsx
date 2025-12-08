@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { LessonComplete } from "@/components/LessonComplete";
 
 interface BulgarianNumber {
   number: number;
@@ -41,6 +42,7 @@ const numbers: BulgarianNumber[] = [
 
 export const NumbersLesson = () => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
   const { isPlaying, playPronunciation } = useTextToSpeech();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -53,7 +55,6 @@ export const NumbersLesson = () => {
     if (currentStep < numbers.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
-      // Lesson complete - save progress and award XP
       if (user) {
         await updateXP(60);
         
@@ -72,13 +73,23 @@ export const NumbersLesson = () => {
         title: "Lesson Complete! 🎉",
         description: "You've learned to count to 20 in Bulgarian! +60 XP",
       });
-      navigate("/");
+      setIsComplete(true);
     }
   };
 
   const prevStep = () => {
     if (currentStep > 0) setCurrentStep(prev => prev - 1);
   };
+
+  if (isComplete) {
+    return (
+      <LessonComplete
+        lessonKey="numbers"
+        score={60}
+        xpEarned={60}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4">

@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { LessonComplete } from "@/components/LessonComplete";
 
 interface CyrillicLetter {
   cyrillic: string;
@@ -35,6 +36,7 @@ const cyrillicAlphabet: CyrillicLetter[] = [
 
 export const CyrillicLesson = () => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
   const { isPlaying, playPronunciation } = useTextToSpeech();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -66,7 +68,7 @@ export const CyrillicLesson = () => {
         title: "Lesson Complete! 🎉",
         description: "You've mastered the Cyrillic alphabet! +50 XP",
       });
-      navigate("/");
+      setIsComplete(true);
     }
   };
 
@@ -80,10 +82,19 @@ export const CyrillicLesson = () => {
     playPronunciation(currentLetter.cyrillic);
   };
 
+  if (isComplete) {
+    return (
+      <LessonComplete
+        lessonKey="cyrillic"
+        score={50}
+        xpEarned={50}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
             <Button variant="outline" size="sm" onClick={() => window.history.back()}>

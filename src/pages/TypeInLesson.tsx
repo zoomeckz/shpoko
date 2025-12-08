@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { LessonComplete } from "@/components/LessonComplete";
 
 interface Question {
   bulgarian: string;
@@ -34,6 +35,7 @@ export const TypeInLesson = () => {
   const [score, setScore] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [showHint, setShowHint] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, updateXP } = useAuth();
@@ -76,7 +78,6 @@ export const TypeInLesson = () => {
       setIsCorrect(null);
       setShowHint(false);
     } else {
-      // Lesson complete
       if (user) {
         await updateXP(score);
         
@@ -95,9 +96,21 @@ export const TypeInLesson = () => {
         title: "Lesson Complete! 🎉",
         description: `You scored ${score} XP with ${correctAnswers}/${questions.length} correct answers!`,
       });
-      navigate("/");
+      setIsComplete(true);
     }
   };
+
+  if (isComplete) {
+    return (
+      <LessonComplete
+        lessonKey="type-in"
+        score={score}
+        correctAnswers={correctAnswers}
+        totalQuestions={questions.length}
+        xpEarned={score}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4">

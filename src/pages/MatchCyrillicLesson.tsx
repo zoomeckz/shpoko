@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { LessonComplete } from "@/components/LessonComplete";
 
 interface MatchPair {
   cyrillic: string;
@@ -37,6 +38,7 @@ export const MatchCyrillicLesson = () => {
   const [wrongMatch, setWrongMatch] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, profile, updateXP } = useAuth();
@@ -115,7 +117,20 @@ export const MatchCyrillicLesson = () => {
       title: "Lesson Complete! 🎉",
       description: `You scored ${score} XP!`,
     });
-    navigate("/");
+    setIsComplete(true);
+  };
+
+  if (isComplete) {
+    return (
+      <LessonComplete
+        lessonKey="match-cyrillic"
+        score={score}
+        correctAnswers={correctAnswers}
+        totalQuestions={totalRounds * pairsPerRound}
+        xpEarned={score}
+      />
+    );
+  }
   };
 
   if (!hasPremiumAccess) {

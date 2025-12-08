@@ -20,6 +20,7 @@ export type Database = {
           email: string | null
           id: string
           is_premium: boolean
+          last_username_change: string | null
           level: number
           premium_until: string | null
           streak: number
@@ -32,6 +33,7 @@ export type Database = {
           email?: string | null
           id: string
           is_premium?: boolean
+          last_username_change?: string | null
           level?: number
           premium_until?: string | null
           streak?: number
@@ -44,6 +46,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_premium?: boolean
+          last_username_change?: string | null
           level?: number
           premium_until?: string | null
           streak?: number
