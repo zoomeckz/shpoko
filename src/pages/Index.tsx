@@ -11,8 +11,13 @@ import { lessons } from "@/data/lessons";
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
-  const { isLessonCompleted, getLessonProgress } = useUserProgress();
+  const { isLessonCompleted, getLessonProgress, progress } = useUserProgress();
   const navigate = useNavigate();
+  
+  // Calculate daily goal progress based on completed lessons
+  const totalLessons = lessons.length;
+  const completedLessons = Object.values(progress).filter(p => p.completed).length;
+  const dailyGoalProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
   useEffect(() => {
     if (!loading && !user) {
@@ -45,7 +50,7 @@ const Index = () => {
         streak={profile?.streak || 0}
         hearts={5}
         xp={profile?.xp || 0}
-        dailyGoalProgress={65}
+        dailyGoalProgress={dailyGoalProgress}
       />
       
       <main>
