@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 
 interface Profile {
   id: string;
@@ -20,11 +19,13 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
-  signUp: (email: string, password: string, username: string) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signUpWithUsername: (username: string) => Promise<{ error: any }>;
+  signIn: (username: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   updateXP: (amount: number) => Promise<void>;
+  updateEmail: (email: string) => Promise<{ error: any }>;
+  hasRealEmail: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,6 +36,16 @@ export const useAuth = () => {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
+};
+
+// Generate a random string for auto-generated emails/passwords
+const generateRandomString = (length: number): string => {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -67,15 +78,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateXP = async (amount: number) => {
     if (!user || !profile) return;
     
-    const newXP = profile.xp + amount;
-    const newLevel = calculateLevel(newXP);
     const isPremium = profile.is_premium;
     const xpToAdd = isPremium ? Math.floor(amount * 1.15) : amount;
+    const newXP = profile.xp + xpToAdd;
+    const newLevel = calculateLevel(newXP);
     
     const { error } = await supabase
       .from("profiles")
       .update({ 
-        xp: profile.xp + xpToAdd,
+        xp: newXP,
         level: newLevel
       })
       .eq("id", user.id);
@@ -96,6 +107,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (xp < 16000) return 8;
     if (xp < 32000) return 9;
     return 10;
+  };
+
+  // Check if user has a real email (not auto-generated)
+  const hasRealEmail = (): boolean => {
+    if (!profile?.email) return false;
+    return !profile.email.endsWith('@shpoko.local');
   };
 
   useEffect(() => {
@@ -134,12 +151,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, username: string) => {
+  // Sign up with just username - auto-generate email and password
+  const signUpWithUsername = async (username: string) => {
+    const randomId = generateRandomString(12);
+    const autoEmail = `${username.toLowerCase().replace(/\s/g, '_')}_${randomId}@shpoko.local`;
+    const autoPassword = generateRandomString(24);
+    
+    // Store the password in localStorage so user can log back in
+    localStorage.setItem(`shpoko_user_${username.toLowerCase()}`, JSON.stringify({
+      email: autoEmail,
+      password: autoPassword,
+    }));
+    
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
-      email,
-      password,
+      email: autoEmail,
+      password: autoPassword,
       options: {
         emailRedirectTo: redirectUrl,
         data: {
@@ -150,12 +178,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error };
   };
 
-  const signIn = async (email: string, password: string) => {
+  // Sign in with username - look up stored credentials
+  const signIn = async (username: string) => {
+    const storedData = localStorage.getItem(`shpoko_user_${username.toLowerCase()}`);
+    
+    if (!storedData) {
+      return { error: { message: "Username not found" } };
+    }
+    
+    const { email, password } = JSON.parse(storedData);
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     return { error };
+  };
+
+  // Update to a real email (for premium)
+  const updateEmail = async (newEmail: string) => {
+    if (!user) return { error: { message: "Not logged in" } };
+    
+    // Update the auth email
+    const { error: authError } = await supabase.auth.updateUser({
+      email: newEmail,
+    });
+    
+    if (authError) return { error: authError };
+    
+    // Update the profile email
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .update({ email: newEmail })
+      .eq("id", user.id);
+    
+    if (profileError) return { error: profileError };
+    
+    await refreshProfile();
+    return { error: null };
   };
 
   const signOut = async () => {
@@ -170,11 +230,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         session,
         profile,
         loading,
-        signUp,
+        signUpWithUsername,
         signIn,
         signOut,
         refreshProfile,
         updateXP,
+        updateEmail,
+        hasRealEmail,
       }}
     >
       {children}
