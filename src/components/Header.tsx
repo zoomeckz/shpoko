@@ -1,10 +1,11 @@
-import { Heart, Flame, Trophy, Crown, LogOut, User } from "lucide-react";
+import { Heart, Flame, Trophy, Crown, LogOut } from "lucide-react";
 import { ProgressCircle } from "@/components/ui/progress-circle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import raccoonMascot from "@/assets/raccoon-mascot.png";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
+import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePictureSelector";
 
 interface HeaderProps {
   streak: number;
@@ -34,13 +35,17 @@ export const Header = ({ streak, hearts, xp, dailyGoalProgress }: HeaderProps) =
       <div className="flex items-center gap-4">
         {user && profile ? (
           <>
-            {/* Level */}
-            <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-accent rounded-lg">
-              <User className="w-4 h-4" />
-              <span className="font-medium">{profile.username}</span>
-              <span className="text-sm text-muted-foreground">Lv.{profile.level}</span>
-              {profile.is_premium && <Crown className="w-4 h-4 text-yellow-500" />}
-            </div>
+            {/* Profile with Picture */}
+            <ProfilePictureSelector
+              trigger={
+                <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-accent rounded-lg cursor-pointer hover:bg-accent/80 transition-colors">
+                  <ProfilePicture pictureId={profile.profile_picture} size="xs" />
+                  <span className="font-medium">{profile.username}</span>
+                  <span className="text-sm text-muted-foreground">Lv.{profile.level}</span>
+                  {profile.is_premium && <Crown className="w-4 h-4 text-yellow-500" />}
+                </div>
+              }
+            />
 
             {/* Daily Goal Progress */}
             <div className="hidden md:flex items-center gap-2">

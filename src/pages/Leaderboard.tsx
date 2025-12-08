@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trophy, Crown, Medal, ArrowLeft } from "lucide-react";
+import { ProfilePicture } from "@/components/ProfilePictureSelector";
 
 interface LeaderboardEntry {
   id: string;
@@ -13,6 +14,7 @@ interface LeaderboardEntry {
   xp: number;
   level: number;
   is_premium: boolean;
+  profile_picture: string | null;
 }
 
 const Leaderboard = () => {
@@ -90,6 +92,7 @@ const Leaderboard = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <span className="text-2xl font-bold text-primary">#{userRank}</span>
+                  <ProfilePicture pictureId={profile.profile_picture} size="md" />
                   <div>
                     <p className="font-semibold">{profile.username} (You)</p>
                     <p className="text-sm text-muted-foreground">Level {profile.level}</p>
@@ -131,6 +134,7 @@ const Leaderboard = () => {
                   >
                     <div className="flex items-center gap-4">
                       {getRankIcon(index + 1)}
+                      <ProfilePicture pictureId={entry.profile_picture} size="sm" />
                       <div>
                         <div className="flex items-center gap-2">
                           <p className="font-semibold">{entry.username}</p>

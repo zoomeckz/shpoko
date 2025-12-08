@@ -239,11 +239,7 @@ export const FillBlanksLesson = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-center flex-1">Fill in the blank</CardTitle>
-              <ShpokoMascot 
-                expression={getShpokoExpression()} 
-                size="sm" 
-                showEmoji={true}
-              />
+              <ShpokoMascot size="sm" />
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -285,11 +281,7 @@ export const FillBlanksLesson = () => {
                 "flex items-center justify-center gap-3 p-4 rounded-lg animate-fade-in",
                 isCorrect ? "bg-green-500/20 text-green-600" : "bg-red-500/20 text-red-600"
               )}>
-                <ShpokoMascot 
-                  expression={isCorrect ? "celebrating" : "sad"} 
-                  size="xs" 
-                  showEmoji={true}
-                />
+                <ShpokoMascot size="xs" />
                 {isCorrect ? (
                   <div className="flex items-center gap-2">
                     <Check className="w-6 h-6" />
