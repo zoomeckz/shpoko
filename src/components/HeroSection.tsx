@@ -26,7 +26,7 @@ export const HeroSection = () => {
             <h1 className="text-5xl lg:text-6xl font-bold mb-6">
               Learn Bulgarian with{" "}
               <span className="bg-gradient-primary bg-clip-text text-transparent">
-                Raccoonie
+                Shpoko
               </span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-lg">

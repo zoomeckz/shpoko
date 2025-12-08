@@ -66,7 +66,7 @@ const Premium = () => {
               <Crown className="w-16 h-16 mx-auto text-yellow-500 mb-4" />
               <CardTitle className="text-3xl">You're Premium!</CardTitle>
               <CardDescription>
-                Thank you for supporting Raccoonie. Enjoy your premium benefits!
+                Thank you for supporting Shpoko. Enjoy your premium benefits!
               </CardDescription>
             </CardHeader>
             <CardContent>
