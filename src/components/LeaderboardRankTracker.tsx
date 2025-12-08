@@ -67,13 +67,13 @@ export const LeaderboardRankTracker = () => {
     >
       <CardContent className="p-2">
         <div className="flex items-center justify-between">
-          <div className="flex-1 flex flex-col items-center justify-center text-center gap-1">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Trophy className="w-4 h-4 text-primary" />
+          <div className="flex-1 flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Trophy className="w-6 h-6 text-primary" />
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Your Leaderboard Rank</p>
-              <div className="flex items-center justify-center gap-1">
+              <div className="flex items-center gap-1">
                 <span className={`text-xl font-bold ${getRankColor()}`}>
                   {getRankDisplay()}
                 </span>
