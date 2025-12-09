@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trophy, Crown, Medal, ArrowLeft } from "lucide-react";
 import { ProfilePicture } from "@/components/ProfilePictureSelector";
+import { HallOfFame } from "@/components/HallOfFame";
+import { AdminChangeUsername } from "@/components/AdminChangeUsername";
 import { cn } from "@/lib/utils";
 
 interface LeaderboardEntry {
@@ -29,13 +31,13 @@ const Leaderboard = () => {
 
     // Subscribe to real-time updates on profiles table
     const channel = supabase
-      .channel('leaderboard-updates')
+      .channel("leaderboard-updates")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'profiles'
+          event: "*",
+          schema: "public",
+          table: "profiles"
         },
         () => {
           // Refetch leaderboard when any profile changes
@@ -85,6 +87,14 @@ const Leaderboard = () => {
             Back
           </Button>
           <h1 className="text-3xl font-bold">Leaderboard</h1>
+          <div className="ml-auto">
+            <AdminChangeUsername />
+          </div>
+        </div>
+
+        {/* Hall of Fame */}
+        <div className="mb-6">
+          <HallOfFame />
         </div>
 
         {profile && userRank > 0 && (

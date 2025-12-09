@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Star, Lock, Check } from "lucide-react";
+import { Crown, Star, Lock, Check, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { lessons, Lesson } from "@/data/lessons";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStreakUnlocks } from "@/hooks/useStreakUnlocks";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const categories = [
   { id: "beginner", label: "Beginner" },
@@ -27,51 +29,78 @@ interface LessonItemProps {
   lesson: Lesson;
   isCompleted: boolean;
   onClick: () => void;
+  premiumIndex?: number;
 }
 
-const LessonItem = ({ lesson, isCompleted, onClick }: LessonItemProps) => {
+const LessonItem = ({ lesson, isCompleted, onClick, premiumIndex }: LessonItemProps) => {
   const { profile } = useAuth();
-  const isPremiumLocked = lesson.isPremium && !profile?.is_premium;
+  const { isPremiumLessonUnlocked, daysUntilNextUnlock, unlockedPremiumLessons } = useStreakUnlocks();
+  
+  const isPremium = lesson.isPremium;
+  const hasFullPremium = profile?.is_premium;
+  
+  // Check if this premium lesson is unlocked via streak
+  const isUnlockedByStreak = isPremium && premiumIndex !== undefined && isPremiumLessonUnlocked(premiumIndex);
+  const isLocked = isPremium && !hasFullPremium && !isUnlockedByStreak;
 
   return (
-    <div
-      onClick={isPremiumLocked ? undefined : onClick}
-      className={cn(
-        "p-3 rounded-lg border transition-all cursor-pointer flex items-center gap-3",
-        isCompleted && "border-green-500 bg-green-500/10",
-        !isCompleted && !isPremiumLocked && "hover:border-primary hover:bg-accent/50",
-        isPremiumLocked && "opacity-60 cursor-not-allowed"
-      )}
-    >
-      <div className={cn(
-        "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
-        isCompleted ? "bg-green-500 text-white" : 
-        isPremiumLocked ? "bg-muted text-muted-foreground" : 
-        "bg-primary/10 text-primary"
-      )}>
-        {isCompleted ? <Check className="w-4 h-4" /> : 
-         isPremiumLocked ? <Lock className="w-4 h-4" /> : 
-         <Star className="w-4 h-4" />}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-medium truncate">{lesson.title}</span>
-          {lesson.isPremium && (
-            <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          onClick={isLocked ? undefined : onClick}
+          className={cn(
+            "p-3 rounded-lg border transition-all cursor-pointer flex items-center gap-3",
+            isCompleted && "border-green-500 bg-green-500/10",
+            !isCompleted && !isLocked && "hover:border-primary hover:bg-accent/50",
+            isLocked && "opacity-60 cursor-not-allowed",
+            isUnlockedByStreak && !hasFullPremium && "border-warning/50 bg-warning/5"
           )}
+        >
+          <div className={cn(
+            "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
+            isCompleted ? "bg-green-500 text-white" : 
+            isLocked ? "bg-muted text-muted-foreground" :
+            isUnlockedByStreak && !hasFullPremium ? "bg-warning/20 text-warning" :
+            "bg-primary/10 text-primary"
+          )}>
+            {isCompleted ? <Check className="w-4 h-4" /> : 
+             isLocked ? <Lock className="w-4 h-4" /> : 
+             isUnlockedByStreak && !hasFullPremium ? <Flame className="w-4 h-4" /> :
+             <Star className="w-4 h-4" />}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="font-medium truncate">{lesson.title}</span>
+              {lesson.isPremium && (
+                <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+              )}
+              {isUnlockedByStreak && !hasFullPremium && (
+                <Badge variant="outline" className="text-xs border-warning text-warning">
+                  Streak
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground truncate">{lesson.description}</p>
+          </div>
+          <Badge variant="secondary" className="flex-shrink-0">
+            {lesson.xpReward} XP
+          </Badge>
         </div>
-        <p className="text-xs text-muted-foreground truncate">{lesson.description}</p>
-      </div>
-      <Badge variant="secondary" className="flex-shrink-0">
-        {lesson.xpReward} XP
-      </Badge>
-    </div>
+      </TooltipTrigger>
+      {isLocked && (
+        <TooltipContent>
+          <p>Unlock with {(premiumIndex! + 1) * 5 - (profile?.streak || 0)} more streak days</p>
+          <p className="text-xs text-muted-foreground">or upgrade to Premium</p>
+        </TooltipContent>
+      )}
+    </Tooltip>
   );
 };
 
 export const LessonTopicSelector = () => {
   const [selectedTab, setSelectedTab] = useState("beginner");
   const { isLessonCompleted } = useUserProgress();
+  const { unlockedPremiumLessons, daysUntilNextUnlock } = useStreakUnlocks();
   const navigate = useNavigate();
 
   const handleLessonClick = (lesson: Lesson) => {
@@ -85,7 +114,15 @@ export const LessonTopicSelector = () => {
 
   return (
     <Card className="p-4">
-      <h2 className="text-lg font-bold mb-3">Lessons</h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-lg font-bold">Lessons</h2>
+        {unlockedPremiumLessons > 0 && (
+          <Badge variant="outline" className="text-warning border-warning">
+            <Flame className="w-3 h-3 mr-1" />
+            {unlockedPremiumLessons} Premium Unlocked
+          </Badge>
+        )}
+      </div>
       
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList className="grid grid-cols-4 mb-4">
@@ -99,14 +136,22 @@ export const LessonTopicSelector = () => {
         <div style={{ minHeight: `${maxLessons * 72 + 16}px` }}>
           {categories.map((cat) => (
             <TabsContent key={cat.id} value={cat.id} className="space-y-2 mt-0">
-              {getLessonsByDifficulty(cat.id).map((lesson) => (
+              {getLessonsByDifficulty(cat.id).map((lesson, index) => (
                 <LessonItem
                   key={lesson.id}
                   lesson={lesson}
                   isCompleted={isLessonCompleted(lesson.id)}
                   onClick={() => handleLessonClick(lesson)}
+                  premiumIndex={cat.id === "premium" ? index : undefined}
                 />
               ))}
+              {cat.id === "premium" && (
+                <p className="text-xs text-muted-foreground text-center py-2">
+                  <Flame className="w-3 h-3 inline mr-1" />
+                  Every 5 streak days unlocks 1 premium lesson!
+                  {daysUntilNextUnlock > 0 && ` (${daysUntilNextUnlock} days to next)`}
+                </p>
+              )}
               {getLessonsByDifficulty(cat.id).length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-4">
                   No lessons available in this category yet.

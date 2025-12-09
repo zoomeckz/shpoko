@@ -245,7 +245,7 @@ export const CyrillicLesson = () => {
                 className={cn(
                   "w-12 h-12 rounded-lg border-2 font-bold transition-all duration-200",
                   index === currentStep 
-                    ? "border-primary bg-primary text-primary-foreground animate-glow" 
+                    ? "border-primary bg-primary text-primary-foreground animate-soft-glow" 
                     : index < currentStep
                     ? "border-success bg-success/10 text-success"
                     : "border-border bg-background hover:border-primary/50"

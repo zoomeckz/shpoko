@@ -49,16 +49,47 @@ export const useUserProgress = () => {
     return p.score || 0;
   };
 
-  // Check if XP can be earned (only once per week per lesson)
+  // Check if XP can be earned - lessons now only give XP on FIRST completion
   const canEarnXP = (lessonId: string): boolean => {
     const p = progress[lessonId];
-    if (!p?.completed_at) return true;
+    // If never completed, can earn XP
+    if (!p?.completed) return true;
+    // If already completed once, no more XP
+    return false;
+  };
+
+  // Save progress and optionally award XP
+  const saveProgress = async (
+    lessonId: string, 
+    score: number, 
+    correctAnswers: number, 
+    totalAnswers: number,
+    updateXPFn?: (amount: number) => Promise<void>
+  ): Promise<{ xpAwarded: boolean; xpAmount: number }> => {
+    if (!user?.id) return { xpAwarded: false, xpAmount: 0 };
     
-    const completedAt = new Date(p.completed_at);
-    const now = new Date();
-    const weekInMs = 7 * 24 * 60 * 60 * 1000;
+    const canEarn = canEarnXP(lessonId);
     
-    return (now.getTime() - completedAt.getTime()) >= weekInMs;
+    // Save progress
+    await supabase.from("user_progress").upsert({
+      user_id: user.id,
+      lesson_id: lessonId,
+      completed: true,
+      score,
+      correct_answers: correctAnswers,
+      total_answers: totalAnswers,
+      completed_at: new Date().toISOString(),
+    }, { onConflict: "user_id,lesson_id" });
+    
+    // Award XP only on first completion
+    if (canEarn && updateXPFn) {
+      await updateXPFn(score);
+      await fetchProgress(); // Refresh progress
+      return { xpAwarded: true, xpAmount: score };
+    }
+    
+    await fetchProgress(); // Refresh progress
+    return { xpAwarded: false, xpAmount: 0 };
   };
 
   return {
@@ -67,6 +98,7 @@ export const useUserProgress = () => {
     isLessonCompleted,
     getLessonProgress,
     canEarnXP,
+    saveProgress,
     refetch: fetchProgress,
   };
 };
