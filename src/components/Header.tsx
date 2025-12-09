@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import shpokoLogo from "@/assets/shpoko-logo.png";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePictureSelector";
+import { calculateLevelProgress } from "@/lib/levelUtils";
 interface HeaderProps {
   streak: number;
   hearts: number;
@@ -39,9 +40,9 @@ export const Header = ({
                   {profile.is_premium && <Crown className="w-4 h-4 text-yellow-500" />}
                 </div>} />
 
-            {/* Daily Goal Progress */}
+            {/* Level Progress */}
             <div className="hidden md:flex items-center gap-2">
-              <ProgressCircle progress={dailyGoalProgress} size={40} strokeWidth={4} />
+              <ProgressCircle progress={calculateLevelProgress(profile.xp, profile.level)} size={40} strokeWidth={4} />
             </div>
             
             {/* Streak */}

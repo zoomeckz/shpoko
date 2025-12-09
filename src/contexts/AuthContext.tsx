@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { calculateLevel } from "@/lib/levelUtils";
 
 interface Profile {
   id: string;
@@ -83,33 +84,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!error) {
       await refreshProfile();
     }
-  };
-
-  const calculateLevel = (xp: number): number => {
-    // Each level requires progressively more XP
-    // Level 1: 0-99 XP
-    // Level 2: 100-249 XP
-    // Level 3: 250-499 XP
-    // etc... continuing indefinitely
-    const thresholds = [0, 100, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000];
-    
-    // For levels beyond 10, each level requires 50% more XP than the previous
-    let level = 1;
-    let currentThreshold = 0;
-    let nextThreshold = 100;
-    
-    while (xp >= nextThreshold) {
-      level++;
-      currentThreshold = nextThreshold;
-      if (level <= 10) {
-        nextThreshold = thresholds[level] || currentThreshold * 1.5;
-      } else {
-        // Beyond level 10, each level requires 50% more XP
-        nextThreshold = Math.floor(currentThreshold * 1.5);
-      }
-    }
-    
-    return level;
   };
 
   useEffect(() => {
