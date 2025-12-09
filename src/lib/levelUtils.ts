@@ -1,19 +1,20 @@
 // Level calculation utilities
+// Lower XP requirements for easier leveling
 
-export const LEVEL_THRESHOLDS = [0, 100, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000];
+export const LEVEL_THRESHOLDS = [0, 50, 120, 200, 300, 450, 650, 900, 1200, 1600];
 
 export function calculateLevel(xp: number): number {
   let level = 1;
   let currentThreshold = 0;
-  let nextThreshold = 100;
+  let nextThreshold = 50;
   
   while (xp >= nextThreshold) {
     level++;
     currentThreshold = nextThreshold;
     if (level <= 10) {
-      nextThreshold = LEVEL_THRESHOLDS[level] || Math.floor(currentThreshold * 1.5);
+      nextThreshold = LEVEL_THRESHOLDS[level] || Math.floor(currentThreshold * 1.3);
     } else {
-      nextThreshold = Math.floor(currentThreshold * 1.5);
+      nextThreshold = Math.floor(currentThreshold * 1.3);
     }
   }
   
@@ -27,7 +28,7 @@ export function getXPForLevel(level: number): number {
   // For levels beyond 10, calculate recursively
   let threshold = LEVEL_THRESHOLDS[9]; // Level 10 threshold
   for (let i = 10; i < level; i++) {
-    threshold = Math.floor(threshold * 1.5);
+    threshold = Math.floor(threshold * 1.3);
   }
   return threshold;
 }
@@ -38,7 +39,7 @@ export function getXPForNextLevel(level: number): number {
   // For levels 10+
   let threshold = LEVEL_THRESHOLDS[9];
   for (let i = 10; i <= level; i++) {
-    threshold = Math.floor(threshold * 1.5);
+    threshold = Math.floor(threshold * 1.3);
   }
   return threshold;
 }

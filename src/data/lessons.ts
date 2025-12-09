@@ -75,6 +75,18 @@ export const lessons: Lesson[] = [
     route: "/topic/shapes",
   },
   {
+    id: "animals-topic",
+    title: "Animals",
+    description: "Learn animal names in Bulgarian",
+    level: 6,
+    xpReward: 70,
+    progress: 0,
+    status: "available",
+    difficulty: "beginner",
+    category: "Vocabulary",
+    route: "/topic/animals",
+  },
+  {
     id: "type-in-basics",
     title: "Type & Learn",
     description: "Practice typing Bulgarian transliterations",

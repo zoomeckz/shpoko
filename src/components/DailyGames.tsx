@@ -4,7 +4,7 @@ import { Gamepad2, Palette, Hash } from "lucide-react";
 const ANIMALS = [
   { emoji: "🐕", english: "Dog", bulgarian: "kuche" },
   { emoji: "🐈", english: "Cat", bulgarian: "kotka" },
-  { emoji: "🐦", english: "Bird", bulgarian: "ptica" },
+  { emoji: "🐦", english: "Bird", bulgarian: "ptitsa" },
   { emoji: "🐟", english: "Fish", bulgarian: "riba" },
   { emoji: "🐎", english: "Horse", bulgarian: "kon" },
   { emoji: "🐄", english: "Cow", bulgarian: "krava" },
@@ -60,7 +60,7 @@ const NUMBERS = [
 
 export const DailyGames = () => {
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <>
       <DailyGame
         title="Animals"
         gameType="animal"
@@ -79,6 +79,6 @@ export const DailyGames = () => {
         items={NUMBERS}
         icon={<Hash className="w-6 h-6 text-yellow-500" />}
       />
-    </div>
+    </>
   );
 };

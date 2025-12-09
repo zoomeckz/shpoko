@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Gamepad2, Clock, Trophy, Star, Lock, SkipForward } from "lucide-react";
+import { Gamepad2, Clock, Trophy, Star, Lock, SkipForward, Check } from "lucide-react";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { cn } from "@/lib/utils";
 
 interface GameItem {
   emoji: string;
@@ -41,6 +43,7 @@ function levenshteinDistance(a: string, b: string): number {
 
 export const DailyGame = ({ title, gameType, items, icon }: DailyGameProps) => {
   const { user, profile, updateXP } = useAuth();
+  const { playCorrect, playIncorrect, playComplete, playSkip } = useSoundEffects();
   const [isOpen, setIsOpen] = useState(false);
   const [gameState, setGameState] = useState<"idle" | "playing" | "finished">("idle");
   const [currentItem, setCurrentItem] = useState<GameItem | null>(null);
@@ -144,6 +147,15 @@ export const DailyGame = ({ title, gameType, items, icon }: DailyGameProps) => {
     setScore((prev) => prev + pointsEarned);
     setAnsweredCount((prev) => prev + 1);
 
+    // Play sound based on score
+    if (pointsEarned >= 50) {
+      playCorrect();
+    } else if (pointsEarned > 0) {
+      playCorrect();
+    } else {
+      playIncorrect();
+    }
+
     setFeedback({
       correct: currentItem.bulgarian,
       points: pointsEarned,
@@ -158,6 +170,8 @@ export const DailyGame = ({ title, gameType, items, icon }: DailyGameProps) => {
   const skipQuestion = () => {
     if (!currentItem || gameState !== "playing") return;
     
+    playSkip();
+    
     setFeedback({
       correct: currentItem.bulgarian,
       points: 0,
@@ -171,6 +185,7 @@ export const DailyGame = ({ title, gameType, items, icon }: DailyGameProps) => {
 
   const endGame = async () => {
     setGameState("finished");
+    playComplete();
     if (!user) return;
 
     const currentHighScore = parseInt(localStorage.getItem(`${storageKey}_highscore_${user.id}`) || "0", 10);
@@ -205,23 +220,33 @@ export const DailyGame = ({ title, gameType, items, icon }: DailyGameProps) => {
 
   if (!user || !profile) return null;
 
+  const isPlayed = !canPlay;
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-yellow-400 bg-gradient-to-br from-yellow-500/10 to-yellow-400/5">
-          <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-            <div className="p-3 bg-yellow-500/20 rounded-full">
-              {icon || <Gamepad2 className="w-6 h-6 text-yellow-500" />}
+        <Card className={cn(
+          "cursor-pointer hover:shadow-lg transition-all",
+          isPlayed 
+            ? "border-2 border-green-500 bg-gradient-to-br from-green-500/10 to-green-400/5 scale-90" 
+            : "border-2 border-yellow-400 bg-gradient-to-br from-yellow-500/10 to-yellow-400/5"
+        )}>
+          <CardContent className={cn("flex flex-col items-center text-center gap-1", isPlayed ? "p-2" : "p-4")}>
+            <div className={cn("rounded-full", isPlayed ? "p-1.5 bg-green-500/20" : "p-3 bg-yellow-500/20")}>
+              {isPlayed ? (
+                <Check className="w-4 h-4 text-green-500" />
+              ) : (
+                icon || <Gamepad2 className="w-6 h-6 text-yellow-500" />
+              )}
             </div>
-            <h3 className="font-bold text-lg">{title}</h3>
-            <p className="text-sm text-muted-foreground">
-              {canPlay ? "Play now!" : `Next: ${formatTimeRemaining()}`}
+            <h3 className={cn("font-bold", isPlayed ? "text-sm" : "text-lg")}>{title}</h3>
+            <p className="text-xs text-muted-foreground">
+              {canPlay ? "Play now!" : `${formatTimeRemaining()}`}
             </p>
-            {!canPlay && <Lock className="w-4 h-4 text-muted-foreground" />}
             {highScore > 0 && (
-              <div className="flex items-center gap-1 text-yellow-500">
-                <Trophy className="w-4 h-4" />
-                <span className="font-bold">{highScore}</span>
+              <div className={cn("flex items-center gap-1", isPlayed ? "text-green-500" : "text-yellow-500")}>
+                <Trophy className="w-3 h-3" />
+                <span className="text-xs font-bold">{highScore}</span>
               </div>
             )}
           </CardContent>
