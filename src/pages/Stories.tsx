@@ -408,7 +408,7 @@ const HoverableWord = ({ word }: { word: Word }) => {
       </TooltipTrigger>
       <TooltipContent side="top" className="text-center">
         <div className="font-medium">{word.romanized}</div>
-        <div className="text-xs text-muted-foreground">{word.meaning}</div>
+        <div className="text-sm font-medium text-primary">{word.meaning}</div>
       </TooltipContent>
     </Tooltip>
   );
@@ -513,7 +513,7 @@ const Stories = () => {
           streak={profile?.streak || 0}
           hearts={5}
           xp={profile?.xp || 0}
-          dailyGoalProgress={65}
+          dailyGoalProgress={0}
         />
         <main className="max-w-4xl mx-auto p-4 py-6">
           <div className="flex items-center gap-4 mb-6">

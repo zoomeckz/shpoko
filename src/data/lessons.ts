@@ -133,6 +133,7 @@ export const lessons: Lesson[] = [
     status: "available",
     difficulty: "intermediate",
     category: "Time",
+    route: "/topic/weekdays",
   },
   {
     id: "food-drinks",

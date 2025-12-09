@@ -26,6 +26,7 @@ import ShapesLesson from "./pages/topic/ShapesLesson";
 import AdjectivesLesson from "./pages/topic/AdjectivesLesson";
 import Adjectives2Lesson from "./pages/topic/Adjectives2Lesson";
 import VerbsLesson from "./pages/topic/VerbsLesson";
+import WeekdaysLesson from "./pages/topic/WeekdaysLesson";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
               <Route path="/topic/adjectives" element={<AdjectivesLesson />} />
               <Route path="/topic/adjectives-2" element={<Adjectives2Lesson />} />
               <Route path="/topic/verbs" element={<VerbsLesson />} />
+              <Route path="/topic/weekdays" element={<WeekdaysLesson />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>

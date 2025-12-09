@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import raccoonMascot from "@/assets/raccoon-mascot.png";
+import shpokoLogo from "@/assets/shpoko-logo.png";
 import { z } from "zod";
 
 const signUpSchema = z.object({
@@ -121,7 +121,7 @@ const Auth = () => {
       <Card className="w-full max-w-md shadow-2xl border-0">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <img src={raccoonMascot} alt="Raccoon mascot" className="w-24 h-24" />
+            <img src={shpokoLogo} alt="Shpoko mascot" className="w-32 h-32" />
           </div>
           <CardTitle className="text-3xl font-bold text-blue-600">
             {isLogin ? "Welcome Back!" : "Join Shpoko"}

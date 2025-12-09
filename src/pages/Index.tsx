@@ -9,6 +9,9 @@ import { LessonTopicSelector } from "@/components/LessonTopicSelector";
 import { ShortStories } from "@/components/ShortStories";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { lessons } from "@/data/lessons";
+import { Card, CardContent } from "@/components/ui/card";
+import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePictureSelector";
+import { Crown, Trophy, Flame } from "lucide-react";
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
@@ -62,8 +65,41 @@ const Index = () => {
       />
       
       <main className="max-w-6xl mx-auto px-4 py-6">
-        {/* Leaderboard at top */}
-        <div className="mb-6">
+        {/* Profile Card and Leaderboard */}
+        <div className="grid md:grid-cols-2 gap-4 mb-6">
+          {/* Profile Card */}
+          <Card className="bg-gradient-to-br from-primary/10 to-primary/5">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4">
+                <ProfilePictureSelector
+                  trigger={
+                    <div className="cursor-pointer hover:opacity-80 transition-opacity">
+                      <ProfilePicture pictureId={profile?.profile_picture} size="lg" />
+                    </div>
+                  }
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-bold">{profile?.username}</h3>
+                    {profile?.is_premium && <Crown className="w-5 h-5 text-yellow-500" />}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Level {profile?.level || 1}</p>
+                  <div className="flex items-center gap-4 mt-2">
+                    <div className="flex items-center gap-1">
+                      <Trophy className="w-4 h-4 text-primary" />
+                      <span className="font-medium">{profile?.xp || 0} XP</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Flame className="w-4 h-4 text-warning" />
+                      <span className="font-medium">{profile?.streak || 0} day streak</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Leaderboard Tracker */}
           <LeaderboardRankTracker />
         </div>
 
