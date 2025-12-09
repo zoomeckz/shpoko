@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,16 +11,27 @@ import { useAuth } from "@/contexts/AuthContext";
 import { LessonComplete } from "@/components/LessonComplete";
 import { useUserProgress } from "@/hooks/useUserProgress";
 
-interface Question {
+interface BaseQuestion {
   bulgarian: string;
   answer: string;
   hint: string;
 }
 
+interface TypeInQuestion extends BaseQuestion {
+  type: "typeIn";
+}
+
+interface FillBlankQuestion extends BaseQuestion {
+  type: "fillBlank";
+  options: string[];
+}
+
+type Question = TypeInQuestion | FillBlankQuestion;
+
 const LESSON_ID = "numbers-topic";
 const XP_REWARD = 70;
 
-const questions: Question[] = [
+const allQuestions: BaseQuestion[] = [
   { bulgarian: "Двадесет и едно", answer: "dvadeset i edno", hint: "21" },
   { bulgarian: "Тридесет", answer: "trideset", hint: "30" },
   { bulgarian: "Четиридесет", answer: "chetirideset", hint: "40" },
@@ -33,7 +44,28 @@ const questions: Question[] = [
   { bulgarian: "Хиляда", answer: "hilyada", hint: "1000" },
 ];
 
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
+const generateQuestions = (): Question[] => {
+  const shuffled = shuffleArray(allQuestions);
+  const typeInQuestions = shuffled.slice(0, 5).map(q => ({ ...q, type: "typeIn" as const }));
+  const fillBlankQuestions = shuffled.slice(5, 8).map(q => {
+    const wrongAnswers = shuffleArray(allQuestions.filter(a => a.answer !== q.answer)).slice(0, 3).map(a => a.answer);
+    const options = shuffleArray([q.answer, ...wrongAnswers]);
+    return { ...q, type: "fillBlank" as const, options };
+  });
+  return shuffleArray([...typeInQuestions, ...fillBlankQuestions]);
+};
+
 export const NumbersTopicLesson = () => {
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
@@ -41,12 +73,18 @@ export const NumbersTopicLesson = () => {
   const [showHint, setShowHint] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [earnedXP, setEarnedXP] = useState(0);
+  const [isRevision, setIsRevision] = useState(false);
   const navigate = useNavigate();
   const { user, updateXP } = useAuth();
-  const { canEarnXP, refetch } = useUserProgress();
+  const { canEarnXP, isLessonCompleted, refetch } = useUserProgress();
+
+  useEffect(() => {
+    setQuestions(generateQuestions());
+    setIsRevision(isLessonCompleted(LESSON_ID));
+  }, []);
 
   const currentQuestion = questions[currentStep];
-  const progress = ((currentStep + 1) / questions.length) * 100;
+  const progress = questions.length > 0 ? ((currentStep + 1) / questions.length) * 100 : 0;
 
   const playPronunciation = async (text: string) => {
     try {
@@ -61,8 +99,9 @@ export const NumbersTopicLesson = () => {
     }
   };
 
-  const checkAnswer = () => {
-    const isAnswerCorrect = userAnswer.toLowerCase().trim() === currentQuestion.answer.toLowerCase();
+  const checkAnswer = (answer?: string) => {
+    const answerToCheck = answer || userAnswer;
+    const isAnswerCorrect = answerToCheck.toLowerCase().trim() === currentQuestion.answer.toLowerCase();
     setIsCorrect(isAnswerCorrect);
     if (isAnswerCorrect) setCorrectAnswers(correctAnswers + 1);
   };
@@ -77,7 +116,7 @@ export const NumbersTopicLesson = () => {
       const canEarn = canEarnXP(LESSON_ID);
       let xpEarned = 0;
       
-      if (canEarn && user?.id) {
+      if (canEarn && !isRevision && user?.id) {
         const baseXP = Math.round((correctAnswers / questions.length) * XP_REWARD);
         xpEarned = baseXP;
         await updateXP(xpEarned);
@@ -108,9 +147,12 @@ export const NumbersTopicLesson = () => {
         xpEarned={earnedXP}
         correctAnswers={correctAnswers}
         totalQuestions={questions.length}
+        isRevision={isRevision}
       />
     );
   }
+
+  if (!currentQuestion) return null;
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -127,7 +169,9 @@ export const NumbersTopicLesson = () => {
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-center">Numbers - Type the transliteration</CardTitle>
+            <CardTitle className="text-center">
+              Numbers - {currentQuestion.type === "typeIn" ? "Type the transliteration" : "Choose the correct answer"}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="text-center">
@@ -139,50 +183,78 @@ export const NumbersTopicLesson = () => {
               </div>
               {showHint && <p className="text-muted-foreground animate-fade-in">Hint: {currentQuestion.hint}</p>}
             </div>
-            <div className="space-y-4">
-              <Input
-                type="text"
-                placeholder="Type the transliteration..."
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                disabled={isCorrect !== null}
-                className={cn(
-                  "text-center text-xl py-6",
-                  isCorrect === true && "border-green-500 bg-green-500/10",
-                  isCorrect === false && "border-red-500 bg-red-500/10"
-                )}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && isCorrect === null && userAnswer.trim()) checkAnswer();
-                }}
-              />
-              {isCorrect !== null && (
-                <div className={cn(
-                  "flex items-center justify-center gap-2 p-4 rounded-lg animate-fade-in",
-                  isCorrect ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
-                )}>
-                  {isCorrect ? (
-                    <><Check className="w-6 h-6" /><span className="font-bold">Correct!</span></>
-                  ) : (
-                    <><X className="w-6 h-6" /><span className="font-bold">The answer is: {currentQuestion.answer}</span></>
+
+            {currentQuestion.type === "typeIn" ? (
+              <div className="space-y-4">
+                <Input
+                  type="text"
+                  placeholder="Type the transliteration..."
+                  value={userAnswer}
+                  onChange={(e) => setUserAnswer(e.target.value)}
+                  disabled={isCorrect !== null}
+                  className={cn(
+                    "text-center text-xl py-6",
+                    isCorrect === true && "border-green-500 bg-green-500/10",
+                    isCorrect === false && "border-red-500 bg-red-500/10"
                   )}
-                </div>
-              )}
-            </div>
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && isCorrect === null && userAnswer.trim()) checkAnswer();
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {currentQuestion.options.map((option, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    className={cn(
+                      "h-14 text-lg",
+                      isCorrect !== null && option === currentQuestion.answer && "bg-green-500 text-white border-green-500",
+                      isCorrect === false && userAnswer === option && "bg-red-500 text-white border-red-500"
+                    )}
+                    onClick={() => {
+                      if (isCorrect === null) {
+                        setUserAnswer(option);
+                        checkAnswer(option);
+                      }
+                    }}
+                    disabled={isCorrect !== null}
+                  >
+                    {option}
+                  </Button>
+                ))}
+              </div>
+            )}
+
+            {isCorrect !== null && (
+              <div className={cn(
+                "flex items-center justify-center gap-2 p-4 rounded-lg animate-fade-in",
+                isCorrect ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
+              )}>
+                {isCorrect ? (
+                  <><Check className="w-6 h-6" /><span className="font-bold">Correct!</span></>
+                ) : (
+                  <><X className="w-6 h-6" /><span className="font-bold">The answer is: {currentQuestion.answer}</span></>
+                )}
+              </div>
+            )}
+
             <div className="flex gap-4">
-              {isCorrect === null ? (
+              {isCorrect === null && currentQuestion.type === "typeIn" ? (
                 <>
                   <Button variant="outline" onClick={() => setShowHint(true)} disabled={showHint} className="flex-1">
                     Show Hint
                   </Button>
-                  <Button onClick={checkAnswer} disabled={!userAnswer.trim()} className="flex-1">
+                  <Button onClick={() => checkAnswer()} disabled={!userAnswer.trim()} className="flex-1">
                     Check
                   </Button>
                 </>
-              ) : (
+              ) : isCorrect !== null ? (
                 <Button onClick={nextQuestion} className="w-full">
                   {currentStep < questions.length - 1 ? "Next" : "Complete Lesson"}
                 </Button>
-              )}
+              ) : null}
             </div>
           </CardContent>
         </Card>
