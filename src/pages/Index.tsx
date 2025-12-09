@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
@@ -8,12 +8,11 @@ import { LeaderboardRankTracker } from "@/components/LeaderboardRankTracker";
 import { LessonTopicSelector } from "@/components/LessonTopicSelector";
 import { ShortStories } from "@/components/ShortStories";
 import { DailyGames } from "@/components/DailyGames";
-import { ContextoGame } from "@/components/ContextoGame";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { lessons } from "@/data/lessons";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePictureSelector";
-import { Crown, Trophy, Flame, Calendar, BookOpen, Gamepad2, BookText } from "lucide-react";
+import { Crown, Trophy, Flame, Calendar, BookOpen, Gamepad2, BookText, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type CategoryType = "daily" | "lessons" | "games" | "stories";
@@ -81,7 +80,17 @@ const Index = () => {
       case "games":
         return (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <ContextoGame />
+            <Link to="/contexto">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-purple-400 bg-gradient-to-br from-purple-500/10 to-purple-400/5 h-full">
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <div className="p-3 bg-purple-500/20 rounded-full">
+                    <Brain className="w-6 h-6 text-purple-500" />
+                  </div>
+                  <h3 className="font-bold text-lg">Contexto</h3>
+                  <p className="text-sm text-muted-foreground">Guess the word!</p>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         );
       case "stories":

@@ -20,6 +20,7 @@ import Leaderboard from "./pages/Leaderboard";
 import Premium from "./pages/Premium";
 import NotFound from "./pages/NotFound";
 import Stories from "./pages/Stories";
+import ContextoGame from "./pages/ContextoGame";
 // Topic Lessons
 import ColorsLesson from "./pages/topic/ColorsLesson";
 import NumbersTopicLesson from "./pages/topic/NumbersTopicLesson";
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/premium" element={<Premium />} />
+              <Route path="/contexto" element={<ContextoGame />} />
               <Route path="/lesson/cyrillic" element={<CyrillicLesson />} />
               <Route path="/lesson/greetings" element={<GreetingsLesson />} />
               <Route path="/lesson/numbers" element={<NumbersLesson />} />
