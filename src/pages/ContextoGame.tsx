@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Brain, Trophy, ArrowLeft, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -80,6 +80,38 @@ const markTierPlayed = (tier: Tier) => {
   localStorage.setItem(`contexto-played-${getTodayKey()}`, JSON.stringify(played));
 };
 
+// Calculate semantic similarity rank for any word
+const calculateGuessRank = (guess: string, targetWord: WordData, allWords: WordData[]): number => {
+  const normalized = guess.toLowerCase().trim();
+  
+  // Check if it's the exact target word
+  if (normalized === targetWord.romanized.toLowerCase() || 
+      normalized === targetWord.word.toLowerCase() || 
+      normalized === targetWord.english.toLowerCase()) {
+    return 1;
+  }
+  
+  // Check if it's in our word list
+  const matchedWord = allWords.find(w => 
+    w.romanized.toLowerCase() === normalized || 
+    w.word.toLowerCase() === normalized ||
+    w.english.toLowerCase() === normalized
+  );
+  
+  if (matchedWord) {
+    return matchedWord.rank;
+  }
+  
+  // For words not in the list, generate a random rank between 50-500
+  // This simulates semantic distance for unknown words
+  const hashCode = normalized.split('').reduce((a, b) => {
+    a = ((a << 5) - a) + b.charCodeAt(0);
+    return a & a;
+  }, 0);
+  
+  return 50 + Math.abs(hashCode % 450);
+};
+
 const ContextoGame = () => {
   const navigate = useNavigate();
   const { updateXP } = useAuth();
@@ -124,35 +156,24 @@ const ContextoGame = () => {
     setGameState("playing");
   };
 
-  const findWordMatch = (input: string): WordData | null => {
-    const normalized = input.toLowerCase().trim();
-    return allWords.find(w => 
-      w.romanized.toLowerCase() === normalized || 
-      w.word.toLowerCase() === normalized ||
-      w.english.toLowerCase() === normalized
-    ) || null;
-  };
-
   const submitGuess = () => {
     if (!currentGuess.trim() || !targetWord) return;
     
-    const matchedWord = findWordMatch(currentGuess);
+    const normalized = currentGuess.toLowerCase().trim();
     
-    if (!matchedWord) {
-      setError("Word not in the list. Try another word!");
-      playIncorrect();
-      return;
-    }
-
-    if (guesses.some(g => g.word === matchedWord.romanized)) {
+    // Check if already guessed
+    if (guesses.some(g => g.word.toLowerCase() === normalized)) {
       setError("You already guessed that word!");
       return;
     }
 
-    const isCorrect = matchedWord.romanized === targetWord.romanized;
+    // Calculate rank for this guess
+    const rank = calculateGuessRank(normalized, targetWord, allWords);
+    const isCorrect = rank === 1;
+    
     const newGuess: Guess = {
-      word: inputMode === "bulgarian" ? matchedWord.word : matchedWord.romanized,
-      rank: matchedWord.rank,
+      word: currentGuess.trim(),
+      rank,
       isCorrect,
     };
 
@@ -178,7 +199,7 @@ const ContextoGame = () => {
       
       updateXP(xpReward);
     } else {
-      if (matchedWord.rank <= 3) {
+      if (rank <= 5) {
         playCorrect();
       } else {
         playIncorrect();
@@ -194,9 +215,10 @@ const ContextoGame = () => {
 
   const getRankColor = (rank: number) => {
     if (rank === 1) return "bg-green-500 text-white";
-    if (rank <= 3) return "bg-green-400 text-white";
-    if (rank <= 5) return "bg-yellow-400 text-yellow-900";
-    if (rank <= 10) return "bg-orange-400 text-white";
+    if (rank <= 5) return "bg-green-400 text-white";
+    if (rank <= 15) return "bg-yellow-400 text-yellow-900";
+    if (rank <= 50) return "bg-orange-400 text-white";
+    if (rank <= 100) return "bg-orange-500 text-white";
     return "bg-red-400 text-white";
   };
 
@@ -218,9 +240,9 @@ const ContextoGame = () => {
             {gameState === "setup" && (
               <div className="space-y-6">
                 <p className="text-muted-foreground text-center">
-                  Find the secret word! Guesses are ranked by how close they are to the answer.
+                  Find the secret Bulgarian word! Guess any word and see how close you are.
                   <br />
-                  <span className="text-sm">You can play each tier once per day.</span>
+                  <span className="text-sm">Lower rank = closer to the answer. You can play each tier once per day.</span>
                 </p>
 
                 <div className="space-y-3">
@@ -282,7 +304,7 @@ const ContextoGame = () => {
                     value={currentGuess}
                     onChange={(e) => setCurrentGuess(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder={inputMode === "bulgarian" ? "Type in Bulgarian..." : "Type romanized..."}
+                    placeholder="Type any word to guess..."
                     autoFocus
                   />
                   <Button onClick={submitGuess}>Guess</Button>
