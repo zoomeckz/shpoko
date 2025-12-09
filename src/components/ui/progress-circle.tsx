@@ -12,10 +12,12 @@ export const ProgressCircle = React.forwardRef<
   SVGSVGElement,
   ProgressCircleProps
 >(({ progress, size = 60, strokeWidth = 6, className }, ref) => {
+  // Clamp progress between 0 and 100
+  const clampedProgress = Math.min(100, Math.max(0, progress));
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDasharray = circumference;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
+  const strokeDashoffset = circumference - (clampedProgress / 100) * circumference;
 
   return (
     <div className={cn("relative inline-flex", className)}>
@@ -49,7 +51,7 @@ export const ProgressCircle = React.forwardRef<
         />
       </svg>
       <span className="absolute inset-0 flex items-center justify-center text-sm font-medium">
-        {Math.round(progress)}%
+        {Math.round(clampedProgress)}%
       </span>
     </div>
   );

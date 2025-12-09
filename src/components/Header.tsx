@@ -28,9 +28,7 @@ export const Header = ({
     await signOut();
     navigate("/auth");
   };
-  return <header className="flex items-center justify-between p-4 bg-background border-b border-border">
-      
-      
+  return <header className="flex items-center justify-center p-4 bg-background border-b border-border">
       <div className="flex items-center gap-4">
         {user && profile ? <>
             {/* Profile with Picture */}
@@ -65,8 +63,9 @@ export const Header = ({
             </div>
 
             {/* Leaderboard */}
-            <Button variant="ghost" size="sm" onClick={() => navigate("/leaderboard")}>
-              <Trophy className="w-4 h-4" />
+            <Button variant="outline" size="sm" onClick={() => navigate("/leaderboard")} className="hidden md:flex">
+              <Trophy className="w-4 h-4 mr-1 text-primary" />
+              Leaderboard
             </Button>
 
             {/* Premium */}
