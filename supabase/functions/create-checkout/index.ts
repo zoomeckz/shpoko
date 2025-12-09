@@ -12,6 +12,14 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
 };
 
+// Whitelist of allowed Stripe price IDs
+const ALLOWED_PRICE_IDS = [
+  "price_1RR4pQRoaO3bDjeFYEZQPcT9", // Monthly subscription €5
+  "price_1RR4pQRoaO3bDjeFFPNAaWGu", // 3-month prepaid €12
+  "price_1RR4pQRoaO3bDjeFVU8rOJfE", // 6-month prepaid €25
+  "price_1RR4pQRoaO3bDjeFhHXTPdSQ", // Yearly subscription €50
+];
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -27,6 +35,13 @@ serve(async (req) => {
     
     const { priceId, mode } = await req.json();
     if (!priceId) throw new Error("Price ID is required");
+    
+    // Validate priceId against whitelist
+    if (!ALLOWED_PRICE_IDS.includes(priceId)) {
+      logStep("Invalid price ID attempted", { priceId });
+      throw new Error("Invalid price ID");
+    }
+    
     logStep("Request received", { priceId, mode });
 
     const authHeader = req.headers.get("Authorization")!;
