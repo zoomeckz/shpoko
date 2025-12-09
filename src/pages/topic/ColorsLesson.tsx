@@ -11,44 +11,65 @@ import { useAuth } from "@/contexts/AuthContext";
 import { LessonComplete } from "@/components/LessonComplete";
 import { useUserProgress } from "@/hooks/useUserProgress";
 
-interface Question {
+interface TypeInQuestion {
   bulgarian: string;
   answer: string;
   hint: string;
   color: string;
 }
 
+interface FillBlankQuestion {
+  sentence: string;
+  blank: string;
+  options: string[];
+  correctIndex: number;
+  translation: string;
+  color: string;
+}
+
+type Question = { type: "typeIn"; data: TypeInQuestion } | { type: "fillBlank"; data: FillBlankQuestion };
+
 const LESSON_ID = "colors-topic";
 const XP_REWARD = 65;
 
-const questions: Question[] = [
+const typeInQuestions: TypeInQuestion[] = [
   { bulgarian: "Червено", answer: "cherveno", hint: "Red", color: "#ef4444" },
   { bulgarian: "Синьо", answer: "sinyo", hint: "Blue", color: "#3b82f6" },
   { bulgarian: "Зелено", answer: "zeleno", hint: "Green", color: "#22c55e" },
   { bulgarian: "Жълто", answer: "zhalto", hint: "Yellow", color: "#eab308" },
   { bulgarian: "Оранжево", answer: "oranzhevo", hint: "Orange", color: "#f97316" },
-  { bulgarian: "Лилаво", answer: "lilavo", hint: "Purple", color: "#a855f7" },
-  { bulgarian: "Розово", answer: "rozovo", hint: "Pink", color: "#ec4899" },
-  { bulgarian: "Кафяво", answer: "kafyavo", hint: "Brown", color: "#92400e" },
-  { bulgarian: "Черно", answer: "cherno", hint: "Black", color: "#171717" },
-  { bulgarian: "Бяло", answer: "byalo", hint: "White", color: "#f5f5f5" },
 ];
 
+const fillBlankQuestions: FillBlankQuestion[] = [
+  { sentence: "Небето е ____", blank: "синьо", options: ["червено", "синьо", "зелено", "жълто"], correctIndex: 1, translation: "The sky is blue", color: "#3b82f6" },
+  { sentence: "Тревата е ____", blank: "зелена", options: ["зелена", "синя", "червена", "бяла"], correctIndex: 0, translation: "The grass is green", color: "#22c55e" },
+  { sentence: "Слънцето е ____", blank: "жълто", options: ["синьо", "зелено", "жълто", "черно"], correctIndex: 2, translation: "The sun is yellow", color: "#eab308" },
+];
+
+const generateMixedQuestions = (): Question[] => {
+  const typeIn: Question[] = typeInQuestions.map(q => ({ type: "typeIn" as const, data: q }));
+  const fillBlank: Question[] = fillBlankQuestions.map(q => ({ type: "fillBlank" as const, data: q }));
+  const allQuestions = [...typeIn, ...fillBlank];
+  return allQuestions.sort(() => Math.random() - 0.5);
+};
+
 export const ColorsLesson = () => {
+  const [questions] = useState<Question[]>(() => generateMixedQuestions());
   const [currentStep, setCurrentStep] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [showHint, setShowHint] = useState(false);
-  const [usedHint, setUsedHint] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [earnedXP, setEarnedXP] = useState(0);
   const navigate = useNavigate();
   const { user, updateXP } = useAuth();
-  const { canEarnXP, refetch } = useUserProgress();
+  const { canEarnXP, saveProgress, refetch } = useUserProgress();
 
   const currentQuestion = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
+  const isRevision = !canEarnXP(LESSON_ID);
 
   const playPronunciation = async (text: string) => {
     try {
@@ -63,10 +84,23 @@ export const ColorsLesson = () => {
     }
   };
 
-  const checkAnswer = () => {
-    const isAnswerCorrect = userAnswer.toLowerCase().trim() === currentQuestion.answer.toLowerCase();
+  const checkTypeInAnswer = () => {
+    if (currentQuestion.type !== "typeIn") return;
+    const q = currentQuestion.data as TypeInQuestion;
+    const isAnswerCorrect = userAnswer.toLowerCase().trim() === q.answer.toLowerCase();
     setIsCorrect(isAnswerCorrect);
     if (isAnswerCorrect) {
+      setCorrectAnswers(correctAnswers + 1);
+    }
+  };
+
+  const selectFillBlankAnswer = (index: number) => {
+    if (currentQuestion.type !== "fillBlank" || isCorrect !== null) return;
+    const q = currentQuestion.data as FillBlankQuestion;
+    setSelectedAnswer(index);
+    const correct = index === q.correctIndex;
+    setIsCorrect(correct);
+    if (correct) {
       setCorrectAnswers(correctAnswers + 1);
     }
   };
@@ -75,15 +109,13 @@ export const ColorsLesson = () => {
     if (currentStep < questions.length - 1) {
       setCurrentStep(currentStep + 1);
       setUserAnswer("");
+      setSelectedAnswer(null);
       setIsCorrect(null);
       setShowHint(false);
-      setUsedHint(false);
     } else {
-      // Lesson complete - calculate and award XP
-      const canEarn = canEarnXP(LESSON_ID);
       let xpEarned = 0;
       
-      if (canEarn && user?.id) {
+      if (!isRevision && user?.id) {
         const baseXP = Math.round((correctAnswers / questions.length) * XP_REWARD);
         xpEarned = baseXP;
         await updateXP(xpEarned);
@@ -106,6 +138,13 @@ export const ColorsLesson = () => {
     }
   };
 
+  const getCurrentColor = () => {
+    if (currentQuestion.type === "typeIn") {
+      return (currentQuestion.data as TypeInQuestion).color;
+    }
+    return (currentQuestion.data as FillBlankQuestion).color;
+  };
+
   if (isComplete) {
     return (
       <LessonComplete
@@ -114,6 +153,7 @@ export const ColorsLesson = () => {
         xpEarned={earnedXP}
         correctAnswers={correctAnswers}
         totalQuestions={questions.length}
+        isRevision={isRevision}
       />
     );
   }
@@ -129,89 +169,134 @@ export const ColorsLesson = () => {
             <Progress value={progress} className="h-3" />
           </div>
           <span className="text-sm font-medium">{currentStep + 1}/{questions.length}</span>
+          {isRevision && (
+            <span className="text-xs bg-muted px-2 py-1 rounded">Revision</span>
+          )}
         </div>
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-center">Colors - Type the transliteration</CardTitle>
+            <CardTitle className="text-center">
+              Colors - {currentQuestion.type === "typeIn" ? "Type the transliteration" : "Fill in the blank"}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="text-center">
-              <div 
-                className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-border"
-                style={{ backgroundColor: currentQuestion.color }}
-              />
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <p className="text-5xl font-bold">{currentQuestion.bulgarian}</p>
-                <Button variant="ghost" size="icon" onClick={() => playPronunciation(currentQuestion.bulgarian)}>
-                  <Volume2 className="w-6 h-6" />
-                </Button>
-              </div>
-              {showHint && (
-                <p className="text-muted-foreground animate-fade-in">Hint: {currentQuestion.hint}</p>
-              )}
-            </div>
+            <div 
+              className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-border"
+              style={{ backgroundColor: getCurrentColor() }}
+            />
 
-            <div className="space-y-4">
-              <Input
-                type="text"
-                placeholder="Type the transliteration..."
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                disabled={isCorrect !== null}
-                className={cn(
-                  "text-center text-xl py-6",
-                  isCorrect === true && "border-green-500 bg-green-500/10",
-                  isCorrect === false && "border-red-500 bg-red-500/10"
-                )}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && isCorrect === null && userAnswer.trim()) {
-                    checkAnswer();
-                  }
-                }}
-              />
-
-              {isCorrect !== null && (
-                <div className={cn(
-                  "flex items-center justify-center gap-2 p-4 rounded-lg animate-fade-in",
-                  isCorrect ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
-                )}>
-                  {isCorrect ? (
-                    <>
-                      <Check className="w-6 h-6" />
-                      <span className="font-bold">Correct!</span>
-                    </>
-                  ) : (
-                    <>
-                      <X className="w-6 h-6" />
-                      <span className="font-bold">The answer is: {currentQuestion.answer}</span>
-                    </>
+            {currentQuestion.type === "typeIn" ? (
+              <>
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-2 mb-4">
+                    <p className="text-5xl font-bold">{(currentQuestion.data as TypeInQuestion).bulgarian}</p>
+                    <Button variant="ghost" size="icon" onClick={() => playPronunciation((currentQuestion.data as TypeInQuestion).bulgarian)}>
+                      <Volume2 className="w-6 h-6" />
+                    </Button>
+                  </div>
+                  {showHint && (
+                    <p className="text-muted-foreground animate-fade-in">Hint: {(currentQuestion.data as TypeInQuestion).hint}</p>
                   )}
                 </div>
-              )}
-            </div>
 
-            <div className="flex gap-4">
-              {isCorrect === null ? (
-                <>
-                  <Button variant="outline" onClick={() => { setShowHint(true); setUsedHint(true); }} disabled={showHint} className="flex-1">
-                    Show Hint
-                  </Button>
-                  <Button onClick={checkAnswer} disabled={!userAnswer.trim()} className="flex-1">
-                    Check
-                  </Button>
-                </>
-              ) : (
-                <Button onClick={nextQuestion} className="w-full">
-                  {currentStep < questions.length - 1 ? "Next" : "Complete Lesson"}
-                </Button>
-              )}
-            </div>
+                <div className="space-y-4">
+                  <Input
+                    type="text"
+                    placeholder="Type the transliteration..."
+                    value={userAnswer}
+                    onChange={(e) => setUserAnswer(e.target.value)}
+                    disabled={isCorrect !== null}
+                    className={cn(
+                      "text-center text-xl py-6",
+                      isCorrect === true && "border-green-500 bg-green-500/10",
+                      isCorrect === false && "border-red-500 bg-red-500/10"
+                    )}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        if (isCorrect !== null) nextQuestion();
+                        else if (userAnswer.trim()) checkTypeInAnswer();
+                      }
+                    }}
+                  />
+
+                  {isCorrect !== null && (
+                    <div className={cn(
+                      "flex items-center justify-center gap-2 p-4 rounded-lg animate-fade-in",
+                      isCorrect ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
+                    )}>
+                      {isCorrect ? (
+                        <><Check className="w-6 h-6" /><span className="font-bold">Correct!</span></>
+                      ) : (
+                        <><X className="w-6 h-6" /><span className="font-bold">The answer is: {(currentQuestion.data as TypeInQuestion).answer}</span></>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-4">
+                  {isCorrect === null ? (
+                    <>
+                      <Button variant="outline" onClick={() => setShowHint(true)} disabled={showHint} className="flex-1">Show Hint</Button>
+                      <Button onClick={checkTypeInAnswer} disabled={!userAnswer.trim()} className="flex-1">Check</Button>
+                    </>
+                  ) : (
+                    <Button onClick={nextQuestion} className="w-full">
+                      {currentStep < questions.length - 1 ? "Next" : "Complete"}
+                    </Button>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-center">
+                  <p className="text-3xl font-bold mb-2">{(currentQuestion.data as FillBlankQuestion).sentence}</p>
+                  <p className="text-lg font-bold text-primary">{(currentQuestion.data as FillBlankQuestion).translation}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {(currentQuestion.data as FillBlankQuestion).options.map((option, index) => (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      onClick={() => selectFillBlankAnswer(index)}
+                      disabled={isCorrect !== null}
+                      className={cn(
+                        "py-6 text-lg transition-all",
+                        selectedAnswer === index && isCorrect && "bg-green-500 text-white border-green-500",
+                        selectedAnswer === index && !isCorrect && "bg-red-500 text-white border-red-500",
+                        isCorrect !== null && index === (currentQuestion.data as FillBlankQuestion).correctIndex && selectedAnswer !== index && "border-green-500 border-2"
+                      )}
+                    >
+                      {option}
+                    </Button>
+                  ))}
+                </div>
+
+                {isCorrect !== null && (
+                  <>
+                    <div className={cn(
+                      "flex items-center justify-center gap-2 p-4 rounded-lg animate-fade-in",
+                      isCorrect ? "bg-green-500/20 text-green-600" : "bg-red-500/20 text-red-600"
+                    )}>
+                      {isCorrect ? (
+                        <><Check className="w-6 h-6" /><span className="font-bold">Correct!</span></>
+                      ) : (
+                        <><X className="w-6 h-6" /><span className="font-bold">Answer: {(currentQuestion.data as FillBlankQuestion).options[(currentQuestion.data as FillBlankQuestion).correctIndex]}</span></>
+                      )}
+                    </div>
+                    <Button onClick={nextQuestion} className="w-full">
+                      {currentStep < questions.length - 1 ? "Next" : "Complete"}
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
 
         <div className="text-center text-muted-foreground">
-          <p>Correct: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}</p>
+          <p>{isRevision ? "Revision Mode" : ""} Correct: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}</p>
         </div>
       </div>
     </div>

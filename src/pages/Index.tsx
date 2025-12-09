@@ -177,7 +177,7 @@ const Index = () => {
         </div>
 
         {/* Category Content */}
-        <div className="animate-fade-in">
+        <div className="animate-fade-in min-h-[400px]">
           {renderCategoryContent()}
         </div>
       </main>
