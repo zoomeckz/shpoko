@@ -34,6 +34,9 @@ import RestaurantLesson from "./pages/topic/RestaurantLesson";
 import DirectionsLesson from "./pages/topic/DirectionsLesson";
 import WeatherLesson from "./pages/topic/WeatherLesson";
 import AnimalsLesson from "./pages/topic/AnimalsLesson";
+import JobsLesson from "./pages/topic/JobsLesson";
+import FamilyLesson from "./pages/topic/FamilyLesson";
+import RestaurantOrderingLesson from "./pages/topic/RestaurantOrderingLesson";
 
 const queryClient = new QueryClient();
 
@@ -76,6 +79,9 @@ const App = () => (
               <Route path="/topic/directions" element={<DirectionsLesson />} />
               <Route path="/topic/weather" element={<WeatherLesson />} />
               <Route path="/topic/animals" element={<AnimalsLesson />} />
+              <Route path="/topic/jobs" element={<JobsLesson />} />
+              <Route path="/topic/family" element={<FamilyLesson />} />
+              <Route path="/topic/restaurant-ordering" element={<RestaurantOrderingLesson />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </InputModeProvider>
