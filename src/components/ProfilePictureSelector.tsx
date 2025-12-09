@@ -151,7 +151,7 @@ export const ProfilePictureSelector = ({ trigger }: ProfilePictureSelectorProps)
 
 interface ProfilePictureProps {
   pictureId?: string | null;
-  size?: "xs" | "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
   className?: string;
 }
 
@@ -160,6 +160,7 @@ const sizeClasses = {
   sm: "w-8 h-8",
   md: "w-12 h-12",
   lg: "w-16 h-16",
+  xl: "w-24 h-24",
 };
 
 export const ProfilePicture = ({ pictureId, size = "md", className }: ProfilePictureProps) => {

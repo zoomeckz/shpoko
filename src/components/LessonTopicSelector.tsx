@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Star, Lock, Check, Flame } from "lucide-react";
+import { Crown, Star, Lock, Check, Flame, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { lessons, Lesson } from "@/data/lessons";
 import { useUserProgress } from "@/hooks/useUserProgress";
@@ -35,9 +35,11 @@ interface LessonItemProps {
 const LessonItem = ({ lesson, isCompleted, onClick, premiumIndex }: LessonItemProps) => {
   const { profile } = useAuth();
   const { isPremiumLessonUnlocked, daysUntilNextUnlock, unlockedPremiumLessons } = useStreakUnlocks();
+  const { canEarnXP } = useUserProgress();
   
   const isPremium = lesson.isPremium;
   const hasFullPremium = profile?.is_premium;
+  const isRevisionOnly = isCompleted && !canEarnXP(lesson.id);
   
   // Check if this premium lesson is unlocked via streak
   const isUnlockedByStreak = isPremium && premiumIndex !== undefined && isPremiumLessonUnlocked(premiumIndex);
@@ -69,7 +71,7 @@ const LessonItem = ({ lesson, isCompleted, onClick, premiumIndex }: LessonItemPr
              <Star className="w-4 h-4" />}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="font-medium truncate">{lesson.title}</span>
               {lesson.isPremium && (
                 <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />
@@ -77,6 +79,12 @@ const LessonItem = ({ lesson, isCompleted, onClick, premiumIndex }: LessonItemPr
               {isUnlockedByStreak && !hasFullPremium && (
                 <Badge variant="outline" className="text-xs border-warning text-warning">
                   Streak
+                </Badge>
+              )}
+              {isRevisionOnly && (
+                <Badge variant="outline" className="text-xs border-muted-foreground text-muted-foreground">
+                  <RotateCcw className="w-3 h-3 mr-1" />
+                  Revise
                 </Badge>
               )}
             </div>
