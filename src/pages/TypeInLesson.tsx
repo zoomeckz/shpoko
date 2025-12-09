@@ -190,8 +190,14 @@ export const TypeInLesson = () => {
                   isCorrect === false && "border-red-500 bg-red-500/10"
                 )}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && isCorrect === null && userAnswer.trim()) {
-                    checkAnswer();
+                  if (e.key === "Enter") {
+                    if (isCorrect !== null) {
+                      // Already answered - go to next question
+                      nextQuestion();
+                    } else if (userAnswer.trim()) {
+                      // Not answered yet - check answer
+                      checkAnswer();
+                    }
                   }
                 }}
               />

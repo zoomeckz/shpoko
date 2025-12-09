@@ -142,12 +142,15 @@ export default {
 						transform: 'translateY(-5px)'
 					}
 				},
-				'glow': {
+			'glow': {
 					'0%, 100%': {
-						boxShadow: '0 0 20px hsl(var(--primary) / 0.3)'
-					},
-					'50%': {
-						boxShadow: '0 0 40px hsl(var(--primary) / 0.6)'
+						boxShadow: '0 0 15px hsl(var(--primary) / 0.4)'
+					}
+				},
+				'soft-glow': {
+					'0%, 100%': {
+						boxShadow: '0 0 20px hsl(var(--primary) / 0.5)',
+						borderColor: 'hsl(var(--primary))'
 					}
 				},
 				'wiggle': {
@@ -183,7 +186,8 @@ export default {
 				'fade-in': 'fade-in 0.3s ease-out',
 				'scale-in': 'scale-in 0.2s ease-out',
 				'bounce-gentle': 'bounce-gentle 1s ease-in-out infinite',
-				'glow': 'glow 2s ease-in-out infinite',
+			'glow': 'soft-glow 0.3s ease-out forwards',
+				'soft-glow': 'soft-glow 0.3s ease-out forwards',
 				'wiggle': 'wiggle 0.5s ease-in-out infinite',
 				'tilt': 'tilt 1s ease-in-out infinite',
 				'jump': 'jump 0.6s ease-in-out infinite',
