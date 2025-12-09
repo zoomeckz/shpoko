@@ -145,6 +145,7 @@ export const lessons: Lesson[] = [
     status: "available",
     difficulty: "intermediate",
     category: "Vocabulary",
+    route: "/topic/food-drinks",
   },
   {
     id: "at-the-restaurant",
@@ -156,6 +157,7 @@ export const lessons: Lesson[] = [
     status: "available",
     difficulty: "intermediate",
     category: "Conversation",
+    route: "/topic/restaurant",
   },
   // Advanced Lessons
   {
@@ -192,6 +194,7 @@ export const lessons: Lesson[] = [
     status: "available",
     difficulty: "advanced",
     category: "Conversation",
+    route: "/topic/directions",
   },
   {
     id: "weather-talk",
@@ -203,6 +206,7 @@ export const lessons: Lesson[] = [
     status: "available",
     difficulty: "advanced",
     category: "Conversation",
+    route: "/topic/weather",
   },
   // Premium Lessons
   {

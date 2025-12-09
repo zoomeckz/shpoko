@@ -86,16 +86,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const calculateLevel = (xp: number): number => {
-    if (xp < 100) return 1;
-    if (xp < 250) return 2;
-    if (xp < 500) return 3;
-    if (xp < 1000) return 4;
-    if (xp < 2000) return 5;
-    if (xp < 4000) return 6;
-    if (xp < 8000) return 7;
-    if (xp < 16000) return 8;
-    if (xp < 32000) return 9;
-    return 10;
+    // Each level requires progressively more XP
+    // Level 1: 0-99 XP
+    // Level 2: 100-249 XP
+    // Level 3: 250-499 XP
+    // etc... continuing indefinitely
+    const thresholds = [0, 100, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000];
+    
+    // For levels beyond 10, each level requires 50% more XP than the previous
+    let level = 1;
+    let currentThreshold = 0;
+    let nextThreshold = 100;
+    
+    while (xp >= nextThreshold) {
+      level++;
+      currentThreshold = nextThreshold;
+      if (level <= 10) {
+        nextThreshold = thresholds[level] || currentThreshold * 1.5;
+      } else {
+        // Beyond level 10, each level requires 50% more XP
+        nextThreshold = Math.floor(currentThreshold * 1.5);
+      }
+    }
+    
+    return level;
   };
 
   useEffect(() => {
