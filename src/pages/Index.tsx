@@ -110,7 +110,7 @@ const Index = () => {
                 <ProfilePictureSelector
                   trigger={
                     <div className="cursor-pointer hover:opacity-80 transition-opacity">
-                      <ProfilePicture pictureId={profile?.profile_picture} size="lg" />
+                      <ProfilePicture pictureId={profile?.profile_picture} size="xl" />
                     </div>
                   }
                 />
