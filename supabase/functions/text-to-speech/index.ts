@@ -19,8 +19,18 @@ serve(async (req) => {
   try {
     const { text, voice = "onwK4e9ZLuTAKqWW03F9" }: TextToSpeechRequest = await req.json();
     
-    if (!text) {
-      throw new Error("Text is required");
+    // Input validation
+    if (!text || typeof text !== "string") {
+      throw new Error("Text is required and must be a string");
+    }
+    
+    const trimmedText = text.trim();
+    if (trimmedText.length === 0) {
+      throw new Error("Text cannot be empty");
+    }
+    
+    if (trimmedText.length > 500) {
+      throw new Error("Text must be 500 characters or less");
     }
 
     const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
