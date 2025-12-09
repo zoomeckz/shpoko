@@ -1,296 +1,168 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Check, X, Volume2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { ShpokoMascot } from "@/components/ShpokoMascot";
+import { useAuth } from "@/contexts/AuthContext";
+import { LessonComplete } from "@/components/LessonComplete";
+import { useUserProgress } from "@/hooks/useUserProgress";
 
-interface WeekdayItem {
+interface BaseQuestion {
   bulgarian: string;
-  romanized: string;
-  english: string;
+  answer: string;
+  hint: string;
 }
 
-const weekdays: WeekdayItem[] = [
-  { bulgarian: "Понеделник", romanized: "Ponedelnik", english: "Monday" },
-  { bulgarian: "Вторник", romanized: "Vtornik", english: "Tuesday" },
-  { bulgarian: "Сряда", romanized: "Sryada", english: "Wednesday" },
-  { bulgarian: "Четвъртък", romanized: "Chetvartuk", english: "Thursday" },
-  { bulgarian: "Петък", romanized: "Petuk", english: "Friday" },
-  { bulgarian: "Събота", romanized: "Sabota", english: "Saturday" },
-  { bulgarian: "Неделя", romanized: "Nedelya", english: "Sunday" },
-];
+interface TypeInQuestion extends BaseQuestion {
+  type: "typeIn";
+}
 
-const months: WeekdayItem[] = [
-  { bulgarian: "Януари", romanized: "Yanuari", english: "January" },
-  { bulgarian: "Февруари", romanized: "Fevruari", english: "February" },
-  { bulgarian: "Март", romanized: "Mart", english: "March" },
-  { bulgarian: "Април", romanized: "April", english: "April" },
-  { bulgarian: "Май", romanized: "May", english: "May" },
-  { bulgarian: "Юни", romanized: "Yuni", english: "June" },
-  { bulgarian: "Юли", romanized: "Yuli", english: "July" },
-  { bulgarian: "Август", romanized: "Avgust", english: "August" },
-  { bulgarian: "Септември", romanized: "Septemvri", english: "September" },
-  { bulgarian: "Октомври", romanized: "Oktomvri", english: "October" },
-  { bulgarian: "Ноември", romanized: "Noemvri", english: "November" },
-  { bulgarian: "Декември", romanized: "Dekemvri", english: "December" },
-];
-
-type Phase = "learn-weekdays" | "learn-months" | "quiz" | "complete";
-
-interface QuizQuestion {
-  type: "weekday" | "month";
-  item: WeekdayItem;
+interface FillBlankQuestion extends BaseQuestion {
+  type: "fillBlank";
   options: string[];
-  correctIndex: number;
 }
 
-const generateQuizQuestions = (): QuizQuestion[] => {
-  const questions: QuizQuestion[] = [];
-  
-  // Add weekday questions
-  weekdays.forEach((item) => {
-    const otherOptions = weekdays
-      .filter(w => w.english !== item.english)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 3)
-      .map(w => w.english);
-    
-    const options = [...otherOptions, item.english].sort(() => Math.random() - 0.5);
-    questions.push({
-      type: "weekday",
-      item,
-      options,
-      correctIndex: options.indexOf(item.english),
-    });
-  });
-  
-  // Add month questions
-  months.forEach((item) => {
-    const otherOptions = months
-      .filter(m => m.english !== item.english)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 3)
-      .map(m => m.english);
-    
-    const options = [...otherOptions, item.english].sort(() => Math.random() - 0.5);
-    questions.push({
-      type: "month",
-      item,
-      options,
-      correctIndex: options.indexOf(item.english),
-    });
-  });
-  
-  return questions.sort(() => Math.random() - 0.5).slice(0, 10);
+type Question = TypeInQuestion | FillBlankQuestion;
+
+const LESSON_ID = "days-months";
+const XP_REWARD = 85;
+
+const allQuestions: BaseQuestion[] = [
+  { bulgarian: "Понеделник", answer: "ponedelnik", hint: "Monday" },
+  { bulgarian: "Вторник", answer: "vtornik", hint: "Tuesday" },
+  { bulgarian: "Сряда", answer: "sryada", hint: "Wednesday" },
+  { bulgarian: "Четвъртък", answer: "chetvartuk", hint: "Thursday" },
+  { bulgarian: "Петък", answer: "petuk", hint: "Friday" },
+  { bulgarian: "Събота", answer: "sabota", hint: "Saturday" },
+  { bulgarian: "Неделя", answer: "nedelya", hint: "Sunday" },
+  { bulgarian: "Януари", answer: "yanuari", hint: "January" },
+  { bulgarian: "Февруари", answer: "fevruari", hint: "February" },
+  { bulgarian: "Март", answer: "mart", hint: "March" },
+  { bulgarian: "Април", answer: "april", hint: "April" },
+  { bulgarian: "Май", answer: "may", hint: "May" },
+  { bulgarian: "Юни", answer: "yuni", hint: "June" },
+  { bulgarian: "Юли", answer: "yuli", hint: "July" },
+  { bulgarian: "Август", answer: "avgust", hint: "August" },
+  { bulgarian: "Септември", answer: "septemvri", hint: "September" },
+  { bulgarian: "Октомври", answer: "oktomvri", hint: "October" },
+  { bulgarian: "Ноември", answer: "noemvri", hint: "November" },
+  { bulgarian: "Декември", answer: "dekemvri", hint: "December" },
+];
+
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 };
 
-const WeekdaysLesson = () => {
-  const navigate = useNavigate();
-  const { user, profile, updateXP } = useAuth();
-  const { toast } = useToast();
-  
-  const [phase, setPhase] = useState<Phase>("learn-weekdays");
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+const generateQuestions = (): Question[] => {
+  const shuffled = shuffleArray(allQuestions);
+  const typeInQuestions = shuffled.slice(0, 5).map(q => ({ ...q, type: "typeIn" as const }));
+  const fillBlankQuestions = shuffled.slice(5, 8).map(q => {
+    const wrongAnswers = shuffleArray(allQuestions.filter(a => a.answer !== q.answer)).slice(0, 3).map(a => a.answer);
+    const options = shuffleArray([q.answer, ...wrongAnswers]);
+    return { ...q, type: "fillBlank" as const, options };
+  });
+  return shuffleArray([...typeInQuestions, ...fillBlankQuestions]);
+};
+
+export const WeekdaysLesson = () => {
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [userAnswer, setUserAnswer] = useState("");
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [correctCount, setCorrectCount] = useState(0);
-  const [totalXP, setTotalXP] = useState(0);
-  const [interactions, setInteractions] = useState(0);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [showHint, setShowHint] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
+  const [earnedXP, setEarnedXP] = useState(0);
+  const [isRevision, setIsRevision] = useState(false);
+  const navigate = useNavigate();
+  const { user, updateXP } = useAuth();
+  const { canEarnXP, isLessonCompleted, refetch } = useUserProgress();
 
   useEffect(() => {
-    setQuizQuestions(generateQuizQuestions());
+    setQuestions(generateQuestions());
+    setIsRevision(isLessonCompleted(LESSON_ID));
   }, []);
 
-  const currentItems = phase === "learn-weekdays" ? weekdays : months;
-  const progress = phase === "learn-weekdays" 
-    ? (currentIndex / weekdays.length) * 33
-    : phase === "learn-months"
-    ? 33 + (currentIndex / months.length) * 33
-    : phase === "quiz"
-    ? 66 + (currentQuestionIndex / quizQuestions.length) * 34
-    : 100;
+  const currentQuestion = questions[currentStep];
+  const progress = questions.length > 0 ? ((currentStep + 1) / questions.length) * 100 : 0;
 
-  const handleNext = () => {
-    setInteractions(prev => prev + 1);
-    
-    if (phase === "learn-weekdays") {
-      if (currentIndex < weekdays.length - 1) {
-        setCurrentIndex(prev => prev + 1);
-      } else {
-        setPhase("learn-months");
-        setCurrentIndex(0);
-      }
-    } else if (phase === "learn-months") {
-      if (currentIndex < months.length - 1) {
-        setCurrentIndex(prev => prev + 1);
-      } else {
-        setPhase("quiz");
-        setCurrentQuestionIndex(0);
-      }
+  const playPronunciation = async (text: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("text-to-speech", {
+        body: { text, voice: "alloy" },
+      });
+      if (error) throw error;
+      const audio = new Audio(`data:audio/mp3;base64,${data.audioContent}`);
+      audio.play();
+    } catch (error) {
+      console.error("Error playing pronunciation:", error);
     }
   };
 
-  const handleSelectAnswer = (index: number) => {
-    if (isCorrect !== null) return;
-    
-    setInteractions(prev => prev + 1);
-    setSelectedAnswer(index);
-    const correct = index === quizQuestions[currentQuestionIndex].correctIndex;
-    setIsCorrect(correct);
-    
-    if (correct) {
-      setCorrectCount(prev => prev + 1);
-      setTotalXP(prev => prev + 10);
-    } else {
-      setTotalXP(prev => prev + 1);
-    }
+  const checkAnswer = (answer?: string) => {
+    const answerToCheck = answer || userAnswer;
+    const isAnswerCorrect = answerToCheck.toLowerCase().trim() === currentQuestion.answer.toLowerCase();
+    setIsCorrect(isAnswerCorrect);
+    if (isAnswerCorrect) setCorrectAnswers(correctAnswers + 1);
   };
 
-  const handleNextQuestion = async () => {
-    if (currentQuestionIndex < quizQuestions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-      setSelectedAnswer(null);
+  const nextQuestion = async () => {
+    if (currentStep < questions.length - 1) {
+      setCurrentStep(currentStep + 1);
+      setUserAnswer("");
       setIsCorrect(null);
+      setShowHint(false);
     } else {
-      // Complete lesson
-      if (user && totalXP > 0) {
-        await updateXP(totalXP);
+      const canEarn = canEarnXP(LESSON_ID);
+      let xpEarned = 0;
+      
+      if (canEarn && !isRevision && user?.id) {
+        const baseXP = Math.round((correctAnswers / questions.length) * XP_REWARD);
+        xpEarned = baseXP;
+        await updateXP(xpEarned);
         
         await supabase.from("user_progress").upsert({
           user_id: user.id,
-          lesson_id: "days-months",
+          lesson_id: LESSON_ID,
           completed: true,
-          score: totalXP,
-          correct_answers: correctCount,
-          total_answers: quizQuestions.length,
+          score: xpEarned,
+          correct_answers: correctAnswers,
+          total_answers: questions.length,
           completed_at: new Date().toISOString(),
         }, { onConflict: "user_id,lesson_id" });
+        
+        refetch();
       }
       
-      setPhase("complete");
+      setEarnedXP(xpEarned);
+      setIsComplete(true);
     }
   };
 
-  if (phase === "complete") {
+  if (isComplete) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <ShpokoMascot size="lg" className="mx-auto mb-4" />
-            <CardTitle className="text-2xl">Lesson Complete!</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-lg">
-              You got <span className="font-bold text-primary">{correctCount}</span> out of{" "}
-              <span className="font-bold">{quizQuestions.length}</span> correct!
-            </p>
-            <p className="text-xl font-bold text-primary">+{totalXP} XP</p>
-            <div className="flex gap-2">
-              <Button onClick={() => navigate("/")} className="flex-1">
-                Back to Home
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setPhase("learn-weekdays");
-                  setCurrentIndex(0);
-                  setQuizQuestions(generateQuizQuestions());
-                  setCurrentQuestionIndex(0);
-                  setSelectedAnswer(null);
-                  setIsCorrect(null);
-                  setCorrectCount(0);
-                  setTotalXP(0);
-                }}
-                className="flex-1"
-              >
-                Practice Again
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <LessonComplete
+        lessonKey={LESSON_ID}
+        score={earnedXP}
+        xpEarned={earnedXP}
+        correctAnswers={correctAnswers}
+        totalQuestions={questions.length}
+        isRevision={isRevision}
+      />
     );
   }
 
-  if (phase === "quiz") {
-    const question = quizQuestions[currentQuestionIndex];
-    
-    return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div className="flex-1">
-              <Progress value={progress} className="h-2" />
-            </div>
-          </div>
+  if (!currentQuestion) return null;
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-center">
-                What is "{question.item.bulgarian}" in English?
-              </CardTitle>
-              <p className="text-center text-muted-foreground">
-                ({question.item.romanized})
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                {question.options.map((option, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    className={cn(
-                      "h-14 text-lg",
-                      selectedAnswer === index && isCorrect && "bg-green-500 text-white border-green-500",
-                      selectedAnswer === index && !isCorrect && "bg-red-500 text-white border-red-500",
-                      isCorrect !== null && index === question.correctIndex && "bg-green-500 text-white border-green-500"
-                    )}
-                    onClick={() => handleSelectAnswer(index)}
-                    disabled={isCorrect !== null}
-                  >
-                    {option}
-                  </Button>
-                ))}
-              </div>
-
-              {isCorrect !== null && (
-                <div className={cn(
-                  "p-4 rounded-lg flex items-center gap-3",
-                  isCorrect ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"
-                )}>
-                  {isCorrect ? <Check className="w-5 h-5" /> : <X className="w-5 h-5" />}
-                  <span className="font-medium">
-                    {isCorrect ? "Correct! +10 XP" : `Incorrect. The answer is "${question.item.english}"`}
-                  </span>
-                </div>
-              )}
-
-              {isCorrect !== null && (
-                <Button onClick={handleNextQuestion} className="w-full">
-                  {currentQuestionIndex < quizQuestions.length - 1 ? "Next Question" : "Finish"}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  // Learning phase
-  const currentItem = currentItems[currentIndex];
-  
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl mx-auto">
@@ -299,38 +171,105 @@ const WeekdaysLesson = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} className="h-3" />
           </div>
+          <span className="text-sm font-medium">{currentStep + 1}/{questions.length}</span>
         </div>
 
-        <Card>
+        <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-center">
-              {phase === "learn-weekdays" ? "Days of the Week" : "Months of the Year"}
+              Days & Months - {currentQuestion.type === "typeIn" ? "Type the transliteration" : "Choose the correct answer"}
             </CardTitle>
-            <p className="text-center text-muted-foreground">
-              {currentIndex + 1} of {currentItems.length}
-            </p>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="text-center space-y-4">
-              <div className="text-4xl font-bold text-primary">
-                {currentItem.bulgarian}
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <p className="text-5xl font-bold">{currentQuestion.bulgarian}</p>
+                <Button variant="ghost" size="icon" onClick={() => playPronunciation(currentQuestion.bulgarian)}>
+                  <Volume2 className="w-6 h-6" />
+                </Button>
               </div>
-              <div className="text-2xl text-muted-foreground">
-                {currentItem.romanized}
-              </div>
-              <div className="text-xl font-medium">
-                {currentItem.english}
-              </div>
+              {showHint && <p className="text-muted-foreground animate-fade-in">Hint: {currentQuestion.hint}</p>}
             </div>
 
-            <Button onClick={handleNext} className="w-full">
-              {currentIndex < currentItems.length - 1 ? "Next" : 
-               phase === "learn-weekdays" ? "Continue to Months" : "Start Quiz"}
-            </Button>
+            {currentQuestion.type === "typeIn" ? (
+              <div className="space-y-4">
+                <Input
+                  type="text"
+                  placeholder="Type the transliteration..."
+                  value={userAnswer}
+                  onChange={(e) => setUserAnswer(e.target.value)}
+                  disabled={isCorrect !== null}
+                  className={cn(
+                    "text-center text-xl py-6",
+                    isCorrect === true && "border-green-500 bg-green-500/10",
+                    isCorrect === false && "border-red-500 bg-red-500/10"
+                  )}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && isCorrect === null && userAnswer.trim()) checkAnswer();
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {currentQuestion.options.map((option, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    className={cn(
+                      "h-14 text-lg",
+                      isCorrect !== null && option === currentQuestion.answer && "bg-green-500 text-white border-green-500",
+                      isCorrect === false && userAnswer === option && "bg-red-500 text-white border-red-500"
+                    )}
+                    onClick={() => {
+                      if (isCorrect === null) {
+                        setUserAnswer(option);
+                        checkAnswer(option);
+                      }
+                    }}
+                    disabled={isCorrect !== null}
+                  >
+                    {option}
+                  </Button>
+                ))}
+              </div>
+            )}
+
+            {isCorrect !== null && (
+              <div className={cn(
+                "flex items-center justify-center gap-2 p-4 rounded-lg animate-fade-in",
+                isCorrect ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
+              )}>
+                {isCorrect ? (
+                  <><Check className="w-6 h-6" /><span className="font-bold">Correct!</span></>
+                ) : (
+                  <><X className="w-6 h-6" /><span className="font-bold">The answer is: {currentQuestion.answer}</span></>
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-4">
+              {isCorrect === null && currentQuestion.type === "typeIn" ? (
+                <>
+                  <Button variant="outline" onClick={() => setShowHint(true)} disabled={showHint} className="flex-1">
+                    Show Hint
+                  </Button>
+                  <Button onClick={() => checkAnswer()} disabled={!userAnswer.trim()} className="flex-1">
+                    Check
+                  </Button>
+                </>
+              ) : isCorrect !== null ? (
+                <Button onClick={nextQuestion} className="w-full">
+                  {currentStep < questions.length - 1 ? "Next" : "Complete Lesson"}
+                </Button>
+              ) : null}
+            </div>
           </CardContent>
         </Card>
+        <div className="text-center text-muted-foreground">
+          <p>Correct: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}</p>
+        </div>
       </div>
     </div>
   );
