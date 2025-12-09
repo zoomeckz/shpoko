@@ -13,12 +13,23 @@ import { useUserProgress } from "@/hooks/useUserProgress";
 import { lessons } from "@/data/lessons";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePictureSelector";
-import { Crown, Trophy, Flame } from "lucide-react";
+import { Crown, Trophy, Flame, Calendar, BookOpen, Gamepad2, BookText } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+type CategoryType = "daily" | "lessons" | "games" | "stories";
+
+const categories = [
+  { id: "daily" as CategoryType, label: "Daily", icon: Calendar, description: "Daily activities" },
+  { id: "lessons" as CategoryType, label: "Lessons", icon: BookOpen, description: "Learn Bulgarian" },
+  { id: "games" as CategoryType, label: "Games", icon: Gamepad2, description: "Fun challenges" },
+  { id: "stories" as CategoryType, label: "Stories", icon: BookText, description: "Read & learn" },
+];
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
   const { progress } = useUserProgress();
   const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState<CategoryType>("daily");
   
   // Check if it's the user's first visit
   const [isFirstVisit, setIsFirstVisit] = useState(false);
@@ -56,6 +67,29 @@ const Index = () => {
   if (!user) {
     return null;
   }
+
+  const renderCategoryContent = () => {
+    switch (selectedCategory) {
+      case "daily":
+        return (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <DailyGames />
+          </div>
+        );
+      case "lessons":
+        return <LessonTopicSelector />;
+      case "games":
+        return (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <ContextoGame />
+          </div>
+        );
+      case "stories":
+        return <ShortStories />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -116,26 +150,35 @@ const Index = () => {
           </div>
         )}
 
-        {/* Daily Games */}
-        <div className="mb-6">
-          <h2 className="text-lg font-bold mb-3">Daily Games</h2>
-          <div className="grid grid-cols-4 gap-3">
-            <DailyGames />
-            <ContextoGame />
-          </div>
+        {/* Category Navigation */}
+        <div className="grid grid-cols-4 gap-2 mb-6">
+          {categories.map((category) => {
+            const Icon = category.icon;
+            const isSelected = selectedCategory === category.id;
+            return (
+              <button
+                key={category.id}
+                onClick={() => setSelectedCategory(category.id)}
+                className={cn(
+                  "flex flex-col items-center gap-1 p-3 rounded-xl transition-all duration-200",
+                  "border-2",
+                  isSelected
+                    ? "bg-primary text-primary-foreground border-primary shadow-lg scale-105"
+                    : "bg-card hover:bg-accent border-border hover:border-primary/50"
+                )}
+              >
+                <Icon className={cn("w-6 h-6", isSelected ? "text-primary-foreground" : "text-primary")} />
+                <span className={cn("text-sm font-medium", isSelected ? "text-primary-foreground" : "text-foreground")}>
+                  {category.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Main content grid */}
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Lessons selector - takes 2 columns */}
-          <div className="lg:col-span-2">
-            <LessonTopicSelector />
-          </div>
-
-          {/* Short Stories sidebar */}
-          <div>
-            <ShortStories />
-          </div>
+        {/* Category Content */}
+        <div className="animate-fade-in">
+          {renderCategoryContent()}
         </div>
       </main>
     </div>
