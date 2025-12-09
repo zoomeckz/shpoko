@@ -101,28 +101,26 @@ export const WordOfTheDay = () => {
   const word = getWordOfTheDay();
 
   return (
-    <Card className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-      <div className="flex items-center justify-center gap-3 mb-4">
+    <Card className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+      <div className="flex items-center gap-2 mb-3">
         <ShpokoMascot size="sm" />
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-primary" />
-          <h2 className="text-xl font-bold text-foreground">Shpoko's Word of the Day</h2>
-        </div>
+        <Sparkles className="w-4 h-4 text-primary" />
+        <h2 className="text-lg font-bold text-foreground">Word of the Day</h2>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6 items-start">
-        <div className="flex flex-col justify-center items-center text-center h-full">
-          <div className="text-7xl font-bold text-primary mb-4">{word.word}</div>
-          <div className="text-3xl text-muted-foreground mb-2">{word.pronunciation}</div>
-          <div className="text-2xl font-medium text-foreground">{word.meaning}</div>
+      <div className="flex flex-col md:flex-row gap-4 items-start">
+        <div className="flex flex-col items-center text-center shrink-0">
+          <div className="text-4xl font-bold text-primary">{word.word}</div>
+          <div className="text-lg text-muted-foreground">{word.pronunciation}</div>
+          <div className="text-base font-medium text-foreground">{word.meaning}</div>
         </div>
 
-        <div className="space-y-2">
-          <h3 className="font-semibold text-sm text-muted-foreground">Examples:</h3>
-          {word.examples.map((example, index) => (
-            <div key={index} className="p-2 bg-card/80 rounded-lg text-sm border border-border/50">
+        <div className="space-y-1 flex-1">
+          <h3 className="font-semibold text-xs text-muted-foreground">Examples:</h3>
+          {word.examples.slice(0, 2).map((example, index) => (
+            <div key={index} className="p-1.5 bg-card/80 rounded text-xs border border-border/50">
               <div className="font-medium text-primary">{example.bulgarian}</div>
-              <div className="text-xs text-muted-foreground">{example.pronunciation} — {example.english}</div>
+              <div className="text-muted-foreground">{example.pronunciation} — {example.english}</div>
             </div>
           ))}
         </div>

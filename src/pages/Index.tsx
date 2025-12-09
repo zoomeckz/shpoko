@@ -7,7 +7,7 @@ import { WordOfTheDay } from "@/components/WordOfTheDay";
 import { LeaderboardRankTracker } from "@/components/LeaderboardRankTracker";
 import { LessonTopicSelector } from "@/components/LessonTopicSelector";
 import { ShortStories } from "@/components/ShortStories";
-import { AnimalGame } from "@/components/AnimalGame";
+import { DailyGames } from "@/components/DailyGames";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { lessons } from "@/data/lessons";
 import { Card, CardContent } from "@/components/ui/card";
@@ -104,9 +104,10 @@ const Index = () => {
           <LeaderboardRankTracker />
         </div>
 
-        {/* Daily Game */}
+        {/* Daily Games */}
         <div className="mb-6">
-          <AnimalGame />
+          <h2 className="text-lg font-bold mb-3">Daily Games</h2>
+          <DailyGames />
         </div>
 
         {/* Show hero only on first visit, otherwise Word of the Day */}
