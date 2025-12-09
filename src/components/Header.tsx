@@ -3,7 +3,7 @@ import { ProgressCircle } from "@/components/ui/progress-circle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import raccoonMascot from "@/assets/raccoon-mascot.png";
+import shpokoLogo from "@/assets/shpoko-logo.png";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePictureSelector";
 
@@ -25,8 +25,8 @@ export const Header = ({ streak, hearts, xp, dailyGoalProgress }: HeaderProps) =
 
   return (
     <header className="flex items-center justify-between p-4 bg-background border-b border-border">
-      <div className="flex items-center gap-4 cursor-pointer" onClick={() => navigate("/")}>
-        <img src={raccoonMascot} alt="Raccoon mascot" className="w-12 h-12" />
+      <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
+        <img src={shpokoLogo} alt="Shpoko mascot" className="w-14 h-14" />
         <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
           Shpoko
         </h1>
