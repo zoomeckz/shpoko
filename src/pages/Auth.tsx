@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import shpokoLogo from "@/assets/shpoko-logo.png";
 import { z } from "zod";
 
 const signUpSchema = z.object({
@@ -16,6 +15,10 @@ const signUpSchema = z.object({
     .regex(/^[a-zA-Z0-9 ]+$/, "Username can only contain letters, numbers, and spaces"),
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
 });
 
 const signInSchema = z.object({
@@ -28,6 +31,7 @@ const Auth = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   
@@ -46,7 +50,7 @@ const Auth = () => {
       if (isLogin) {
         signInSchema.parse({ email, password });
       } else {
-        signUpSchema.parse({ username, email, password });
+        signUpSchema.parse({ username, email, password, confirmPassword });
       }
       setErrors({});
       return true;
@@ -120,9 +124,6 @@ const Auth = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-2xl border-0">
         <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <img src={shpokoLogo} alt="Shpoko mascot" className="w-32 h-32" />
-          </div>
           <CardTitle className="text-3xl font-bold text-blue-600">
             {isLogin ? "Welcome Back!" : "Join Shpoko"}
           </CardTitle>
@@ -184,6 +185,24 @@ const Auth = () => {
               )}
             </div>
 
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className={errors.confirmPassword ? "border-red-500" : ""}
+                  autoComplete="new-password"
+                />
+                {errors.confirmPassword && (
+                  <p className="text-sm text-red-500">{errors.confirmPassword}</p>
+                )}
+              </div>
+            )}
+
             <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
               {loading ? "Loading..." : isLogin ? "Log In" : "Create Account"}
             </Button>
@@ -198,6 +217,7 @@ const Auth = () => {
               onClick={() => {
                 setIsLogin(!isLogin);
                 setErrors({});
+                setConfirmPassword("");
               }}
               className="text-blue-600"
             >
