@@ -70,6 +70,7 @@ const App = () => (
               <Route path="/topic/restaurant" element={<RestaurantLesson />} />
               <Route path="/topic/directions" element={<DirectionsLesson />} />
               <Route path="/topic/weather" element={<WeatherLesson />} />
+              <Route path="/topic/animals" element={<AnimalsLesson />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>

@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
 import { ShpokoMascot } from "@/components/ShpokoMascot";
+
 interface DailyWord {
   word: string;
   pronunciation: string;
@@ -11,6 +12,7 @@ interface DailyWord {
     english: string;
   }[];
 }
+
 const wordsOfTheDay: DailyWord[] = [{
   word: "Харесвам",
   pronunciation: "Kharesvam",
@@ -159,34 +161,41 @@ const wordsOfTheDay: DailyWord[] = [{
     english: "I have an idea."
   }]
 }];
+
 const getWordOfTheDay = (): DailyWord => {
   const today = new Date();
   const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
   return wordsOfTheDay[dayOfYear % wordsOfTheDay.length];
 };
+
 export const WordOfTheDay = () => {
   const word = getWordOfTheDay();
-  return <Card className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-      <div className="gap-2 mb-3 flex items-center justify-center">
-        <ShpokoMascot size="sm" />
-        <Sparkles className="w-4 h-4 text-primary" />
-        <h2 className="text-lg font-bold text-foreground">Word of the Day</h2>
+  
+  return (
+    <Card className="p-3 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+      {/* Title */}
+      <div className="flex items-center justify-center gap-2 mb-2">
+        <ShpokoMascot size="xs" />
+        <Sparkles className="w-3 h-3 text-primary" />
+        <h2 className="text-sm font-bold text-foreground">Word of the Day</h2>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 items-start">
-        <div className="flex flex-col items-center text-center shrink-0">
-          <div className="text-4xl font-bold text-primary">{word.word}</div>
-          <div className="text-lg text-muted-foreground">{word.pronunciation}</div>
-          <div className="text-base font-medium text-foreground">{word.meaning}</div>
-        </div>
-
-        <div className="space-y-1 flex-1">
-          <h3 className="font-semibold text-xs text-muted-foreground">Examples:</h3>
-          {word.examples.slice(0, 2).map((example, index) => <div key={index} className="p-1.5 bg-card/80 rounded text-xs border border-border/50">
-              <div className="font-medium text-primary">{example.bulgarian}</div>
-              <div className="text-muted-foreground">{example.pronunciation} — {example.english}</div>
-            </div>)}
-        </div>
+      {/* Word info - centered under title */}
+      <div className="text-center mb-3">
+        <div className="text-3xl font-bold text-primary">{word.word}</div>
+        <div className="text-base text-muted-foreground">{word.pronunciation}</div>
+        <div className="text-sm font-medium text-foreground">{word.meaning}</div>
       </div>
-    </Card>;
+
+      {/* Example sentences - centered */}
+      <div className="space-y-1">
+        {word.examples.slice(0, 2).map((example, index) => (
+          <div key={index} className="p-1.5 bg-card/80 rounded text-xs border border-border/50 text-center">
+            <div className="font-medium text-primary">{example.bulgarian}</div>
+            <div className="text-muted-foreground">{example.pronunciation} — {example.english}</div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
 };

@@ -44,6 +44,36 @@ export type Database = {
         }
         Relationships: []
       }
+      hall_of_fame: {
+        Row: {
+          created_at: string
+          id: string
+          month_year: string
+          place: number
+          stars: number
+          user_id: string
+          xp_at_win: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          month_year: string
+          place: number
+          stars?: number
+          user_id: string
+          xp_at_win?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          month_year?: string
+          place?: number
+          stars?: number
+          user_id?: string
+          xp_at_win?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

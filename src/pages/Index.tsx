@@ -8,6 +8,7 @@ import { LeaderboardRankTracker } from "@/components/LeaderboardRankTracker";
 import { LessonTopicSelector } from "@/components/LessonTopicSelector";
 import { ShortStories } from "@/components/ShortStories";
 import { DailyGames } from "@/components/DailyGames";
+import { ContextoGame } from "@/components/ContextoGame";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { lessons } from "@/data/lessons";
 import { Card, CardContent } from "@/components/ui/card";
@@ -104,12 +105,6 @@ const Index = () => {
           <LeaderboardRankTracker />
         </div>
 
-        {/* Daily Games */}
-        <div className="mb-6">
-          <h2 className="text-lg font-bold mb-3">Daily Games</h2>
-          <DailyGames />
-        </div>
-
         {/* Show hero only on first visit, otherwise Word of the Day */}
         {isFirstVisit ? (
           <div className="mb-6">
@@ -120,6 +115,15 @@ const Index = () => {
             <WordOfTheDay />
           </div>
         )}
+
+        {/* Daily Games */}
+        <div className="mb-6">
+          <h2 className="text-lg font-bold mb-3">Daily Games</h2>
+          <div className="grid grid-cols-4 gap-3">
+            <DailyGames />
+            <ContextoGame />
+          </div>
+        </div>
 
         {/* Main content grid */}
         <div className="grid lg:grid-cols-3 gap-6">
