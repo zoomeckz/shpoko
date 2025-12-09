@@ -1,7 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
 import { ShpokoMascot } from "@/components/ShpokoMascot";
-
 interface DailyWord {
   word: string;
   pronunciation: string;
@@ -12,7 +10,6 @@ interface DailyWord {
     english: string;
   }[];
 }
-
 const wordsOfTheDay: DailyWord[] = [{
   word: "Харесвам",
   pronunciation: "Kharesvam",
@@ -161,22 +158,18 @@ const wordsOfTheDay: DailyWord[] = [{
     english: "I have an idea."
   }]
 }];
-
 const getWordOfTheDay = (): DailyWord => {
   const today = new Date();
   const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
   return wordsOfTheDay[dayOfYear % wordsOfTheDay.length];
 };
-
 export const WordOfTheDay = () => {
   const word = getWordOfTheDay();
-  
-  return (
-    <Card className="p-3 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+  return <Card className="p-3 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
       {/* Title */}
       <div className="flex items-center justify-center gap-2 mb-2">
         <ShpokoMascot size="xs" />
-        <Sparkles className="w-3 h-3 text-primary" />
+        
         <h2 className="text-sm font-bold text-foreground">Word of the Day</h2>
       </div>
 
@@ -189,13 +182,10 @@ export const WordOfTheDay = () => {
 
       {/* Example sentences - centered */}
       <div className="space-y-1">
-        {word.examples.slice(0, 2).map((example, index) => (
-          <div key={index} className="p-1.5 bg-card/80 rounded text-xs border border-border/50 text-center">
+        {word.examples.slice(0, 2).map((example, index) => <div key={index} className="p-1.5 bg-card/80 rounded text-xs border border-border/50 text-center">
             <div className="font-medium text-primary">{example.bulgarian}</div>
             <div className="text-muted-foreground">{example.pronunciation} — {example.english}</div>
-          </div>
-        ))}
+          </div>)}
       </div>
-    </Card>
-  );
+    </Card>;
 };

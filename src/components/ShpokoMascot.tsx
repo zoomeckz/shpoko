@@ -18,8 +18,6 @@ export const ShpokoMascot = ({
   animate = true
 }: ShpokoMascotProps) => {
   return <div className={cn("relative inline-flex flex-col items-center", className)}>
-      <div className={cn("relative inline-flex items-center justify-center", sizeClasses[size], animate && "animate-bounce")}>
-        
-      </div>
+      
     </div>;
 };
