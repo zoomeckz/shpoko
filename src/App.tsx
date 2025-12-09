@@ -31,6 +31,7 @@ import FoodDrinksLesson from "./pages/topic/FoodDrinksLesson";
 import RestaurantLesson from "./pages/topic/RestaurantLesson";
 import DirectionsLesson from "./pages/topic/DirectionsLesson";
 import WeatherLesson from "./pages/topic/WeatherLesson";
+import AnimalsLesson from "./pages/topic/AnimalsLesson";
 
 const queryClient = new QueryClient();
 
