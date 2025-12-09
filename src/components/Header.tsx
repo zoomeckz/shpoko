@@ -74,8 +74,6 @@ export const Header = ({
               <span className="font-bold text-primary">{profile.xp} XP</span>
             </div>
 
-            {/* Input Mode Toggle */}
-            <InputModeToggle />
 
             {/* Leaderboard */}
             <Button variant="outline" size="sm" onClick={() => navigate("/leaderboard")} className="hidden md:flex">

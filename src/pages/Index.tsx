@@ -79,15 +79,59 @@ const Index = () => {
         return <LessonTopicSelector />;
       case "games":
         return (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <Link to="/contexto">
               <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-purple-400 bg-gradient-to-br from-purple-500/10 to-purple-400/5 h-full">
                 <CardContent className="p-4 flex flex-col items-center text-center gap-2">
                   <div className="p-3 bg-purple-500/20 rounded-full">
                     <Brain className="w-6 h-6 text-purple-500" />
                   </div>
-                  <h3 className="font-bold text-lg">Contexto</h3>
-                  <p className="text-sm text-muted-foreground">Guess the word!</p>
+                  <h3 className="font-bold text-sm">Contexto</h3>
+                  <p className="text-xs text-muted-foreground">Guess the word</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link to="/game/rapid-fire">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-yellow-400 bg-gradient-to-br from-yellow-500/10 to-yellow-400/5 h-full">
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <div className="p-3 bg-yellow-500/20 rounded-full">
+                    <Gamepad2 className="w-6 h-6 text-yellow-500" />
+                  </div>
+                  <h3 className="font-bold text-sm">Rapid Fire</h3>
+                  <p className="text-xs text-muted-foreground">15s rounds</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link to="/game/conjugation">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-green-400 bg-gradient-to-br from-green-500/10 to-green-400/5 h-full">
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <div className="p-3 bg-green-500/20 rounded-full">
+                    <BookOpen className="w-6 h-6 text-green-500" />
+                  </div>
+                  <h3 className="font-bold text-sm">Conjugation</h3>
+                  <p className="text-xs text-muted-foreground">Verb forms</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link to="/game/cloze-combat">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-red-400 bg-gradient-to-br from-red-500/10 to-red-400/5 h-full">
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <div className="p-3 bg-red-500/20 rounded-full">
+                    <Brain className="w-6 h-6 text-red-500" />
+                  </div>
+                  <h3 className="font-bold text-sm">Cloze Combat</h3>
+                  <p className="text-xs text-muted-foreground">Find wrong word</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link to="/game/fix-bulgarian">
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-blue-400 bg-gradient-to-br from-blue-500/10 to-blue-400/5 h-full">
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <div className="p-3 bg-blue-500/20 rounded-full">
+                    <BookText className="w-6 h-6 text-blue-500" />
+                  </div>
+                  <h3 className="font-bold text-sm">Fix My Bulgarian</h3>
+                  <p className="text-xs text-muted-foreground">Proofread</p>
                 </CardContent>
               </Card>
             </Link>

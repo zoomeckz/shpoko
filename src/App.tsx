@@ -21,6 +21,11 @@ import Premium from "./pages/Premium";
 import NotFound from "./pages/NotFound";
 import Stories from "./pages/Stories";
 import ContextoGame from "./pages/ContextoGame";
+import TierAssessment from "./pages/TierAssessment";
+import RapidFireGame from "./pages/RapidFireGame";
+import ConjugationGame from "./pages/ConjugationGame";
+import PhraseClozeCombat from "./pages/PhraseClozeCombat";
+import FixMyBulgarianGame from "./pages/FixMyBulgarianGame";
 // Topic Lessons
 import ColorsLesson from "./pages/topic/ColorsLesson";
 import NumbersTopicLesson from "./pages/topic/NumbersTopicLesson";
@@ -56,6 +61,11 @@ const App = () => (
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/premium" element={<Premium />} />
               <Route path="/contexto" element={<ContextoGame />} />
+              <Route path="/assessment/:tier" element={<TierAssessment />} />
+              <Route path="/game/rapid-fire" element={<RapidFireGame />} />
+              <Route path="/game/conjugation" element={<ConjugationGame />} />
+              <Route path="/game/cloze-combat" element={<PhraseClozeCombat />} />
+              <Route path="/game/fix-bulgarian" element={<FixMyBulgarianGame />} />
               <Route path="/lesson/cyrillic" element={<CyrillicLesson />} />
               <Route path="/lesson/greetings" element={<GreetingsLesson />} />
               <Route path="/lesson/numbers" element={<NumbersLesson />} />
@@ -66,7 +76,7 @@ const App = () => (
               {/* Stories */}
               <Route path="/stories" element={<Stories />} />
               <Route path="/stories/:storyId" element={<Stories />} />
-              {/* Topic Lessons (no XP) */}
+              {/* Topic Lessons */}
               <Route path="/topic/colors" element={<ColorsLesson />} />
               <Route path="/topic/numbers" element={<NumbersTopicLesson />} />
               <Route path="/topic/shapes" element={<ShapesLesson />} />
