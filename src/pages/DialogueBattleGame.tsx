@@ -1,13 +1,16 @@
-import { useState, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Book, MessageCircle, Heart, MapPin, ChevronRight, Check, X, Trophy } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ArrowLeft, Book, MessageCircle, Heart, MapPin, Send, RotateCcw, HelpCircle, Loader2, X } from "lucide-react";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { useToast } from "@/hooks/use-toast";
 import { useInputMode } from "@/contexts/InputModeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDailyGameXP } from "@/hooks/useDailyGameXP";
+import { supabase } from "@/integrations/supabase/client";
 
 type Scenario = "restaurant" | "compliments" | "directions";
 type Gender = "male" | "female";
@@ -18,353 +21,299 @@ interface VocabItem {
   english: string;
 }
 
-interface DialogueStep {
-  speaker: "npc" | "player";
-  bulgarian: string;
-  romanized: string;
-  english: string;
-  options?: {
-    bulgarian: string;
-    romanized: string;
-    english: string;
-    correct: boolean;
-  }[];
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
 }
 
-interface ScenarioData {
+interface ScenarioConfig {
   title: string;
   description: string;
   icon: React.ReactNode;
   vocab: VocabItem[];
   exampleSentences: { bulgarian: string; romanized: string; english: string }[];
-  dialogue: DialogueStep[];
+  completionKeywords: string[];
+  maxTurns: number;
 }
 
-const restaurantScenario: ScenarioData = {
-  title: "Restaurant Ordering",
-  description: "Order food from a friendly waiter",
-  icon: <MessageCircle className="w-8 h-8" />,
-  vocab: [
-    { bulgarian: "Здравейте", romanized: "Zdraveyte", english: "Hello (formal)" },
-    { bulgarian: "Меню", romanized: "Menyu", english: "Menu" },
-    { bulgarian: "Вода", romanized: "Voda", english: "Water" },
-    { bulgarian: "Ястие", romanized: "Yastie", english: "Dish" },
-    { bulgarian: "Сметка", romanized: "Smetka", english: "Bill" },
-    { bulgarian: "Благодаря", romanized: "Blagodarya", english: "Thank you" },
-    { bulgarian: "Моля", romanized: "Molya", english: "Please" },
-    { bulgarian: "Да", romanized: "Da", english: "Yes" },
-  ],
-  exampleSentences: [
-    { bulgarian: "Искам вода, моля.", romanized: "Iskam voda, molya.", english: "I want water, please." },
-    { bulgarian: "Сметката, моля.", romanized: "Smetkata, molya.", english: "The bill, please." },
-    { bulgarian: "Благодаря много.", romanized: "Blagodarya mnogo.", english: "Thank you very much." },
-  ],
-  dialogue: [
-    {
-      speaker: "npc",
-      bulgarian: "Здравейте! Добре дошли!",
-      romanized: "Zdraveyte! Dobre doshli!",
-      english: "Hello! Welcome!",
-    },
-    {
-      speaker: "player",
-      bulgarian: "",
-      romanized: "",
-      english: "How do you respond?",
-      options: [
-        { bulgarian: "Здравейте!", romanized: "Zdraveyte!", english: "Hello!", correct: true },
-        { bulgarian: "Довиждане!", romanized: "Dovizhdane!", english: "Goodbye!", correct: false },
-        { bulgarian: "Лека нощ!", romanized: "Leka nosht!", english: "Good night!", correct: false },
-      ],
-    },
-    {
-      speaker: "npc",
-      bulgarian: "Искате ли вода?",
-      romanized: "Iskate li voda?",
-      english: "Would you like water?",
-    },
-    {
-      speaker: "player",
-      bulgarian: "",
-      romanized: "",
-      english: "How do you respond?",
-      options: [
-        { bulgarian: "Да, моля.", romanized: "Da, molya.", english: "Yes, please.", correct: true },
-        { bulgarian: "Аз съм котка.", romanized: "Az sam kotka.", english: "I am a cat.", correct: false },
-        { bulgarian: "Къде е?", romanized: "Kade e?", english: "Where is it?", correct: false },
-      ],
-    },
-    {
-      speaker: "npc",
-      bulgarian: "Готови ли сте да поръчате?",
-      romanized: "Gotovi li ste da porachate?",
-      english: "Are you ready to order?",
-    },
-    {
-      speaker: "player",
-      bulgarian: "",
-      romanized: "",
-      english: "How do you respond?",
-      options: [
-        { bulgarian: "Да, готов съм.", romanized: "Da, gotov sam.", english: "Yes, I'm ready.", correct: true },
-        { bulgarian: "Не разбирам.", romanized: "Ne razbiram.", english: "I don't understand.", correct: false },
-        { bulgarian: "Колко е часът?", romanized: "Kolko e chasat?", english: "What time is it?", correct: false },
-      ],
-    },
-    {
-      speaker: "npc",
-      bulgarian: "Ето сметката.",
-      romanized: "Eto smetkata.",
-      english: "Here is the bill.",
-    },
-    {
-      speaker: "player",
-      bulgarian: "",
-      romanized: "",
-      english: "How do you respond?",
-      options: [
-        { bulgarian: "Благодаря!", romanized: "Blagodarya!", english: "Thank you!", correct: true },
-        { bulgarian: "Съжалявам.", romanized: "Sazhalyavam.", english: "I'm sorry.", correct: false },
-        { bulgarian: "Помощ!", romanized: "Pomosht!", english: "Help!", correct: false },
-      ],
-    },
-  ],
-};
-
-const getComplimentsScenario = (gender: Gender): ScenarioData => ({
-  title: gender === "female" ? "Complimenting Her" : "Complimenting Him",
-  description: `Tell your ${gender === "female" ? "girlfriend" : "boyfriend"} how beautiful they are`,
-  icon: <Heart className="w-8 h-8" />,
-  vocab: [
-    { bulgarian: "Красив", romanized: "Krasiv", english: "Beautiful (m)" },
-    { bulgarian: "Красива", romanized: "Krasiva", english: "Beautiful (f)" },
-    { bulgarian: "Обичам те", romanized: "Obicham te", english: "I love you" },
-    { bulgarian: "Очи", romanized: "Ochi", english: "Eyes" },
-    { bulgarian: "Усмивка", romanized: "Usmivka", english: "Smile" },
-    { bulgarian: "Сърце", romanized: "Sartse", english: "Heart" },
-    { bulgarian: "Щастлив", romanized: "Shtastliv", english: "Happy (m)" },
-    { bulgarian: "Щастлива", romanized: "Shtastliva", english: "Happy (f)" },
-  ],
-  exampleSentences: [
-    { 
-      bulgarian: gender === "female" ? "Ти си много красива." : "Ти си много красив.", 
-      romanized: gender === "female" ? "Ti si mnogo krasiva." : "Ti si mnogo krasiv.", 
-      english: "You are very beautiful." 
-    },
-    { bulgarian: "Обичам усмивката ти.", romanized: "Obicham usmivkata ti.", english: "I love your smile." },
-    { bulgarian: "Имаш красиви очи.", romanized: "Imash krasivi ochi.", english: "You have beautiful eyes." },
-  ],
-  dialogue: [
-    {
-      speaker: "npc",
-      bulgarian: "Здравей, скъпи!",
-      romanized: "Zdravey, skapi!",
-      english: "Hello, dear!",
-    },
-    {
-      speaker: "player",
-      bulgarian: "",
-      romanized: "",
-      english: "How do you greet them?",
-      options: [
-        { bulgarian: "Здравей, любов!", romanized: "Zdravey, lyubov!", english: "Hello, love!", correct: true },
-        { bulgarian: "Кой си ти?", romanized: "Koy si ti?", english: "Who are you?", correct: false },
-        { bulgarian: "Гладен съм.", romanized: "Gladen sam.", english: "I'm hungry.", correct: false },
-      ],
-    },
-    {
-      speaker: "npc",
-      bulgarian: "Как изглеждам днес?",
-      romanized: "Kak izglezhdam dnes?",
-      english: "How do I look today?",
-    },
-    {
-      speaker: "player",
-      bulgarian: "",
-      romanized: "",
-      english: "Give a compliment:",
-      options: [
-        { 
-          bulgarian: gender === "female" ? "Много си красива!" : "Много си красив!", 
-          romanized: gender === "female" ? "Mnogo si krasiva!" : "Mnogo si krasiv!", 
-          english: "You are very beautiful!", 
-          correct: true 
-        },
-        { bulgarian: "Не знам.", romanized: "Ne znam.", english: "I don't know.", correct: false },
-        { bulgarian: "Къде е банята?", romanized: "Kade e banyata?", english: "Where is the bathroom?", correct: false },
-      ],
-    },
-    {
-      speaker: "npc",
-      bulgarian: "Ти си толкова мил!",
-      romanized: "Ti si tolkova mil!",
-      english: "You are so sweet!",
-    },
-    {
-      speaker: "player",
-      bulgarian: "",
-      romanized: "",
-      english: "Express your feelings:",
-      options: [
-        { bulgarian: "Обичам те!", romanized: "Obicham te!", english: "I love you!", correct: true },
-        { bulgarian: "Време е да вървя.", romanized: "Vreme e da varvya.", english: "It's time to go.", correct: false },
-        { bulgarian: "Уморен съм.", romanized: "Umoren sam.", english: "I'm tired.", correct: false },
-      ],
-    },
-    {
-      speaker: "npc",
-      bulgarian: "И аз те обичам!",
-      romanized: "I az te obicham!",
-      english: "I love you too!",
-    },
-    {
-      speaker: "player",
-      bulgarian: "",
-      romanized: "",
-      english: "Say something sweet:",
-      options: [
-        { bulgarian: "Имаш красиви очи.", romanized: "Imash krasivi ochi.", english: "You have beautiful eyes.", correct: true },
-        { bulgarian: "Искам кафе.", romanized: "Iskam kafe.", english: "I want coffee.", correct: false },
-        { bulgarian: "Студено е.", romanized: "Studeno e.", english: "It's cold.", correct: false },
-      ],
-    },
-  ],
-});
-
-const directionsScenario: ScenarioData = {
-  title: "Giving Directions",
-  description: "Help someone find the train station",
-  icon: <MapPin className="w-8 h-8" />,
-  vocab: [
-    { bulgarian: "Гара", romanized: "Gara", english: "Station" },
-    { bulgarian: "Наляво", romanized: "Nalyavo", english: "Left" },
-    { bulgarian: "Надясно", romanized: "Nadyasno", english: "Right" },
-    { bulgarian: "Направо", romanized: "Napravo", english: "Straight" },
-    { bulgarian: "Улица", romanized: "Ulitsa", english: "Street" },
-    { bulgarian: "Близо", romanized: "Blizo", english: "Near" },
-    { bulgarian: "Далеч", romanized: "Dalech", english: "Far" },
-    { bulgarian: "Тук", romanized: "Tuk", english: "Here" },
-  ],
-  exampleSentences: [
-    { bulgarian: "Вървете направо.", romanized: "Varvete napravo.", english: "Go straight." },
-    { bulgarian: "Завийте наляво.", romanized: "Zaviyte nalyavo.", english: "Turn left." },
-    { bulgarian: "Гарата е близо.", romanized: "Garata e blizo.", english: "The station is near." },
-  ],
-  dialogue: [
-    {
-      speaker: "npc",
-      bulgarian: "Извинете, къде е гарата?",
-      romanized: "Izvinete, kade e garata?",
-      english: "Excuse me, where is the station?",
-    },
-    {
-      speaker: "player",
-      bulgarian: "",
-      romanized: "",
-      english: "Give the first direction:",
-      options: [
-        { bulgarian: "Вървете направо.", romanized: "Varvete napravo.", english: "Go straight.", correct: true },
-        { bulgarian: "Не говоря български.", romanized: "Ne govorya balgarski.", english: "I don't speak Bulgarian.", correct: false },
-        { bulgarian: "Обичам пица.", romanized: "Obicham pitsa.", english: "I love pizza.", correct: false },
-      ],
-    },
-    {
-      speaker: "npc",
-      bulgarian: "Добре, и после?",
-      romanized: "Dobre, i posle?",
-      english: "Okay, and then?",
-    },
-    {
-      speaker: "player",
-      bulgarian: "",
-      romanized: "",
-      english: "Give the next direction:",
-      options: [
-        { bulgarian: "Завийте наляво.", romanized: "Zaviyte nalyavo.", english: "Turn left.", correct: true },
-        { bulgarian: "Искам сладолед.", romanized: "Iskam sladoled.", english: "I want ice cream.", correct: false },
-        { bulgarian: "Котката спи.", romanized: "Kotkata spi.", english: "The cat is sleeping.", correct: false },
-      ],
-    },
-    {
-      speaker: "npc",
-      bulgarian: "Далеч ли е?",
-      romanized: "Dalech li e?",
-      english: "Is it far?",
-    },
-    {
-      speaker: "player",
-      bulgarian: "",
-      romanized: "",
-      english: "Tell them the distance:",
-      options: [
-        { bulgarian: "Не, близо е.", romanized: "Ne, blizo e.", english: "No, it's near.", correct: true },
-        { bulgarian: "Да, много далеч.", romanized: "Da, mnogo dalech.", english: "Yes, very far.", correct: false },
-        { bulgarian: "Не знам.", romanized: "Ne znam.", english: "I don't know.", correct: false },
-      ],
-    },
-    {
-      speaker: "npc",
-      bulgarian: "Благодаря много!",
-      romanized: "Blagodarya mnogo!",
-      english: "Thank you very much!",
-    },
-    {
-      speaker: "player",
-      bulgarian: "",
-      romanized: "",
-      english: "Respond politely:",
-      options: [
-        { bulgarian: "Моля! Приятен ден!", romanized: "Molya! Priyaten den!", english: "You're welcome! Have a nice day!", correct: true },
-        { bulgarian: "Гладен съм.", romanized: "Gladen sam.", english: "I'm hungry.", correct: false },
-        { bulgarian: "Трябва да вървя.", romanized: "Tryabva da varvya.", english: "I have to go.", correct: false },
-      ],
-    },
-  ],
+const scenarioConfigs: Record<string, ScenarioConfig> = {
+  restaurant: {
+    title: "Restaurant Ordering",
+    description: "Order food from a friendly waiter",
+    icon: <MessageCircle className="w-8 h-8" />,
+    vocab: [
+      { bulgarian: "Здравейте", romanized: "Zdraveyte", english: "Hello (formal)" },
+      { bulgarian: "Меню", romanized: "Menyu", english: "Menu" },
+      { bulgarian: "Вода", romanized: "Voda", english: "Water" },
+      { bulgarian: "Ястие", romanized: "Yastie", english: "Dish" },
+      { bulgarian: "Сметка", romanized: "Smetka", english: "Bill" },
+      { bulgarian: "Благодаря", romanized: "Blagodarya", english: "Thank you" },
+      { bulgarian: "Моля", romanized: "Molya", english: "Please" },
+      { bulgarian: "Да", romanized: "Da", english: "Yes" },
+      { bulgarian: "Не", romanized: "Ne", english: "No" },
+      { bulgarian: "Искам", romanized: "Iskam", english: "I want" },
+    ],
+    exampleSentences: [
+      { bulgarian: "Искам вода, моля.", romanized: "Iskam voda, molya.", english: "I want water, please." },
+      { bulgarian: "Сметката, моля.", romanized: "Smetkata, molya.", english: "The bill, please." },
+      { bulgarian: "Благодаря много.", romanized: "Blagodarya mnogo.", english: "Thank you very much." },
+      { bulgarian: "Да, готов съм.", romanized: "Da, gotov sam.", english: "Yes, I'm ready." },
+    ],
+    completionKeywords: ["smetka", "bill", "довиждане", "goodbye"],
+    maxTurns: 8,
+  },
+  compliments_male: {
+    title: "Complimenting Him",
+    description: "Tell your boyfriend how handsome he is",
+    icon: <Heart className="w-8 h-8" />,
+    vocab: [
+      { bulgarian: "Красив", romanized: "Krasiv", english: "Beautiful/Handsome (m)" },
+      { bulgarian: "Обичам те", romanized: "Obicham te", english: "I love you" },
+      { bulgarian: "Очи", romanized: "Ochi", english: "Eyes" },
+      { bulgarian: "Усмивка", romanized: "Usmivka", english: "Smile" },
+      { bulgarian: "Сърце", romanized: "Sartse", english: "Heart" },
+      { bulgarian: "Щастлив", romanized: "Shtastliv", english: "Happy (m)" },
+      { bulgarian: "Силен", romanized: "Silen", english: "Strong" },
+      { bulgarian: "Любов", romanized: "Lyubov", english: "Love" },
+    ],
+    exampleSentences: [
+      { bulgarian: "Ти си много красив.", romanized: "Ti si mnogo krasiv.", english: "You are very handsome." },
+      { bulgarian: "Обичам усмивката ти.", romanized: "Obicham usmivkata ti.", english: "I love your smile." },
+      { bulgarian: "Имаш красиви очи.", romanized: "Imash krasivi ochi.", english: "You have beautiful eyes." },
+      { bulgarian: "Обичам те!", romanized: "Obicham te!", english: "I love you!" },
+    ],
+    completionKeywords: ["obicham", "love", "сърце", "heart"],
+    maxTurns: 6,
+  },
+  compliments_female: {
+    title: "Complimenting Her",
+    description: "Tell your girlfriend how beautiful she is",
+    icon: <Heart className="w-8 h-8" />,
+    vocab: [
+      { bulgarian: "Красива", romanized: "Krasiva", english: "Beautiful (f)" },
+      { bulgarian: "Обичам те", romanized: "Obicham te", english: "I love you" },
+      { bulgarian: "Очи", romanized: "Ochi", english: "Eyes" },
+      { bulgarian: "Усмивка", romanized: "Usmivka", english: "Smile" },
+      { bulgarian: "Сърце", romanized: "Sartse", english: "Heart" },
+      { bulgarian: "Щастлива", romanized: "Shtastliva", english: "Happy (f)" },
+      { bulgarian: "Принцеса", romanized: "Printsesa", english: "Princess" },
+      { bulgarian: "Любов", romanized: "Lyubov", english: "Love" },
+    ],
+    exampleSentences: [
+      { bulgarian: "Ти си много красива.", romanized: "Ti si mnogo krasiva.", english: "You are very beautiful." },
+      { bulgarian: "Обичам усмивката ти.", romanized: "Obicham usmivkata ti.", english: "I love your smile." },
+      { bulgarian: "Имаш красиви очи.", romanized: "Imash krasivi ochi.", english: "You have beautiful eyes." },
+      { bulgarian: "Обичам те!", romanized: "Obicham te!", english: "I love you!" },
+    ],
+    completionKeywords: ["obicham", "love", "сърце", "heart"],
+    maxTurns: 6,
+  },
+  directions: {
+    title: "Giving Directions",
+    description: "Help someone find the train station",
+    icon: <MapPin className="w-8 h-8" />,
+    vocab: [
+      { bulgarian: "Гара", romanized: "Gara", english: "Station" },
+      { bulgarian: "Наляво", romanized: "Nalyavo", english: "Left" },
+      { bulgarian: "Надясно", romanized: "Nadyasno", english: "Right" },
+      { bulgarian: "Направо", romanized: "Napravo", english: "Straight" },
+      { bulgarian: "Улица", romanized: "Ulitsa", english: "Street" },
+      { bulgarian: "Близо", romanized: "Blizo", english: "Near" },
+      { bulgarian: "Далеч", romanized: "Dalech", english: "Far" },
+      { bulgarian: "Завийте", romanized: "Zaviyte", english: "Turn" },
+      { bulgarian: "Вървете", romanized: "Varvete", english: "Go/Walk" },
+    ],
+    exampleSentences: [
+      { bulgarian: "Вървете направо.", romanized: "Varvete napravo.", english: "Go straight." },
+      { bulgarian: "Завийте наляво.", romanized: "Zaviyte nalyavo.", english: "Turn left." },
+      { bulgarian: "Гарата е близо.", romanized: "Garata e blizo.", english: "The station is near." },
+      { bulgarian: "Не е далеч.", romanized: "Ne e dalech.", english: "It's not far." },
+    ],
+    completionKeywords: ["благодаря", "blagodarya", "thank", "goodbye"],
+    maxTurns: 6,
+  },
 };
 
 export default function DialogueBattleGame() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { playCorrect, playIncorrect, playComplete } = useSoundEffects();
+  const { playCorrect, playComplete } = useSoundEffects();
   const { inputMode } = useInputMode();
   const { user, updateXP } = useAuth();
   const { hasEarnedToday, markAsEarned, canEarnXP } = useDailyGameXP("dialogue-battle");
 
-  const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
+  const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
   const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
   const [showVocab, setShowVocab] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [score, setScore] = useState(0);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [gameComplete, setGameComplete] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  const [turnCount, setTurnCount] = useState(0);
   const [xpAwarded, setXpAwarded] = useState(0);
+  
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const getScenarioData = useCallback((): ScenarioData | null => {
-    if (!selectedScenario) return null;
-    if (selectedScenario === "restaurant") return restaurantScenario;
-    if (selectedScenario === "compliments" && selectedGender) return getComplimentsScenario(selectedGender);
-    if (selectedScenario === "directions") return directionsScenario;
-    return null;
-  }, [selectedScenario, selectedGender]);
+  const currentScenarioKey = selectedScenario === "compliments" && selectedGender 
+    ? `compliments_${selectedGender}` 
+    : selectedScenario;
+  
+  const config = currentScenarioKey ? scenarioConfigs[currentScenarioKey] : null;
 
-  const scenarioData = getScenarioData();
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (currentScenarioKey && messages.length === 0 && !isLoading) {
+      startConversation();
+    }
+  }, [currentScenarioKey]);
+
+  const startConversation = async () => {
+    if (!currentScenarioKey) return;
+    
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("dialogue-chat", {
+        body: { scenario: currentScenarioKey, messages: [] },
+      });
+
+      if (error) throw error;
+      
+      setMessages([{ role: "assistant", content: data.reply }]);
+    } catch (error) {
+      console.error("Failed to start conversation:", error);
+      toast({
+        title: "Error",
+        description: "Failed to start conversation. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const sendMessage = async (messageText?: string) => {
+    const text = messageText || inputValue.trim();
+    if (!text || isLoading || !currentScenarioKey) return;
+
+    const userMessage: ChatMessage = { role: "user", content: text };
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
+    setInputValue("");
+    setIsLoading(true);
+    setTurnCount((prev) => prev + 1);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("dialogue-chat", {
+        body: { 
+          scenario: currentScenarioKey, 
+          messages: updatedMessages,
+        },
+      });
+
+      if (error) throw error;
+      
+      const assistantMessage: ChatMessage = { role: "assistant", content: data.reply };
+      setMessages([...updatedMessages, assistantMessage]);
+      playCorrect();
+
+      // Check for completion
+      const lowerReply = data.reply.toLowerCase();
+      const isComplete = config?.completionKeywords.some(kw => lowerReply.includes(kw.toLowerCase())) 
+        || turnCount >= (config?.maxTurns || 8) - 1;
+
+      if (isComplete) {
+        handleGameComplete();
+      }
+    } catch (error) {
+      console.error("Failed to send message:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+      inputRef.current?.focus();
+    }
+  };
+
+  const requestHint = async () => {
+    if (isLoading || !currentScenarioKey) return;
+    
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("dialogue-chat", {
+        body: { 
+          scenario: currentScenarioKey, 
+          messages: messages,
+          isHint: true,
+        },
+      });
+
+      if (error) throw error;
+      
+      toast({
+        title: "💡 Hint",
+        description: data.reply,
+        duration: 8000,
+      });
+    } catch (error) {
+      console.error("Failed to get hint:", error);
+      toast({
+        title: "Error",
+        description: "Failed to get hint. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGameComplete = () => {
+    playComplete();
+    setGameComplete(true);
+    
+    const baseXP = Math.max(10, 30 - turnCount * 2);
+    
+    if (user?.id && canEarnXP) {
+      updateXP(baseXP);
+      markAsEarned();
+      setXpAwarded(baseXP);
+      toast({
+        title: "Dialogue Complete! 🎉",
+        description: `You earned ${baseXP} XP!`,
+      });
+    } else if (hasEarnedToday) {
+      toast({
+        title: "Dialogue Complete!",
+        description: "Practice mode - XP already earned today!",
+      });
+    }
+  };
+
+  const resetGame = () => {
+    setMessages([]);
+    setTurnCount(0);
+    setGameComplete(false);
+    setXpAwarded(0);
+    setTimeout(() => startConversation(), 100);
+  };
 
   const handleBack = () => {
-    if (showVocab) {
-      setShowVocab(false);
-    } else if (gameComplete) {
+    if (gameComplete || messages.length > 0) {
+      setMessages([]);
+      setTurnCount(0);
       setGameComplete(false);
-      setCurrentStep(0);
-      setScore(0);
       setSelectedScenario(null);
       setSelectedGender(null);
-    } else if (currentStep > 0) {
-      setSelectedScenario(null);
-      setSelectedGender(null);
-      setCurrentStep(0);
-      setScore(0);
+      setXpAwarded(0);
     } else if (selectedGender) {
       setSelectedGender(null);
     } else if (selectedScenario) {
@@ -373,60 +322,6 @@ export default function DialogueBattleGame() {
       const fromCategory = location.state?.fromCategory || "games";
       navigate("/", { state: { activeCategory: fromCategory } });
     }
-  };
-
-  const handleSelectOption = (index: number, correct: boolean) => {
-    if (showFeedback) return;
-    
-    setSelectedOption(index);
-    setShowFeedback(true);
-
-    if (correct) {
-      playCorrect();
-      setScore((prev) => prev + 10);
-    } else {
-      playIncorrect();
-    }
-
-    setTimeout(() => {
-      setShowFeedback(false);
-      setSelectedOption(null);
-      
-      // Find next player turn or end game
-      const dialogue = scenarioData?.dialogue || [];
-      let nextStep = currentStep + 1;
-      
-      // Skip NPC lines to find next player turn
-      while (nextStep < dialogue.length && dialogue[nextStep].speaker === "npc") {
-        nextStep++;
-      }
-      
-      // Check if next step is a player turn
-      if (nextStep < dialogue.length && dialogue[nextStep].options) {
-        setCurrentStep(nextStep);
-      } else {
-        // Game complete - award XP
-        playComplete();
-        setGameComplete(true);
-        
-        const finalScore = score + (correct ? 10 : 0);
-        if (user?.id && canEarnXP && finalScore > 0) {
-          const xpEarned = Math.floor(finalScore / 2);
-          updateXP(xpEarned);
-          markAsEarned();
-          setXpAwarded(xpEarned);
-          toast({
-            title: "Dialogue Complete!",
-            description: `You earned ${xpEarned} XP!`,
-          });
-        } else if (hasEarnedToday) {
-          toast({
-            title: "Dialogue Complete!",
-            description: "Practice mode - XP already earned today!",
-          });
-        }
-      }
-    }, 1500);
   };
 
   // Scenario selection screen
@@ -439,7 +334,7 @@ export default function DialogueBattleGame() {
           </Button>
 
           <h1 className="text-3xl font-bold text-center mb-2">Dialogue Battle</h1>
-          <p className="text-muted-foreground text-center mb-8">Practice real conversations in Bulgarian</p>
+          <p className="text-muted-foreground text-center mb-8">Practice real conversations with AI in Bulgarian</p>
 
           <div className="grid gap-4">
             <Card
@@ -451,10 +346,9 @@ export default function DialogueBattleGame() {
                   <MessageCircle className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold">Restaurant Ordering</h3>
+                  <h3 className="font-semibold text-lg">Restaurant Ordering</h3>
                   <p className="text-muted-foreground">Order food from a friendly waiter</p>
                 </div>
-                <ChevronRight className="w-6 h-6 ml-auto text-muted-foreground" />
               </div>
             </Card>
 
@@ -467,10 +361,9 @@ export default function DialogueBattleGame() {
                   <Heart className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold">Sweet Compliments</h3>
+                  <h3 className="font-semibold text-lg">Sweet Compliments</h3>
                   <p className="text-muted-foreground">Tell your partner how beautiful they are</p>
                 </div>
-                <ChevronRight className="w-6 h-6 ml-auto text-muted-foreground" />
               </div>
             </Card>
 
@@ -483,10 +376,9 @@ export default function DialogueBattleGame() {
                   <MapPin className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold">Giving Directions</h3>
+                  <h3 className="font-semibold text-lg">Giving Directions</h3>
                   <p className="text-muted-foreground">Help someone find the train station</p>
                 </div>
-                <ChevronRight className="w-6 h-6 ml-auto text-muted-foreground" />
               </div>
             </Card>
           </div>
@@ -504,26 +396,26 @@ export default function DialogueBattleGame() {
             <ArrowLeft className="w-4 h-4 mr-2" /> Back
           </Button>
 
-          <h1 className="text-3xl font-bold text-center mb-2">Who are you complimenting?</h1>
-          <p className="text-muted-foreground text-center mb-8">Choose your partner's gender for correct grammar</p>
+          <h1 className="text-3xl font-bold text-center mb-2">Sweet Compliments</h1>
+          <p className="text-muted-foreground text-center mb-8">Who would you like to compliment?</p>
 
           <div className="grid grid-cols-2 gap-4">
             <Card
               className="p-6 cursor-pointer hover:border-primary transition-colors text-center"
               onClick={() => setSelectedGender("female")}
             >
-              <div className="text-6xl mb-4">👩</div>
-              <h3 className="text-xl font-semibold">Her</h3>
-              <p className="text-sm text-muted-foreground">Girlfriend / Wife</p>
+              <div className="text-4xl mb-2">👩</div>
+              <h3 className="font-semibold">Her</h3>
+              <p className="text-sm text-muted-foreground">Girlfriend</p>
             </Card>
 
             <Card
               className="p-6 cursor-pointer hover:border-primary transition-colors text-center"
               onClick={() => setSelectedGender("male")}
             >
-              <div className="text-6xl mb-4">👨</div>
-              <h3 className="text-xl font-semibold">Him</h3>
-              <p className="text-sm text-muted-foreground">Boyfriend / Husband</p>
+              <div className="text-4xl mb-2">👨</div>
+              <h3 className="font-semibold">Him</h3>
+              <p className="text-sm text-muted-foreground">Boyfriend</p>
             </Card>
           </div>
         </div>
@@ -531,185 +423,172 @@ export default function DialogueBattleGame() {
     );
   }
 
-  if (!scenarioData) return null;
-
-  // Vocab/Examples view
-  if (showVocab) {
-    return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-2xl mx-auto">
-          <Button variant="ghost" onClick={handleBack} className="mb-4">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Game
-          </Button>
-
-          <h1 className="text-2xl font-bold mb-6">{scenarioData.title} - Study Materials</h1>
-
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <Book className="w-5 h-5" /> Vocabulary
-            </h2>
-            <div className="grid gap-2">
-              {scenarioData.vocab.map((item, i) => (
-                <Card key={i} className="p-3">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <span className="font-semibold">{item.bulgarian}</span>
-                      <span className="text-muted-foreground ml-2">({item.romanized})</span>
-                    </div>
-                    <span className="text-primary">{item.english}</span>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Example Sentences</h2>
-            <div className="grid gap-3">
-              {scenarioData.exampleSentences.map((sentence, i) => (
-                <Card key={i} className="p-4">
-                  <p className="font-semibold">{sentence.bulgarian}</p>
-                  <p className="text-muted-foreground text-sm">{sentence.romanized}</p>
-                  <p className="text-primary mt-1">{sentence.english}</p>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Game complete screen
-  if (gameComplete) {
-    const maxScore = scenarioData.dialogue.filter(d => d.options).length * 10;
-    const percentage = Math.round((score / maxScore) * 100);
-
-    return (
-      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
-        <Card className="max-w-md w-full p-8 text-center">
-          <div className="text-6xl mb-4">🎉</div>
-          <h1 className="text-2xl font-bold mb-2">Dialogue Complete!</h1>
-          <p className="text-muted-foreground mb-4">{scenarioData.title}</p>
-          
-          <div className="text-4xl font-bold text-primary mb-2">{score} pts</div>
-          <p className="text-muted-foreground mb-2">{percentage}% accuracy</p>
-          
-          {xpAwarded > 0 && (
-            <div className="flex items-center justify-center gap-2 mb-4 text-yellow-500">
-              <Trophy className="w-5 h-5" />
-              <span className="font-bold">+{xpAwarded} XP earned!</span>
-            </div>
-          )}
-          {hasEarnedToday && xpAwarded === 0 && (
-            <p className="text-sm text-muted-foreground mb-4">Practice mode - XP already earned today!</p>
-          )}
-
-          <div className="grid gap-3">
-            <Button onClick={() => {
-              setCurrentStep(0);
-              setScore(0);
-              setGameComplete(false);
-              setXpAwarded(0);
-            }}>
-              Play Again
-            </Button>
-            <Button variant="outline" onClick={() => setShowVocab(true)}>
-              <Book className="w-4 h-4 mr-2" /> Review Vocab
-            </Button>
-            <Button variant="ghost" onClick={handleBack}>
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back to Menu
-            </Button>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
-  // Main game view
-  const dialogue = scenarioData.dialogue;
-  const currentDialogue = dialogue[currentStep];
-
-  // Get all dialogue up to current step for display
-  const displayDialogue: DialogueStep[] = [];
-  for (let i = 0; i <= currentStep; i++) {
-    if (dialogue[i].speaker === "npc") {
-      displayDialogue.push(dialogue[i]);
-    }
-  }
-
+  // Main chat interface
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <Button variant="ghost" onClick={handleBack}>
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setShowVocab(true)}>
-            <Book className="w-4 h-4 mr-2" /> Vocab
-          </Button>
-        </div>
-
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-bold">{scenarioData.title}</h1>
-          <div className="text-lg font-semibold text-primary">{score} pts</div>
-        </div>
-
-        {/* Dialogue history */}
-        <div className="space-y-4 mb-6">
-          {displayDialogue.map((d, i) => (
-            <div key={i} className="flex gap-3">
-              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-xl shrink-0">
-                🧑
-              </div>
-              <Card className="p-4 flex-1">
-                <p className="font-semibold">{d.bulgarian}</p>
-                <p className="text-sm text-muted-foreground">{d.romanized}</p>
-                <p className="text-sm text-primary mt-1">{d.english}</p>
-              </Card>
-            </div>
-          ))}
-        </div>
-
-        {/* Player options */}
-        {currentDialogue.options && (
-          <div className="space-y-3">
-            <p className="text-center text-muted-foreground mb-4">{currentDialogue.english}</p>
-            {currentDialogue.options.map((option, i) => {
-              const isSelected = selectedOption === i;
-              const showResult = showFeedback && isSelected;
-              
-              return (
-                <Card
-                  key={i}
-                  className={`p-4 cursor-pointer transition-all ${
-                    showResult
-                      ? option.correct
-                        ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                        : "border-red-500 bg-red-50 dark:bg-red-900/20"
-                      : "hover:border-primary"
-                  } ${showFeedback && !isSelected ? "opacity-50" : ""}`}
-                  onClick={() => handleSelectOption(i, option.correct)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold">
-                        {inputMode === "bulgarian" ? option.bulgarian : option.romanized}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {inputMode === "bulgarian" ? option.romanized : option.bulgarian}
-                      </p>
-                      <p className="text-sm text-primary mt-1">{option.english}</p>
-                    </div>
-                    {showResult && (
-                      option.correct 
-                        ? <Check className="w-6 h-6 text-green-500" />
-                        : <X className="w-6 h-6 text-red-500" />
-                    )}
+    <div className="min-h-screen bg-background flex">
+      {/* Vocab sidebar */}
+      {showVocab && config && (
+        <div className="w-80 border-r bg-card p-4 flex flex-col">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold flex items-center gap-2">
+              <Book className="w-4 h-4" /> Vocabulary
+            </h3>
+            <Button variant="ghost" size="sm" onClick={() => setShowVocab(false)}>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          <ScrollArea className="flex-1">
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <h4 className="text-xs font-medium text-muted-foreground uppercase">Words</h4>
+                {config.vocab.map((item, i) => (
+                  <div key={i} className="p-2 bg-muted/50 rounded text-sm">
+                    <div className="font-medium">{item.bulgarian}</div>
+                    <div className="text-muted-foreground text-xs">{item.romanized}</div>
+                    <div className="text-primary text-xs">{item.english}</div>
                   </div>
-                </Card>
-              );
-            })}
+                ))}
+              </div>
+              
+              <div className="space-y-2 pt-4 border-t">
+                <h4 className="text-xs font-medium text-muted-foreground uppercase">Example Sentences</h4>
+                {config.exampleSentences.map((item, i) => (
+                  <div key={i} className="p-2 bg-muted/50 rounded text-sm">
+                    <div className="font-medium">{item.bulgarian}</div>
+                    <div className="text-muted-foreground text-xs">{item.romanized}</div>
+                    <div className="text-primary text-xs">{item.english}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </ScrollArea>
+        </div>
+      )}
+
+      {/* Main chat area */}
+      <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full">
+        {/* Header */}
+        <div className="p-4 border-b flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={handleBack}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <h1 className="font-semibold">{config?.title}</h1>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {/* Progress indicator */}
+            <div className="text-sm text-muted-foreground">
+              Turn {turnCount}/{config?.maxTurns || 8}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowVocab(!showVocab)}
+            >
+              <Book className="w-4 h-4 mr-1" />
+              Vocab
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resetGame}
+              disabled={isLoading}
+            >
+              <RotateCcw className="w-4 h-4 mr-1" />
+              Reset
+            </Button>
+          </div>
+        </div>
+
+        {/* Messages */}
+        <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+          <div className="space-y-4">
+            {messages.map((msg, i) => (
+              <div
+                key={i}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`max-w-[80%] p-3 rounded-lg ${
+                    msg.role === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted"
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                </div>
+              </div>
+            ))}
+            
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-muted p-3 rounded-lg">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                </div>
+              </div>
+            )}
+            
+            {gameComplete && (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-2">🎉</div>
+                <h2 className="text-xl font-bold mb-2">Conversation Complete!</h2>
+                {xpAwarded > 0 ? (
+                  <p className="text-primary font-medium">+{xpAwarded} XP earned!</p>
+                ) : hasEarnedToday ? (
+                  <p className="text-muted-foreground">Practice mode - XP already earned today</p>
+                ) : null}
+                <div className="flex justify-center gap-2 mt-4">
+                  <Button onClick={resetGame}>
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Try Again
+                  </Button>
+                  <Button variant="outline" onClick={handleBack}>
+                    Choose Another
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+
+        {/* Input area */}
+        {!gameComplete && (
+          <div className="p-4 border-t">
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={requestHint}
+                disabled={isLoading || messages.length === 0}
+                title="Get a hint"
+              >
+                <HelpCircle className="w-4 h-4" />
+              </Button>
+              
+              <Input
+                ref={inputRef}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                placeholder={inputMode === "bulgarian" ? "Напишете на български..." : "Type in Bulgarian (romanized)..."}
+                disabled={isLoading}
+                className="flex-1"
+              />
+              
+              <Button
+                onClick={() => sendMessage()}
+                disabled={isLoading || !inputValue.trim()}
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              Type your response in Bulgarian or click 💡 for a hint
+            </p>
           </div>
         )}
       </div>
