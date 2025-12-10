@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -54,6 +54,7 @@ const QUESTIONS_PER_ROUND = 15;
 
 const RapidFireGame = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { user, updateXP } = useAuth();
   const { playCorrect, playIncorrect } = useSoundEffects();
@@ -172,11 +173,20 @@ const RapidFireGame = () => {
     setStreak(0);
   };
 
+  const handleBack = () => {
+    const returnTo = location.state?.returnCategory;
+    if (returnTo) {
+      navigate("/", { state: { selectedCategory: returnTo } });
+    } else {
+      navigate("/");
+    }
+  };
+
   if (gameState === "ready") {
     return (
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-2xl mx-auto">
-          <Button variant="outline" size="sm" onClick={() => navigate("/")} className="mb-6">
+          <Button variant="outline" size="sm" onClick={handleBack} className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
@@ -232,7 +242,7 @@ const RapidFireGame = () => {
               <p className="text-sm text-muted-foreground mb-4">Practice mode - no XP</p>
             )}
             <div className="flex gap-4 justify-center">
-              <Button variant="outline" onClick={() => navigate("/")}>
+              <Button variant="outline" onClick={handleBack}>
                 Back to Home
               </Button>
               <Button onClick={() => { setGameState("ready"); setXpAwarded(0); }}>

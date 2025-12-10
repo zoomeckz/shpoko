@@ -1,8 +1,7 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, PenTool, Trophy, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,82 +11,95 @@ import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { useDailyGameXP } from "@/hooks/useDailyGameXP";
 
 interface MistakeSentence {
-  incorrect: string;
-  correct: string;
+  words: string[];
+  wrongWordIndex: number;
+  correctWord: string;
   hint: string;
   explanation: string;
 }
 
 const sentences: MistakeSentence[] = [
   {
-    incorrect: "Аз съм добър учителка",
-    correct: "Аз съм добра учителка",
+    words: ["Аз", "съм", "добър", "учителка"],
+    wrongWordIndex: 2,
+    correctWord: "добра",
     hint: "Check the adjective gender agreement",
     explanation: "'учителка' is feminine, so the adjective should be 'добра' (feminine)"
   },
   {
-    incorrect: "Той отиде на работа утре",
-    correct: "Той отива на работа утре",
+    words: ["Той", "отиде", "на", "работа", "утре"],
+    wrongWordIndex: 1,
+    correctWord: "отива",
     hint: "Check the verb tense",
     explanation: "'утре' (tomorrow) requires present/future tense 'отива', not past 'отиде'"
   },
   {
-    incorrect: "Ние имам много приятели",
-    correct: "Ние имаме много приятели",
+    words: ["Ние", "имам", "много", "приятели"],
+    wrongWordIndex: 1,
+    correctWord: "имаме",
     hint: "Check the verb conjugation",
     explanation: "'Ние' requires 'имаме' (we have), not 'имам' (I have)"
   },
   {
-    incorrect: "Времето е хубав днес",
-    correct: "Времето е хубаво днес",
+    words: ["Времето", "е", "хубав", "днес"],
+    wrongWordIndex: 2,
+    correctWord: "хубаво",
     hint: "Check the adjective form",
     explanation: "'Времето' is neuter, so use 'хубаво' (neuter form)"
   },
   {
-    incorrect: "Те говорят много добра",
-    correct: "Те говорят много добре",
+    words: ["Те", "говорят", "много", "добра"],
+    wrongWordIndex: 3,
+    correctWord: "добре",
     hint: "Adjective vs. adverb",
     explanation: "Use adverb 'добре' (well) to modify the verb, not adjective 'добра'"
   },
   {
-    incorrect: "Искам да ям много вода",
-    correct: "Искам да пия много вода",
+    words: ["Искам", "да", "ям", "много", "вода"],
+    wrongWordIndex: 2,
+    correctWord: "пия",
     hint: "Check the verb choice",
     explanation: "'ям' (eat) doesn't work with water; use 'пия' (drink)"
   },
   {
-    incorrect: "Това е моят нова книга",
-    correct: "Това е моята нова книга",
+    words: ["Това", "е", "моят", "нова", "книга"],
+    wrongWordIndex: 2,
+    correctWord: "моята",
     hint: "Check the possessive form",
     explanation: "'книга' is feminine, so use 'моята' (feminine possessive)"
   },
   {
-    incorrect: "Те живеят в голям село",
-    correct: "Те живеят в голямо село",
+    words: ["Те", "живеят", "в", "голям", "село"],
+    wrongWordIndex: 3,
+    correctWord: "голямо",
     hint: "Check adjective-noun agreement",
     explanation: "'село' is neuter, so use 'голямо' (neuter form)"
   },
   {
-    incorrect: "Вие сте много умен хора",
-    correct: "Вие сте много умни хора",
+    words: ["Вие", "сте", "много", "умен", "хора"],
+    wrongWordIndex: 3,
+    correctWord: "умни",
     hint: "Check the adjective number",
     explanation: "'хора' is plural, so use plural adjective 'умни'"
   },
   {
-    incorrect: "Аз чета интересен филм",
-    correct: "Аз гледам интересен филм",
+    words: ["Аз", "чета", "интересен", "филм"],
+    wrongWordIndex: 1,
+    correctWord: "гледам",
     hint: "Check the verb meaning",
     explanation: "'чета' means 'read'; for films use 'гледам' (watch)"
   },
   {
-    incorrect: "Тя е красива момче",
-    correct: "Тя е красиво момиче",
+    words: ["Тя", "е", "красива", "момче"],
+    wrongWordIndex: 3,
+    correctWord: "момиче",
     hint: "Check noun and adjective",
-    explanation: "'Тя' is feminine, needs 'момиче' (girl) with neuter adjective 'красиво'"
+    explanation: "'Тя' is feminine, needs 'момиче' (girl), not 'момче' (boy)"
   },
   {
-    incorrect: "Котката спи на столът",
-    correct: "Котката спи на стола",
+    words: ["Котката", "спи", "на", "столът"],
+    wrongWordIndex: 3,
+    correctWord: "стола",
     hint: "Check the article form",
     explanation: "After preposition 'на', use 'стола' (accusative), not 'столът' (nominative)"
   },
@@ -97,6 +109,7 @@ const TOTAL_ROUNDS = 8;
 
 const FixMyBulgarianGame = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { user, updateXP } = useAuth();
   const { playCorrect, playIncorrect } = useSoundEffects();
@@ -105,7 +118,7 @@ const FixMyBulgarianGame = () => {
   const [gameState, setGameState] = useState<"ready" | "playing" | "finished">("ready");
   const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [userAnswer, setUserAnswer] = useState("");
+  const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(null);
   const [showHint, setShowHint] = useState(false);
   const [showFeedback, setShowFeedback] = useState<"correct" | "wrong" | null>(null);
   const [xpAwarded, setXpAwarded] = useState(0);
@@ -117,12 +130,11 @@ const FixMyBulgarianGame = () => {
   const current = shuffledSentences[currentRound];
   const progress = ((currentRound + 1) / TOTAL_ROUNDS) * 100;
 
-  const checkAnswer = () => {
-    // Normalize both strings for comparison
-    const normalizedUser = userAnswer.trim().toLowerCase().replace(/\s+/g, ' ');
-    const normalizedCorrect = current.correct.toLowerCase().replace(/\s+/g, ' ');
+  const handleWordClick = (index: number) => {
+    if (showFeedback) return;
     
-    const isCorrect = normalizedUser === normalizedCorrect;
+    setSelectedWordIndex(index);
+    const isCorrect = index === current.wrongWordIndex;
     
     if (isCorrect) {
       playCorrect();
@@ -137,7 +149,7 @@ const FixMyBulgarianGame = () => {
 
   const nextRound = () => {
     setShowFeedback(null);
-    setUserAnswer("");
+    setSelectedWordIndex(null);
     setShowHint(false);
     
     if (currentRound < TOTAL_ROUNDS - 1) {
@@ -170,16 +182,25 @@ const FixMyBulgarianGame = () => {
     setGameState("playing");
     setCurrentRound(0);
     setScore(0);
-    setUserAnswer("");
+    setSelectedWordIndex(null);
     setShowHint(false);
     setShowFeedback(null);
+  };
+
+  const handleBack = () => {
+    const returnTo = location.state?.returnCategory;
+    if (returnTo) {
+      navigate("/", { state: { selectedCategory: returnTo } });
+    } else {
+      navigate("/");
+    }
   };
 
   if (gameState === "ready") {
     return (
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-2xl mx-auto">
-          <Button variant="outline" size="sm" onClick={() => navigate("/")} className="mb-6">
+          <Button variant="outline" size="sm" onClick={handleBack} className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
@@ -188,7 +209,7 @@ const FixMyBulgarianGame = () => {
             <PenTool className="w-16 h-16 mx-auto text-purple-500 mb-4" />
             <h1 className="text-3xl font-bold mb-4">Fix My Bulgarian</h1>
             <p className="text-muted-foreground mb-6">
-              Each sentence has a grammatical mistake. Type the corrected version!
+              Each sentence has a grammatical mistake. Tap the <strong>wrong word</strong> to fix it!
               Use hints if you get stuck (but you'll earn fewer points).
             </p>
             {hasEarnedToday && (
@@ -231,7 +252,7 @@ const FixMyBulgarianGame = () => {
               <p className="text-sm text-muted-foreground mb-4">Practice mode - no XP</p>
             )}
             <div className="flex gap-4 justify-center">
-              <Button variant="outline" onClick={() => navigate("/")}>
+              <Button variant="outline" onClick={handleBack}>
                 Back to Home
               </Button>
               <Button onClick={() => { setGameState("ready"); setXpAwarded(0); }}>
@@ -257,14 +278,29 @@ const FixMyBulgarianGame = () => {
         <Progress value={progress} className="h-2 mb-6" />
 
         <Card className="p-8">
-          <h2 className="text-xl font-bold text-center mb-2">Fix the Mistake</h2>
+          <h2 className="text-xl font-bold text-center mb-2">Tap the Wrong Word</h2>
           <p className="text-sm text-muted-foreground text-center mb-6">
-            Type the corrected sentence
+            Find and tap the incorrect word in the sentence
           </p>
           
-          <div className="p-4 bg-red-500/10 border-2 border-red-500/30 rounded-lg mb-6">
-            <p className="text-sm text-red-500 mb-1">Incorrect:</p>
-            <p className="text-2xl font-bold">{current.incorrect}</p>
+          <div className="flex flex-wrap justify-center gap-2 mb-6">
+            {current.words.map((word, index) => (
+              <button
+                key={index}
+                onClick={() => handleWordClick(index)}
+                disabled={showFeedback !== null}
+                className={cn(
+                  "px-4 py-3 rounded-lg text-xl font-bold transition-all border-2",
+                  "hover:scale-105 hover:shadow-lg",
+                  showFeedback === null && "hover:border-primary hover:bg-primary/10 border-border bg-muted",
+                  showFeedback && index === current.wrongWordIndex && "border-green-500 bg-green-500/20 text-green-700 dark:text-green-300",
+                  showFeedback === "wrong" && selectedWordIndex === index && index !== current.wrongWordIndex && "border-red-500 bg-red-500/20 text-red-700 dark:text-red-300",
+                  showFeedback && index !== current.wrongWordIndex && selectedWordIndex !== index && "opacity-50"
+                )}
+              >
+                {word}
+              </button>
+            ))}
           </div>
 
           {showHint && !showFeedback && (
@@ -273,65 +309,42 @@ const FixMyBulgarianGame = () => {
             </div>
           )}
 
-          <div className="space-y-4">
-            <Input
-              type="text"
-              placeholder="Type the corrected sentence..."
-              value={userAnswer}
-              onChange={(e) => setUserAnswer(e.target.value)}
-              disabled={showFeedback !== null}
-              className={cn(
-                "text-lg py-6",
-                showFeedback === "correct" && "border-green-500 bg-green-500/10",
-                showFeedback === "wrong" && "border-red-500 bg-red-500/10"
-              )}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && userAnswer.trim()) {
-                  if (showFeedback) nextRound();
-                  else checkAnswer();
-                }
-              }}
-              autoFocus
-            />
-
-            {showFeedback !== null && (
-              <div className={cn(
-                "p-4 rounded-lg animate-fade-in",
-                showFeedback === "correct" ? "bg-green-500/20" : "bg-red-500/20"
-              )}>
-                <div className="flex items-center gap-2 mb-2">
-                  {showFeedback === "correct" ? (
-                    <><Check className="w-6 h-6 text-green-500" /><span className="font-bold text-green-500">Correct!</span></>
-                  ) : (
-                    <><X className="w-6 h-6 text-red-500" /><span className="font-bold text-red-500">Not quite right</span></>
-                  )}
-                </div>
-                <p className="text-sm mb-1">
-                  <span className="text-muted-foreground">Correct answer:</span>
-                </p>
-                <p className="font-bold text-lg">{current.correct}</p>
-                <p className="text-xs text-muted-foreground mt-2">{current.explanation}</p>
+          {showFeedback !== null && (
+            <div className={cn(
+              "p-4 rounded-lg animate-fade-in",
+              showFeedback === "correct" ? "bg-green-500/20" : "bg-red-500/20"
+            )}>
+              <div className="flex items-center gap-2 mb-2">
+                {showFeedback === "correct" ? (
+                  <><Check className="w-6 h-6 text-green-500" /><span className="font-bold text-green-500">Correct!</span></>
+                ) : (
+                  <><X className="w-6 h-6 text-red-500" /><span className="font-bold text-red-500">Not quite right</span></>
+                )}
               </div>
-            )}
-
-            <div className="flex gap-4">
-              {showFeedback === null ? (
-                <>
-                  {!showHint && (
-                    <Button variant="outline" onClick={() => setShowHint(true)} className="flex-1">
-                      Show Hint (-5 pts)
-                    </Button>
-                  )}
-                  <Button onClick={checkAnswer} disabled={!userAnswer.trim()} className="flex-1">
-                    Check Answer
-                  </Button>
-                </>
-              ) : (
-                <Button onClick={nextRound} className="w-full">
-                  {currentRound < TOTAL_ROUNDS - 1 ? "Next Sentence" : "Finish Game"}
-                </Button>
-              )}
+              <p className="text-sm mb-1">
+                <span className="text-muted-foreground">The wrong word was:</span>{" "}
+                <span className="font-bold line-through">{current.words[current.wrongWordIndex]}</span>
+                {" → "}
+                <span className="font-bold text-green-600 dark:text-green-400">{current.correctWord}</span>
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">{current.explanation}</p>
             </div>
+          )}
+
+          <div className="flex gap-4 mt-4">
+            {showFeedback === null ? (
+              <>
+                {!showHint && (
+                  <Button variant="outline" onClick={() => setShowHint(true)} className="flex-1">
+                    Show Hint (-5 pts)
+                  </Button>
+                )}
+              </>
+            ) : (
+              <Button onClick={nextRound} className="w-full">
+                {currentRound < TOTAL_ROUNDS - 1 ? "Next Sentence" : "Finish Game"}
+              </Button>
+            )}
           </div>
         </Card>
       </div>

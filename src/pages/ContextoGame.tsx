@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -114,6 +114,7 @@ const calculateGuessRank = (guess: string, targetWord: WordData, allWords: WordD
 
 const ContextoGame = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { updateXP } = useAuth();
   const { playCorrect, playComplete, playIncorrect } = useSoundEffects();
   
@@ -222,11 +223,20 @@ const ContextoGame = () => {
     return "bg-red-400 text-white";
   };
 
+  const handleBack = () => {
+    const returnTo = location.state?.returnCategory;
+    if (returnTo) {
+      navigate("/", { state: { selectedCategory: returnTo } });
+    } else {
+      navigate("/");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+          <Button variant="ghost" size="icon" onClick={handleBack}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-2">
