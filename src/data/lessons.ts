@@ -307,8 +307,20 @@ export const lessons: Lesson[] = [
     category: "Grammar",
     isPremium: true,
   },
+  {
+    id: "synonyms-premium",
+    title: "Synonyms",
+    description: "Learn Bulgarian synonyms to expand your vocabulary",
+    level: 21,
+    xpReward: 100,
+    progress: 0,
+    status: "available",
+    difficulty: "advanced",
+    category: "Premium",
+    isPremium: true,
+    route: "/topic/synonyms",
+  },
 ];
-
 export const getUserStats = () => ({
   streak: 0,
   hearts: 5,
