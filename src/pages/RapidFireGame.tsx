@@ -49,7 +49,7 @@ const wordBank: WordPair[] = [
   { bulgarian: "кафе", english: "Coffee", romanized: "kafe" },
 ];
 
-const ROUND_TIME = 15;
+const ROUND_TIME = 7;
 const QUESTIONS_PER_ROUND = 15;
 
 const RapidFireGame = () => {
@@ -195,7 +195,7 @@ const RapidFireGame = () => {
             <Zap className="w-16 h-16 mx-auto text-yellow-500 mb-4" />
             <h1 className="text-3xl font-bold mb-4">Rapid-Fire Translation</h1>
             <p className="text-muted-foreground mb-6">
-              You have 15 seconds per word. Choose the correct translation from 3 options.
+              You have 7 seconds per word. Choose the correct translation from 3 options.
               Build streaks for bonus points!
             </p>
             {hasEarnedToday && (
@@ -209,7 +209,7 @@ const RapidFireGame = () => {
                 <div className="text-muted-foreground">Questions</div>
               </div>
               <div className="p-3 bg-muted rounded-lg">
-                <div className="font-bold text-lg">15s</div>
+                <div className="font-bold text-lg">7s</div>
                 <div className="text-muted-foreground">Per Word</div>
               </div>
               <div className="p-3 bg-muted rounded-lg">

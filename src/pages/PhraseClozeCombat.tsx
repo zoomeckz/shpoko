@@ -11,101 +11,133 @@ import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { useDailyGameXP } from "@/hooks/useDailyGameXP";
 
 interface ClozeSentence {
-  sentence: string[];  // Array of words
+  sentence: string[];
+  romanized: string[];
   wrongWordIndex: number;
   correctWord: string;
+  correctRomanized: string;
   translation: string;
 }
 
 const sentences: ClozeSentence[] = [
   { 
     sentence: ["Аз", "съм", "учител", "добър"], 
+    romanized: ["Az", "sam", "uchitel", "dobar"],
     wrongWordIndex: 3, 
     correctWord: "добре",
+    correctRomanized: "dobre",
     translation: "I am a teacher (good)" 
   },
   { 
     sentence: ["Той", "ходи", "на", "работа", "вчера"], 
+    romanized: ["Toy", "hodi", "na", "rabota", "vchera"],
     wrongWordIndex: 1, 
     correctWord: "отиде",
+    correctRomanized: "otide",
     translation: "He went to work yesterday" 
   },
   { 
     sentence: ["Ние", "имам", "много", "приятели"], 
+    romanized: ["Nie", "imam", "mnogo", "priyateli"],
     wrongWordIndex: 1, 
     correctWord: "имаме",
+    correctRomanized: "imame",
     translation: "We have many friends" 
   },
   { 
     sentence: ["Тя", "е", "красива", "момче"], 
+    romanized: ["Tya", "e", "krasiva", "momche"],
     wrongWordIndex: 3, 
     correctWord: "момиче",
+    correctRomanized: "momiche",
     translation: "She is a beautiful girl" 
   },
   { 
     sentence: ["Те", "говорят", "английски", "добре"], 
+    romanized: ["Te", "govoryat", "angliyski", "dobre"],
     wrongWordIndex: 2, 
     correctWord: "български",
+    correctRomanized: "balgarski",
     translation: "They speak Bulgarian well" 
   },
   { 
     sentence: ["Искам", "да", "ям", "вода"], 
+    romanized: ["Iskam", "da", "yam", "voda"],
     wrongWordIndex: 3, 
     correctWord: "храна",
+    correctRomanized: "hrana",
     translation: "I want to eat food" 
   },
   { 
     sentence: ["Котката", "е", "на", "масата", "под"], 
+    romanized: ["Kotkata", "e", "na", "masata", "pod"],
     wrongWordIndex: 4, 
     correctWord: "върху",
+    correctRomanized: "varhu",
     translation: "The cat is on the table" 
   },
   { 
     sentence: ["Днес", "е", "студено", "ден"], 
+    romanized: ["Dnes", "e", "studeno", "den"],
     wrongWordIndex: 3, 
     correctWord: "време",
+    correctRomanized: "vreme",
     translation: "Today the weather is cold" 
   },
   { 
     sentence: ["Моят", "брат", "е", "млад", "сестра"], 
+    romanized: ["Moyat", "brat", "e", "mlad", "sestra"],
     wrongWordIndex: 4, 
     correctWord: "момче",
+    correctRomanized: "momche",
     translation: "My brother is a young boy" 
   },
   { 
     sentence: ["Къде", "е", "най-близката", "ресторант", "?"], 
+    romanized: ["Kade", "e", "nay-blizkata", "restorant", "?"],
     wrongWordIndex: 3, 
     correctWord: "ресторантът",
+    correctRomanized: "restorantat",
     translation: "Where is the nearest restaurant?" 
   },
   { 
     sentence: ["Вие", "сте", "много", "умен", "хора"], 
+    romanized: ["Vie", "ste", "mnogo", "umen", "hora"],
     wrongWordIndex: 3, 
     correctWord: "умни",
+    correctRomanized: "umni",
     translation: "You are very smart people" 
   },
   { 
     sentence: ["Това", "е", "моята", "книга", "нов"], 
+    romanized: ["Tova", "e", "moyata", "kniga", "nov"],
     wrongWordIndex: 4, 
     correctWord: "нова",
+    correctRomanized: "nova",
     translation: "This is my new book" 
   },
   { 
     sentence: ["Аз", "чета", "интересна", "филм"], 
+    romanized: ["Az", "cheta", "interesna", "film"],
     wrongWordIndex: 3, 
     correctWord: "книга",
+    correctRomanized: "kniga",
     translation: "I am reading an interesting book" 
   },
   { 
     sentence: ["Те", "живеят", "в", "голям", "село"], 
+    romanized: ["Te", "zhiveyat", "v", "golyam", "selo"],
     wrongWordIndex: 3, 
     correctWord: "голямо",
+    correctRomanized: "golyamo",
     translation: "They live in a big village" 
   },
   { 
     sentence: ["Времето", "е", "хубав", "днес"], 
+    romanized: ["Vremeto", "e", "hubav", "dnes"],
     wrongWordIndex: 2, 
     correctWord: "хубаво",
+    correctRomanized: "hubavo",
     translation: "The weather is nice today" 
   },
 ];
@@ -293,7 +325,7 @@ const PhraseClozeCombat = () => {
                 onClick={() => handleWordClick(idx)}
                 disabled={showFeedback !== null}
                 className={cn(
-                  "px-4 py-3 rounded-lg text-xl font-medium border-2 transition-all",
+                  "px-4 py-2 rounded-lg border-2 transition-all flex flex-col items-center",
                   "hover:border-primary hover:bg-primary/10",
                   selectedWord === idx && showFeedback === true && "border-green-500 bg-green-500/20 line-through",
                   selectedWord === idx && showFeedback === false && "border-red-500 bg-red-500/20",
@@ -301,7 +333,8 @@ const PhraseClozeCombat = () => {
                   showFeedback === null && "border-border"
                 )}
               >
-                {word}
+                <span className="text-xl font-medium">{word}</span>
+                <span className="text-xs text-muted-foreground">{current.romanized[idx]}</span>
               </button>
             ))}
           </div>
@@ -320,8 +353,10 @@ const PhraseClozeCombat = () => {
               </div>
               <p className="text-sm text-center">
                 <span className="line-through text-red-500">{current.sentence[current.wrongWordIndex]}</span>
+                <span className="text-xs text-muted-foreground ml-1">({current.romanized[current.wrongWordIndex]})</span>
                 {" → "}
                 <span className="text-green-500 font-bold">{current.correctWord}</span>
+                <span className="text-xs text-muted-foreground ml-1">({current.correctRomanized})</span>
               </p>
               <p className="text-xs text-muted-foreground">{current.translation}</p>
             </div>
