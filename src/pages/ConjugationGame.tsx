@@ -113,14 +113,34 @@ const ConjugationGame = () => {
   const currentPronoun = pronouns[currentPronounIndex];
   const correctAnswer = currentVerb.conjugations[currentPronoun.key];
 
-  // Generate options (correct + 2 wrong from other conjugations)
+  // Generate options (correct + 2 wrong from other verbs' conjugations for the same pronoun)
   const options = useMemo(() => {
-    const wrongOptions = Object.values(currentVerb.conjugations)
-      .filter(c => c !== correctAnswer)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 2);
-    return [correctAnswer, ...wrongOptions].sort(() => Math.random() - 0.5);
-  }, [currentVerbIndex, currentPronounIndex]);
+    // Get wrong options from OTHER verbs for the same pronoun to ensure diversity
+    const wrongOptions: string[] = [];
+    const otherVerbs = shuffledVerbs.filter((_, idx) => idx !== currentVerbIndex % shuffledVerbs.length);
+    
+    for (const verb of otherVerbs) {
+      const wrongConjugation = verb.conjugations[currentPronoun.key];
+      if (wrongConjugation !== correctAnswer && !wrongOptions.includes(wrongConjugation)) {
+        wrongOptions.push(wrongConjugation);
+        if (wrongOptions.length >= 2) break;
+      }
+    }
+    
+    // Fallback: if we still need more options, get from current verb's other conjugations
+    if (wrongOptions.length < 2) {
+      const currentVerbOtherForms = Object.values(currentVerb.conjugations)
+        .filter(c => c !== correctAnswer && !wrongOptions.includes(c));
+      for (const form of currentVerbOtherForms) {
+        if (!wrongOptions.includes(form)) {
+          wrongOptions.push(form);
+          if (wrongOptions.length >= 2) break;
+        }
+      }
+    }
+    
+    return [correctAnswer, ...wrongOptions.slice(0, 2)].sort(() => Math.random() - 0.5);
+  }, [currentVerbIndex, currentPronounIndex, shuffledVerbs, currentVerb, currentPronoun, correctAnswer]);
 
   // Timer for timed mode
   useEffect(() => {

@@ -20,7 +20,7 @@ type Question = { type: "typeIn"; data: TypeInQuestion } | { type: "fillBlank"; 
 
 const typeInQuestions: TypeInQuestion[] = [
   { bulgarian: "Слънце", answer: "slantse", hint: "Sun" },
-  { bulgarian: "Дъжд", answer: "dazht", hint: "Rain" },
+  { bulgarian: "Дъжд", answer: "dazhd", hint: "Rain" },
   { bulgarian: "Сняг", answer: "snyag", hint: "Snow" },
   { bulgarian: "Вятър", answer: "vyatar", hint: "Wind" },
   { bulgarian: "Студено", answer: "studeno", hint: "Cold" },

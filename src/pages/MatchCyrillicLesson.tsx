@@ -38,6 +38,7 @@ const allPairs: MatchPair[] = [
 export const MatchCyrillicLesson = () => {
   const [round, setRound] = useState(0);
   const [pairs, setPairs] = useState<MatchPair[]>([]);
+  const [shuffledLatins, setShuffledLatins] = useState<MatchPair[]>([]);
   const [selectedCyrillic, setSelectedCyrillic] = useState<string | null>(null);
   const [matchedPairs, setMatchedPairs] = useState<string[]>([]);
   const [wrongMatch, setWrongMatch] = useState<string | null>(null);
@@ -65,11 +66,11 @@ export const MatchCyrillicLesson = () => {
     const startIndex = round * pairsPerRound;
     const roundPairs = allPairs.slice(startIndex, startIndex + pairsPerRound);
     setPairs(roundPairs);
+    // Shuffle latins once when round starts
+    setShuffledLatins([...roundPairs].sort(() => Math.random() - 0.5));
     setMatchedPairs([]);
     setSelectedCyrillic(null);
   };
-
-  const shuffledLatins = [...pairs].sort(() => Math.random() - 0.5);
 
   const handleCyrillicClick = (cyrillic: string) => {
     if (matchedPairs.includes(cyrillic)) return;

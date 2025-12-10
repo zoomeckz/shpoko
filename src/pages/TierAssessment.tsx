@@ -139,7 +139,7 @@ const TierAssessment = () => {
 
   const checkAnswer = () => {
     const isTyping = currentQuestion.type === "typing";
-    const userInput = isTyping ? userAnswer.toLowerCase().trim() : selectedOption;
+    const userInput = isTyping ? userAnswer.toLowerCase().trim() : selectedOption?.toLowerCase();
     const correct = userInput === currentQuestion.answer.toLowerCase();
     
     setIsCorrect(correct);
