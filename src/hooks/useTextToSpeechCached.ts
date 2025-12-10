@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { getCachedAudio, setCachedAudio } from "@/lib/audioCache";
+import { useToast } from "@/hooks/use-toast";
 
 export const useTextToSpeechCached = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -10,53 +10,50 @@ export const useTextToSpeechCached = () => {
 
   const playPronunciation = useCallback(async (text: string) => {
     if (isPlaying || isLoading) return;
-    
+
     setIsLoading(true);
+
     try {
       // Check cache first
-      let audioContent = await getCachedAudio(text);
-      
-      if (!audioContent) {
-        // Fetch from API if not cached
-        const { data, error } = await supabase.functions.invoke("text-to-speech", {
-          body: { text },
-        });
-
-        if (error) throw error;
-        if (!data?.audioContent) throw new Error("No audio received");
-        
-        audioContent = data.audioContent;
-        // Cache for future use
-        await setCachedAudio(text, audioContent);
+      const cachedAudio = await getCachedAudio(text);
+      if (cachedAudio) {
+        const audio = new Audio(cachedAudio);
+        setIsPlaying(true);
+        audio.onended = () => setIsPlaying(false);
+        audio.onerror = () => setIsPlaying(false);
+        await audio.play();
+        setIsLoading(false);
+        return;
       }
 
-      const audioBlob = Uint8Array.from(atob(audioContent), c => c.charCodeAt(0));
-      const blob = new Blob([audioBlob], { type: "audio/mpeg" });
-      const audioUrl = URL.createObjectURL(blob);
+      // Fetch from edge function
+      const { data, error } = await supabase.functions.invoke("text-to-speech", {
+        body: { text },
+      });
+
+      if (error) throw error;
+
+      const audioContent = data?.audioContent;
+      if (!audioContent) throw new Error("No audio content received");
+
+      const audioUrl = `data:audio/mp3;base64,${audioContent}`;
+      
+      // Save to cache
+      await setCachedAudio(text, audioContent);
+
       const audio = new Audio(audioUrl);
-
       setIsPlaying(true);
-      setIsLoading(false);
-
-      audio.onended = () => {
-        setIsPlaying(false);
-        URL.revokeObjectURL(audioUrl);
-      };
-
-      audio.onerror = () => {
-        setIsPlaying(false);
-        URL.revokeObjectURL(audioUrl);
-      };
-
+      audio.onended = () => setIsPlaying(false);
+      audio.onerror = () => setIsPlaying(false);
       await audio.play();
     } catch (error) {
-      console.error("Pronunciation error:", error);
+      console.error("TTS error:", error);
       toast({
-        title: "Pronunciation Error",
-        description: "Failed to play pronunciation. Please try again.",
+        title: "Audio Error",
+        description: "Could not play pronunciation",
         variant: "destructive",
       });
-      setIsPlaying(false);
+    } finally {
       setIsLoading(false);
     }
   }, [isPlaying, isLoading, toast]);
