@@ -2,10 +2,12 @@ import { useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Book, MessageCircle, Heart, MapPin, ChevronRight, Check, X } from "lucide-react";
+import { ArrowLeft, Book, MessageCircle, Heart, MapPin, ChevronRight, Check, X, Trophy } from "lucide-react";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { useToast } from "@/hooks/use-toast";
 import { useInputMode } from "@/contexts/InputModeContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useDailyGameXP } from "@/hooks/useDailyGameXP";
 
 type Scenario = "restaurant" | "compliments" | "directions";
 type Gender = "male" | "female";
@@ -326,6 +328,8 @@ export default function DialogueBattleGame() {
   const { toast } = useToast();
   const { playCorrect, playIncorrect, playComplete } = useSoundEffects();
   const { inputMode } = useInputMode();
+  const { user, updateXP } = useAuth();
+  const { hasEarnedToday, markAsEarned, canEarnXP } = useDailyGameXP("dialogue-battle");
 
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
   const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
@@ -335,6 +339,7 @@ export default function DialogueBattleGame() {
   const [gameComplete, setGameComplete] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [xpAwarded, setXpAwarded] = useState(0);
 
   const getScenarioData = useCallback((): ScenarioData | null => {
     if (!selectedScenario) return null;
@@ -400,9 +405,26 @@ export default function DialogueBattleGame() {
       if (nextStep < dialogue.length && dialogue[nextStep].options) {
         setCurrentStep(nextStep);
       } else {
-        // Game complete
+        // Game complete - award XP
         playComplete();
         setGameComplete(true);
+        
+        const finalScore = score + (correct ? 10 : 0);
+        if (user?.id && canEarnXP && finalScore > 0) {
+          const xpEarned = Math.floor(finalScore / 2);
+          updateXP(xpEarned);
+          markAsEarned();
+          setXpAwarded(xpEarned);
+          toast({
+            title: "Dialogue Complete!",
+            description: `You earned ${xpEarned} XP!`,
+          });
+        } else if (hasEarnedToday) {
+          toast({
+            title: "Dialogue Complete!",
+            description: "Practice mode - XP already earned today!",
+          });
+        }
       }
     }, 1500);
   };
@@ -571,13 +593,24 @@ export default function DialogueBattleGame() {
           <p className="text-muted-foreground mb-4">{scenarioData.title}</p>
           
           <div className="text-4xl font-bold text-primary mb-2">{score} pts</div>
-          <p className="text-muted-foreground mb-6">{percentage}% accuracy</p>
+          <p className="text-muted-foreground mb-2">{percentage}% accuracy</p>
+          
+          {xpAwarded > 0 && (
+            <div className="flex items-center justify-center gap-2 mb-4 text-yellow-500">
+              <Trophy className="w-5 h-5" />
+              <span className="font-bold">+{xpAwarded} XP earned!</span>
+            </div>
+          )}
+          {hasEarnedToday && xpAwarded === 0 && (
+            <p className="text-sm text-muted-foreground mb-4">Practice mode - XP already earned today!</p>
+          )}
 
           <div className="grid gap-3">
             <Button onClick={() => {
               setCurrentStep(0);
               setScore(0);
               setGameComplete(false);
+              setXpAwarded(0);
             }}>
               Play Again
             </Button>
