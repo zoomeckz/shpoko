@@ -12,8 +12,10 @@ import { useDailyGameXP } from "@/hooks/useDailyGameXP";
 
 interface MistakeSentence {
   words: string[];
+  romanized: string[];
   wrongWordIndex: number;
   correctWord: string;
+  correctRomanized: string;
   hint: string;
   explanation: string;
 }
@@ -21,85 +23,109 @@ interface MistakeSentence {
 const sentences: MistakeSentence[] = [
   {
     words: ["Аз", "съм", "добър", "учителка"],
+    romanized: ["Az", "sam", "dobar", "uchitelka"],
     wrongWordIndex: 2,
     correctWord: "добра",
+    correctRomanized: "dobra",
     hint: "Check the adjective gender agreement",
     explanation: "'учителка' is feminine, so the adjective should be 'добра' (feminine)"
   },
   {
     words: ["Той", "отиде", "на", "работа", "утре"],
+    romanized: ["Toy", "otide", "na", "rabota", "utre"],
     wrongWordIndex: 1,
     correctWord: "отива",
+    correctRomanized: "otiva",
     hint: "Check the verb tense",
     explanation: "'утре' (tomorrow) requires present/future tense 'отива', not past 'отиде'"
   },
   {
     words: ["Ние", "имам", "много", "приятели"],
+    romanized: ["Nie", "imam", "mnogo", "priyateli"],
     wrongWordIndex: 1,
     correctWord: "имаме",
+    correctRomanized: "imame",
     hint: "Check the verb conjugation",
     explanation: "'Ние' requires 'имаме' (we have), not 'имам' (I have)"
   },
   {
     words: ["Времето", "е", "хубав", "днес"],
+    romanized: ["Vremeto", "e", "hubav", "dnes"],
     wrongWordIndex: 2,
     correctWord: "хубаво",
+    correctRomanized: "hubavo",
     hint: "Check the adjective form",
     explanation: "'Времето' is neuter, so use 'хубаво' (neuter form)"
   },
   {
     words: ["Те", "говорят", "много", "добра"],
+    romanized: ["Te", "govoryat", "mnogo", "dobra"],
     wrongWordIndex: 3,
     correctWord: "добре",
+    correctRomanized: "dobre",
     hint: "Adjective vs. adverb",
     explanation: "Use adverb 'добре' (well) to modify the verb, not adjective 'добра'"
   },
   {
     words: ["Искам", "да", "ям", "много", "вода"],
+    romanized: ["Iskam", "da", "yam", "mnogo", "voda"],
     wrongWordIndex: 2,
     correctWord: "пия",
+    correctRomanized: "piya",
     hint: "Check the verb choice",
     explanation: "'ям' (eat) doesn't work with water; use 'пия' (drink)"
   },
   {
     words: ["Това", "е", "моят", "нова", "книга"],
+    romanized: ["Tova", "e", "moyat", "nova", "kniga"],
     wrongWordIndex: 2,
     correctWord: "моята",
+    correctRomanized: "moyata",
     hint: "Check the possessive form",
     explanation: "'книга' is feminine, so use 'моята' (feminine possessive)"
   },
   {
     words: ["Те", "живеят", "в", "голям", "село"],
+    romanized: ["Te", "zhiveyat", "v", "golyam", "selo"],
     wrongWordIndex: 3,
     correctWord: "голямо",
+    correctRomanized: "golyamo",
     hint: "Check adjective-noun agreement",
     explanation: "'село' is neuter, so use 'голямо' (neuter form)"
   },
   {
     words: ["Вие", "сте", "много", "умен", "хора"],
+    romanized: ["Vie", "ste", "mnogo", "umen", "hora"],
     wrongWordIndex: 3,
     correctWord: "умни",
+    correctRomanized: "umni",
     hint: "Check the adjective number",
     explanation: "'хора' is plural, so use plural adjective 'умни'"
   },
   {
     words: ["Аз", "чета", "интересен", "филм"],
+    romanized: ["Az", "cheta", "interesen", "film"],
     wrongWordIndex: 1,
     correctWord: "гледам",
+    correctRomanized: "gledam",
     hint: "Check the verb meaning",
     explanation: "'чета' means 'read'; for films use 'гледам' (watch)"
   },
   {
     words: ["Тя", "е", "красива", "момче"],
+    romanized: ["Tya", "e", "krasiva", "momche"],
     wrongWordIndex: 3,
     correctWord: "момиче",
+    correctRomanized: "momiche",
     hint: "Check noun and adjective",
     explanation: "'Тя' is feminine, needs 'момиче' (girl), not 'момче' (boy)"
   },
   {
     words: ["Котката", "спи", "на", "столът"],
+    romanized: ["Kotkata", "spi", "na", "stolat"],
     wrongWordIndex: 3,
     correctWord: "стола",
+    correctRomanized: "stola",
     hint: "Check the article form",
     explanation: "After preposition 'на', use 'стола' (accusative), not 'столът' (nominative)"
   },
@@ -290,7 +316,7 @@ const FixMyBulgarianGame = () => {
                 onClick={() => handleWordClick(index)}
                 disabled={showFeedback !== null}
                 className={cn(
-                  "px-4 py-3 rounded-lg text-xl font-bold transition-all border-2",
+                  "px-4 py-2 rounded-lg transition-all border-2 flex flex-col items-center",
                   "hover:scale-105 hover:shadow-lg",
                   showFeedback === null && "hover:border-primary hover:bg-primary/10 border-border bg-muted",
                   showFeedback && index === current.wrongWordIndex && "border-green-500 bg-green-500/20 text-green-700 dark:text-green-300",
@@ -298,7 +324,8 @@ const FixMyBulgarianGame = () => {
                   showFeedback && index !== current.wrongWordIndex && selectedWordIndex !== index && "opacity-50"
                 )}
               >
-                {word}
+                <span className="text-xl font-bold">{word}</span>
+                <span className="text-xs text-muted-foreground">{current.romanized[index]}</span>
               </button>
             ))}
           </div>
@@ -324,8 +351,10 @@ const FixMyBulgarianGame = () => {
               <p className="text-sm mb-1">
                 <span className="text-muted-foreground">The wrong word was:</span>{" "}
                 <span className="font-bold line-through">{current.words[current.wrongWordIndex]}</span>
+                <span className="text-xs text-muted-foreground ml-1">({current.romanized[current.wrongWordIndex]})</span>
                 {" → "}
                 <span className="font-bold text-green-600 dark:text-green-400">{current.correctWord}</span>
+                <span className="text-xs text-muted-foreground ml-1">({current.correctRomanized})</span>
               </p>
               <p className="text-xs text-muted-foreground mt-2">{current.explanation}</p>
             </div>
