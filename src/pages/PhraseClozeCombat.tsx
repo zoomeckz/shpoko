@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { useDailyGameXP } from "@/hooks/useDailyGameXP";
 
 interface ClozeSentence {
   sentence: string[];  // Array of words
@@ -116,12 +117,14 @@ const PhraseClozeCombat = () => {
   const { toast } = useToast();
   const { user, updateXP } = useAuth();
   const { playCorrect, playIncorrect } = useSoundEffects();
+  const { hasEarnedToday, markAsEarned, canEarnXP } = useDailyGameXP("phrase-cloze");
   
   const [gameState, setGameState] = useState<"ready" | "playing" | "finished">("ready");
   const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
   const [selectedWord, setSelectedWord] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState<boolean | null>(null);
+  const [xpAwarded, setXpAwarded] = useState(0);
 
   const shuffledSentences = useMemo(() => {
     return [...sentences].sort(() => Math.random() - 0.5).slice(0, TOTAL_ROUNDS);
@@ -158,12 +161,19 @@ const PhraseClozeCombat = () => {
 
   const endGame = async () => {
     setGameState("finished");
-    if (user?.id && score > 0) {
+    if (user?.id && score > 0 && canEarnXP) {
       const xpEarned = Math.floor(score / 2);
       await updateXP(xpEarned);
+      markAsEarned();
+      setXpAwarded(xpEarned);
       toast({
         title: "Game Complete!",
         description: `You earned ${xpEarned} XP!`,
+      });
+    } else if (hasEarnedToday) {
+      toast({
+        title: "Game Complete!",
+        description: "Practice mode - XP already earned today!",
       });
     }
   };
@@ -192,6 +202,11 @@ const PhraseClozeCombat = () => {
               Each sentence has ONE incorrect word. Find it and strike it out!
               The wrong word doesn't fit grammatically or contextually.
             </p>
+            {hasEarnedToday && (
+              <div className="p-3 bg-muted rounded-lg mb-4 text-sm text-muted-foreground">
+                ✓ XP already earned today - playing for practice!
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
               <div className="p-3 bg-muted rounded-lg">
                 <div className="font-bold text-lg">{TOTAL_ROUNDS}</div>
@@ -204,7 +219,7 @@ const PhraseClozeCombat = () => {
             </div>
             <Button onClick={startGame} size="lg" className="gap-2">
               <Target className="w-5 h-5" />
-              Start Game
+              {hasEarnedToday ? "Play Again (Practice)" : "Start Game"}
             </Button>
           </Card>
         </div>
@@ -221,6 +236,11 @@ const PhraseClozeCombat = () => {
             <h1 className="text-3xl font-bold mb-4">Game Complete!</h1>
             <div className="text-6xl font-bold text-primary mb-4">{score}</div>
             <p className="text-xl text-muted-foreground mb-2">Total Points</p>
+            {xpAwarded > 0 ? (
+              <p className="text-lg text-green-500 mb-2">+{xpAwarded} XP earned!</p>
+            ) : (
+              <p className="text-sm text-muted-foreground mb-2">Practice mode - no XP</p>
+            )}
             <p className="text-sm text-muted-foreground mb-6">
               {score / 10}/{TOTAL_ROUNDS} correct
             </p>
@@ -228,7 +248,7 @@ const PhraseClozeCombat = () => {
               <Button variant="outline" onClick={() => navigate("/")}>
                 Back to Home
               </Button>
-              <Button onClick={() => setGameState("ready")}>
+              <Button onClick={() => { setGameState("ready"); setXpAwarded(0); }}>
                 Play Again
               </Button>
             </div>

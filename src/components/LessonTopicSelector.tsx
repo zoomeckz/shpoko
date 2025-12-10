@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Star, Lock, Check, Flame, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Crown, Star, Lock, Check, Flame, RotateCcw, GraduationCap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { lessons, Lesson } from "@/data/lessons";
 import { useUserProgress } from "@/hooks/useUserProgress";
@@ -105,11 +106,26 @@ const LessonItem = ({ lesson, isCompleted, onClick, premiumIndex }: LessonItemPr
   );
 };
 
+// Check if all lessons in a tier are completed
+const useTierCompletion = (tier: string) => {
+  const { isLessonCompleted } = useUserProgress();
+  const tierLessons = getLessonsByDifficulty(tier);
+  const completedCount = tierLessons.filter(l => isLessonCompleted(l.id)).length;
+  const totalCount = tierLessons.length;
+  const isComplete = totalCount > 0 && completedCount === totalCount;
+  
+  return { isComplete, completedCount, totalCount };
+};
+
 export const LessonTopicSelector = () => {
   const [selectedTab, setSelectedTab] = useState("beginner");
   const { isLessonCompleted } = useUserProgress();
   const { unlockedPremiumLessons, daysUntilNextUnlock } = useStreakUnlocks();
   const navigate = useNavigate();
+
+  const beginnerCompletion = useTierCompletion("beginner");
+  const intermediateCompletion = useTierCompletion("intermediate");
+  const advancedCompletion = useTierCompletion("advanced");
 
   const handleLessonClick = (lesson: Lesson) => {
     if (lesson.route) {
@@ -142,31 +158,69 @@ export const LessonTopicSelector = () => {
         </TabsList>
 
         <div style={{ minHeight: `${maxLessons * 72 + 16}px` }}>
-          {categories.map((cat) => (
-            <TabsContent key={cat.id} value={cat.id} className="space-y-2 mt-0">
-              {getLessonsByDifficulty(cat.id).map((lesson, index) => (
-                <LessonItem
-                  key={lesson.id}
-                  lesson={lesson}
-                  isCompleted={isLessonCompleted(lesson.id)}
-                  onClick={() => handleLessonClick(lesson)}
-                  premiumIndex={cat.id === "premium" ? index : undefined}
-                />
-              ))}
-              {cat.id === "premium" && (
-                <p className="text-xs text-muted-foreground text-center py-2">
-                  <Flame className="w-3 h-3 inline mr-1" />
-                  Every 5 streak days unlocks 1 premium lesson!
-                  {daysUntilNextUnlock > 0 && ` (${daysUntilNextUnlock} days to next)`}
-                </p>
-              )}
-              {getLessonsByDifficulty(cat.id).length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  No lessons available in this category yet.
-                </p>
-              )}
-            </TabsContent>
-          ))}
+          {categories.map((cat) => {
+            const tierCompletion = cat.id === "beginner" ? beginnerCompletion :
+                                   cat.id === "intermediate" ? intermediateCompletion :
+                                   cat.id === "advanced" ? advancedCompletion : null;
+            
+            return (
+              <TabsContent key={cat.id} value={cat.id} className="space-y-2 mt-0">
+                {/* Tier Assessment Link */}
+                {tierCompletion && cat.id !== "premium" && (
+                  <div className={cn(
+                    "p-3 rounded-lg border-2 border-dashed transition-all",
+                    tierCompletion.isComplete 
+                      ? "border-primary bg-primary/5 cursor-pointer hover:bg-primary/10" 
+                      : "border-muted bg-muted/30 opacity-60"
+                  )}
+                  onClick={tierCompletion.isComplete ? () => navigate(`/assessment/${cat.id}`) : undefined}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
+                        tierCompletion.isComplete ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      )}>
+                        {tierCompletion.isComplete ? <GraduationCap className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium capitalize">{cat.id} Assessment</div>
+                        <p className="text-xs text-muted-foreground">
+                          {tierCompletion.isComplete 
+                            ? "Test your knowledge of all lessons!" 
+                            : `Complete ${tierCompletion.totalCount - tierCompletion.completedCount} more lessons to unlock`}
+                        </p>
+                      </div>
+                      {tierCompletion.isComplete && (
+                        <Badge className="bg-primary">Take Test</Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {getLessonsByDifficulty(cat.id).map((lesson, index) => (
+                  <LessonItem
+                    key={lesson.id}
+                    lesson={lesson}
+                    isCompleted={isLessonCompleted(lesson.id)}
+                    onClick={() => handleLessonClick(lesson)}
+                    premiumIndex={cat.id === "premium" ? index : undefined}
+                  />
+                ))}
+                {cat.id === "premium" && (
+                  <p className="text-xs text-muted-foreground text-center py-2">
+                    <Flame className="w-3 h-3 inline mr-1" />
+                    Every 5 streak days unlocks 1 premium lesson!
+                    {daysUntilNextUnlock > 0 && ` (${daysUntilNextUnlock} days to next)`}
+                  </p>
+                )}
+                {getLessonsByDifficulty(cat.id).length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No lessons available in this category yet.
+                  </p>
+                )}
+              </TabsContent>
+            );
+          })}
         </div>
       </Tabs>
     </Card>
