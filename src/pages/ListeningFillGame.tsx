@@ -3,11 +3,14 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Volume2, Lightbulb, Loader2 } from "lucide-react";
+import { ArrowLeft, Volume2, Lightbulb, Loader2, Trophy } from "lucide-react";
 import { useTextToSpeechCached } from "@/hooks/useTextToSpeechCached";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { preloadAudio } from "@/lib/audioCache";
 import { useInputMode } from "@/contexts/InputModeContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useDailyGameXP } from "@/hooks/useDailyGameXP";
+import { useToast } from "@/hooks/use-toast";
 
 type Difficulty = "beginner" | "intermediate" | "advanced";
 
@@ -82,8 +85,11 @@ const ListeningFillGame = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isPlaying, isLoading, playPronunciation } = useTextToSpeechCached();
-  const { playCorrect, playIncorrect } = useSoundEffects();
+  const { playCorrect, playIncorrect, playComplete } = useSoundEffects();
   const { inputMode } = useInputMode();
+  const { user, updateXP } = useAuth();
+  const { toast } = useToast();
+  const { hasEarnedToday, markAsEarned, canEarnXP } = useDailyGameXP("listening-fill");
   
   const [selectedTier, setSelectedTier] = useState<Difficulty | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -96,6 +102,7 @@ const ListeningFillGame = () => {
   const [preloadProgress, setPreloadProgress] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [gameComplete, setGameComplete] = useState(false);
+  const [xpAwarded, setXpAwarded] = useState(0);
 
   const shuffledSentences = useMemo(() => {
     if (!selectedTier) return [];
@@ -176,11 +183,30 @@ const ListeningFillGame = () => {
         ? Math.floor(tierConfig[selectedTier!].points / 2) 
         : tierConfig[selectedTier!].points;
       setScore(prev => prev + pts);
-      setTimeout(() => {
+      setTimeout(async () => {
         if (currentIndex < shuffledSentences.length - 1) {
           setCurrentIndex(prev => prev + 1);
           setInput1(""); setInput2(""); setFeedback(null); setShowHint(false);
-        } else setGameComplete(true);
+        } else {
+          // Award XP on game complete
+          playComplete();
+          setGameComplete(true);
+          if (user?.id && canEarnXP) {
+            const xpEarned = Math.floor(score / 2) + pts / 2;
+            await updateXP(Math.floor(xpEarned));
+            markAsEarned();
+            setXpAwarded(Math.floor(xpEarned));
+            toast({
+              title: "Game Complete!",
+              description: `You earned ${Math.floor(xpEarned)} XP!`,
+            });
+          } else if (hasEarnedToday) {
+            toast({
+              title: "Game Complete!",
+              description: "Practice mode - XP already earned today!",
+            });
+          }
+        }
       }, 1500);
     } else {
       playIncorrect();
@@ -278,9 +304,18 @@ const ListeningFillGame = () => {
           <CardContent className="pt-6 text-center">
             <h2 className="text-2xl font-bold mb-4">🎉 Game Complete!</h2>
             <p className="text-muted-foreground mb-2">{tierConfig[selectedTier].title} Level</p>
-            <p className="text-3xl font-bold mb-6 text-primary">{score} points</p>
+            <p className="text-3xl font-bold mb-2 text-primary">{score} points</p>
+            {xpAwarded > 0 && (
+              <div className="flex items-center justify-center gap-2 mb-4 text-yellow-500">
+                <Trophy className="w-5 h-5" />
+                <span className="font-bold">+{xpAwarded} XP earned!</span>
+              </div>
+            )}
+            {hasEarnedToday && xpAwarded === 0 && (
+              <p className="text-sm text-muted-foreground mb-4">Practice mode - XP already earned today!</p>
+            )}
             <div className="flex gap-3 justify-center">
-              <Button variant="outline" onClick={() => { setSelectedTier(null); setGameComplete(false); setScore(0); setCurrentIndex(0); }}>
+              <Button variant="outline" onClick={() => { setSelectedTier(null); setGameComplete(false); setScore(0); setCurrentIndex(0); setXpAwarded(0); }}>
                 Choose Tier
               </Button>
               <Button onClick={() => navigate("/", { state: { returnCategory: "games" } })}>Back to Games</Button>
