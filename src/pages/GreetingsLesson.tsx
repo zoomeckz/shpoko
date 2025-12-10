@@ -5,8 +5,8 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Volume2, ArrowLeft, ArrowRight, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useLessonNavigation } from "@/hooks/useLessonNavigation";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useAuth } from "@/contexts/AuthContext";
 import { LessonComplete } from "@/components/LessonComplete";
@@ -43,7 +43,7 @@ export const GreetingsLesson = () => {
   const [isComplete, setIsComplete] = useState(false);
   const { isPlaying, playPronunciation } = useTextToSpeech();
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const { handleBack, navigate } = useLessonNavigation();
   const { user, updateXP } = useAuth();
   const { saveProgress, isLessonCompleted } = useUserProgress();
 
@@ -117,7 +117,7 @@ export const GreetingsLesson = () => {
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
-            <Button variant="outline" size="sm" onClick={() => navigate("/")}>
+            <Button variant="outline" size="sm" onClick={handleBack}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Lessons
             </Button>

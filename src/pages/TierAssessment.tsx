@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -75,9 +75,19 @@ const tierConfig = {
 const TierAssessment = () => {
   const { tier } = useParams<{ tier: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { user, updateXP } = useAuth();
   const { progress, isLessonCompleted, saveProgress } = useUserProgress();
+  
+  const handleBack = () => {
+    const returnTo = location.state?.returnCategory;
+    if (returnTo) {
+      navigate("/", { state: { selectedCategory: returnTo } });
+    } else {
+      navigate("/");
+    }
+  };
   
   const [currentStep, setCurrentStep] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
@@ -117,7 +127,7 @@ const TierAssessment = () => {
     return (
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-2xl mx-auto">
-          <Button variant="outline" size="sm" onClick={() => navigate("/")} className="mb-6">
+          <Button variant="outline" size="sm" onClick={handleBack} className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Button>
@@ -192,7 +202,7 @@ const TierAssessment = () => {
               {passed ? "Great job! You've mastered this tier." : "You need 70% to pass. Review the lessons and try again!"}
             </p>
             <div className="flex gap-4 justify-center">
-              <Button variant="outline" onClick={() => navigate("/")}>
+              <Button variant="outline" onClick={handleBack}>
                 Back to Home
               </Button>
               {!passed && (
@@ -212,7 +222,7 @@ const TierAssessment = () => {
       <div className="max-w-2xl mx-auto">
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
-            <Button variant="outline" size="sm" onClick={() => navigate("/")}>
+            <Button variant="outline" size="sm" onClick={handleBack}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>

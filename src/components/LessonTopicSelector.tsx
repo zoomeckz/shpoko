@@ -129,7 +129,7 @@ export const LessonTopicSelector = () => {
 
   const handleLessonClick = (lesson: Lesson) => {
     if (lesson.route) {
-      navigate(lesson.route);
+      navigate(lesson.route, { state: { returnCategory: "lessons" } });
     }
   };
 
@@ -173,7 +173,7 @@ export const LessonTopicSelector = () => {
                       ? "border-primary bg-primary/5 cursor-pointer hover:bg-primary/10" 
                       : "border-muted bg-muted/30 opacity-60"
                   )}
-                  onClick={tierCompletion.isComplete ? () => navigate(`/assessment/${cat.id}`) : undefined}
+                  onClick={tierCompletion.isComplete ? () => navigate(`/assessment/${cat.id}`, { state: { returnCategory: "lessons" } }) : undefined}
                   >
                     <div className="flex items-center gap-3">
                       <div className={cn(

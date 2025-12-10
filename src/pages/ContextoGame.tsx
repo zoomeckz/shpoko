@@ -84,22 +84,25 @@ const markTierPlayed = (tier: Tier) => {
 const calculateGuessRank = (guess: string, targetWord: WordData, allWords: WordData[]): number => {
   const normalized = guess.toLowerCase().trim();
   
-  // Check if it's the exact target word
+  // Check if it's the exact target word - ONLY this returns rank 1
   if (normalized === targetWord.romanized.toLowerCase() || 
       normalized === targetWord.word.toLowerCase() || 
       normalized === targetWord.english.toLowerCase()) {
     return 1;
   }
   
-  // Check if it's in our word list
+  // Check if it's in our word list (but NOT the target)
   const matchedWord = allWords.find(w => 
-    w.romanized.toLowerCase() === normalized || 
-    w.word.toLowerCase() === normalized ||
-    w.english.toLowerCase() === normalized
+    (w.romanized.toLowerCase() === normalized || 
+     w.word.toLowerCase() === normalized ||
+     w.english.toLowerCase() === normalized) &&
+    // Make sure it's not the target word
+    w.word !== targetWord.word
   );
   
   if (matchedWord) {
-    return matchedWord.rank;
+    // Return rank but ensure it's never 1 (only target gets rank 1)
+    return Math.max(2, matchedWord.rank + 1);
   }
   
   // For words not in the list, generate a random rank between 50-500
