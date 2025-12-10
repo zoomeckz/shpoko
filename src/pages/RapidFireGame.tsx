@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { useDailyGameXP } from "@/hooks/useDailyGameXP";
 
 interface WordPair {
   bulgarian: string;
@@ -56,6 +57,7 @@ const RapidFireGame = () => {
   const { toast } = useToast();
   const { user, updateXP } = useAuth();
   const { playCorrect, playIncorrect } = useSoundEffects();
+  const { hasEarnedToday, markAsEarned, canEarnXP } = useDailyGameXP("rapid-fire");
   
   const [gameState, setGameState] = useState<"ready" | "playing" | "finished">("ready");
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -63,6 +65,7 @@ const RapidFireGame = () => {
   const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
   const [streak, setStreak] = useState(0);
   const [showFeedback, setShowFeedback] = useState<"correct" | "wrong" | null>(null);
+  const [xpAwarded, setXpAwarded] = useState(0);
 
   // Generate questions with shuffled wrong answers
   const questions = useMemo(() => {
@@ -144,12 +147,19 @@ const RapidFireGame = () => {
 
   const endGame = async () => {
     setGameState("finished");
-    if (user?.id && score > 0) {
+    if (user?.id && score > 0 && canEarnXP) {
       const xpEarned = Math.floor(score / 2);
       await updateXP(xpEarned);
+      markAsEarned();
+      setXpAwarded(xpEarned);
       toast({
         title: "Game Complete!",
         description: `You earned ${xpEarned} XP!`,
+      });
+    } else if (hasEarnedToday) {
+      toast({
+        title: "Game Complete!",
+        description: "Practice mode - XP already earned today!",
       });
     }
   };
@@ -178,6 +188,11 @@ const RapidFireGame = () => {
               You have 15 seconds per word. Choose the correct translation from 3 options.
               Build streaks for bonus points!
             </p>
+            {hasEarnedToday && (
+              <div className="p-3 bg-muted rounded-lg mb-4 text-sm text-muted-foreground">
+                ✓ XP already earned today - playing for practice!
+              </div>
+            )}
             <div className="grid grid-cols-3 gap-4 mb-6 text-sm">
               <div className="p-3 bg-muted rounded-lg">
                 <div className="font-bold text-lg">15</div>
@@ -194,7 +209,7 @@ const RapidFireGame = () => {
             </div>
             <Button onClick={startGame} size="lg" className="gap-2">
               <Zap className="w-5 h-5" />
-              Start Game
+              {hasEarnedToday ? "Play Again (Practice)" : "Start Game"}
             </Button>
           </Card>
         </div>
@@ -210,12 +225,17 @@ const RapidFireGame = () => {
             <Trophy className="w-16 h-16 mx-auto text-yellow-500 mb-4" />
             <h1 className="text-3xl font-bold mb-4">Game Complete!</h1>
             <div className="text-6xl font-bold text-primary mb-4">{score}</div>
-            <p className="text-xl text-muted-foreground mb-6">Total Points</p>
+            <p className="text-xl text-muted-foreground mb-2">Total Points</p>
+            {xpAwarded > 0 ? (
+              <p className="text-lg text-green-500 mb-4">+{xpAwarded} XP earned!</p>
+            ) : (
+              <p className="text-sm text-muted-foreground mb-4">Practice mode - no XP</p>
+            )}
             <div className="flex gap-4 justify-center">
               <Button variant="outline" onClick={() => navigate("/")}>
                 Back to Home
               </Button>
-              <Button onClick={() => { setGameState("ready"); }}>
+              <Button onClick={() => { setGameState("ready"); setXpAwarded(0); }}>
                 Play Again
               </Button>
             </div>

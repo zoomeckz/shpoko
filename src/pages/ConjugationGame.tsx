@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { useDailyGameXP } from "@/hooks/useDailyGameXP";
 
 interface VerbConjugation {
   infinitive: string;
@@ -90,6 +91,7 @@ const ConjugationGame = () => {
   const { toast } = useToast();
   const { user, updateXP } = useAuth();
   const { playCorrect, playIncorrect } = useSoundEffects();
+  const { hasEarnedToday, markAsEarned, canEarnXP } = useDailyGameXP("conjugation");
   
   const [gameMode, setGameMode] = useState<GameMode | null>(null);
   const [gameState, setGameState] = useState<"menu" | "playing" | "finished">("menu");
@@ -100,6 +102,7 @@ const ConjugationGame = () => {
   const [timeLeft, setTimeLeft] = useState(60);
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
   const [showFeedback, setShowFeedback] = useState<"correct" | "wrong" | null>(null);
+  const [xpAwarded, setXpAwarded] = useState(0);
 
   // Shuffle verbs for variety
   const shuffledVerbs = useMemo(() => {
@@ -193,12 +196,19 @@ const ConjugationGame = () => {
 
   const endGame = async () => {
     setGameState("finished");
-    if (user?.id && score > 0) {
+    if (user?.id && score > 0 && canEarnXP) {
       const xpEarned = Math.floor(score / 2);
       await updateXP(xpEarned);
+      markAsEarned();
+      setXpAwarded(xpEarned);
       toast({
         title: "Game Complete!",
         description: `You earned ${xpEarned} XP!`,
+      });
+    } else if (hasEarnedToday) {
+      toast({
+        title: "Game Complete!",
+        description: "Practice mode - XP already earned today!",
       });
     }
   };
@@ -214,9 +224,14 @@ const ConjugationGame = () => {
           
           <Card className="p-8 text-center">
             <h1 className="text-3xl font-bold mb-4">Speed Conjugation Arena</h1>
-            <p className="text-muted-foreground mb-8">
+            <p className="text-muted-foreground mb-4">
               Master Bulgarian verb conjugations! Pick the correct form for each pronoun.
             </p>
+            {hasEarnedToday && (
+              <div className="p-3 bg-muted rounded-lg mb-4 text-sm text-muted-foreground">
+                ✓ XP already earned today - playing for practice!
+              </div>
+            )}
             
             <div className="grid gap-4">
               <Button 
@@ -273,6 +288,11 @@ const ConjugationGame = () => {
             <h1 className="text-3xl font-bold mb-4">Game Over!</h1>
             <div className="text-6xl font-bold text-primary mb-2">{score}</div>
             <p className="text-muted-foreground mb-2">Points</p>
+            {xpAwarded > 0 ? (
+              <p className="text-lg text-green-500 mb-2">+{xpAwarded} XP earned!</p>
+            ) : (
+              <p className="text-sm text-muted-foreground mb-2">Practice mode - no XP</p>
+            )}
             <p className="text-sm text-muted-foreground mb-6">
               {questionsAnswered} questions answered
             </p>
@@ -280,7 +300,7 @@ const ConjugationGame = () => {
               <Button variant="outline" onClick={() => navigate("/")}>
                 Back to Home
               </Button>
-              <Button onClick={() => setGameState("menu")}>
+              <Button onClick={() => { setGameState("menu"); setXpAwarded(0); }}>
                 Play Again
               </Button>
             </div>
