@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Clock, Infinity, Skull, Trophy, Heart } from "lucide-react";
@@ -88,6 +88,7 @@ type GameMode = "timed" | "endless" | "sudden-death";
 
 const ConjugationGame = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { user, updateXP } = useAuth();
   const { playCorrect, playIncorrect } = useSoundEffects();
@@ -109,8 +110,13 @@ const ConjugationGame = () => {
     return [...verbs].sort(() => Math.random() - 0.5);
   }, [gameState]);
 
+  // Shuffle pronouns for each verb - randomize the order
+  const shuffledPronouns = useMemo(() => {
+    return [...pronouns].sort(() => Math.random() - 0.5);
+  }, [currentVerbIndex, gameState]);
+
   const currentVerb = shuffledVerbs[currentVerbIndex % shuffledVerbs.length];
-  const currentPronoun = pronouns[currentPronounIndex];
+  const currentPronoun = shuffledPronouns[currentPronounIndex % shuffledPronouns.length];
   const correctAnswer = currentVerb.conjugations[currentPronoun.key];
 
   // Generate options (correct + 2 wrong from other verbs' conjugations for the same pronoun)
@@ -160,7 +166,7 @@ const ConjugationGame = () => {
   }, [gameState, gameMode]);
 
   const nextQuestion = () => {
-    const nextPronoun = (currentPronounIndex + 1) % pronouns.length;
+    const nextPronoun = (currentPronounIndex + 1) % shuffledPronouns.length;
     if (nextPronoun === 0) {
       setCurrentVerbIndex(prev => prev + 1);
     }
@@ -233,11 +239,20 @@ const ConjugationGame = () => {
     }
   };
 
+  const handleBack = () => {
+    const returnTo = location.state?.returnCategory;
+    if (returnTo) {
+      navigate("/", { state: { selectedCategory: returnTo } });
+    } else {
+      navigate("/");
+    }
+  };
+
   if (gameState === "menu") {
     return (
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-2xl mx-auto">
-          <Button variant="outline" size="sm" onClick={() => navigate("/")} className="mb-6">
+          <Button variant="outline" size="sm" onClick={handleBack} className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
@@ -317,7 +332,7 @@ const ConjugationGame = () => {
               {questionsAnswered} questions answered
             </p>
             <div className="flex gap-4 justify-center">
-              <Button variant="outline" onClick={() => navigate("/")}>
+              <Button variant="outline" onClick={handleBack}>
                 Back to Home
               </Button>
               <Button onClick={() => { setGameState("menu"); setXpAwarded(0); }}>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
@@ -28,7 +28,11 @@ const Index = () => {
   const { user, profile, loading } = useAuth();
   const { progress } = useUserProgress();
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState<CategoryType>("daily");
+  const location = useLocation();
+  
+  // Initialize category from navigation state if coming back from a game
+  const initialCategory = (location.state?.selectedCategory as CategoryType) || "daily";
+  const [selectedCategory, setSelectedCategory] = useState<CategoryType>(initialCategory);
   
   // Check if it's the user's first visit
   const [isFirstVisit, setIsFirstVisit] = useState(false);
@@ -80,7 +84,7 @@ const Index = () => {
       case "games":
         return (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <Link to="/contexto">
+            <Link to="/contexto" state={{ returnCategory: "games" }}>
               <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-purple-400 bg-gradient-to-br from-purple-500/10 to-purple-400/5 h-full">
                 <CardContent className="p-4 flex flex-col items-center text-center gap-2">
                   <div className="p-3 bg-purple-500/20 rounded-full">
@@ -91,7 +95,7 @@ const Index = () => {
                 </CardContent>
               </Card>
             </Link>
-            <Link to="/game/rapid-fire">
+            <Link to="/game/rapid-fire" state={{ returnCategory: "games" }}>
               <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-yellow-400 bg-gradient-to-br from-yellow-500/10 to-yellow-400/5 h-full">
                 <CardContent className="p-4 flex flex-col items-center text-center gap-2">
                   <div className="p-3 bg-yellow-500/20 rounded-full">
@@ -102,7 +106,7 @@ const Index = () => {
                 </CardContent>
               </Card>
             </Link>
-            <Link to="/game/conjugation">
+            <Link to="/game/conjugation" state={{ returnCategory: "games" }}>
               <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-green-400 bg-gradient-to-br from-green-500/10 to-green-400/5 h-full">
                 <CardContent className="p-4 flex flex-col items-center text-center gap-2">
                   <div className="p-3 bg-green-500/20 rounded-full">
@@ -113,7 +117,7 @@ const Index = () => {
                 </CardContent>
               </Card>
             </Link>
-            <Link to="/game/cloze-combat">
+            <Link to="/game/cloze-combat" state={{ returnCategory: "games" }}>
               <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-red-400 bg-gradient-to-br from-red-500/10 to-red-400/5 h-full">
                 <CardContent className="p-4 flex flex-col items-center text-center gap-2">
                   <div className="p-3 bg-red-500/20 rounded-full">
@@ -124,7 +128,7 @@ const Index = () => {
                 </CardContent>
               </Card>
             </Link>
-            <Link to="/game/fix-bulgarian">
+            <Link to="/game/fix-bulgarian" state={{ returnCategory: "games" }}>
               <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-blue-400 bg-gradient-to-br from-blue-500/10 to-blue-400/5 h-full">
                 <CardContent className="p-4 flex flex-col items-center text-center gap-2">
                   <div className="p-3 bg-blue-500/20 rounded-full">
