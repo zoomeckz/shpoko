@@ -26,6 +26,7 @@ import RapidFireGame from "./pages/RapidFireGame";
 import ConjugationGame from "./pages/ConjugationGame";
 import PhraseClozeCombat from "./pages/PhraseClozeCombat";
 import FixMyBulgarianGame from "./pages/FixMyBulgarianGame";
+import ListeningFillGame from "./pages/ListeningFillGame";
 // Topic Lessons
 import ColorsLesson from "./pages/topic/ColorsLesson";
 import NumbersTopicLesson from "./pages/topic/NumbersTopicLesson";
@@ -66,6 +67,7 @@ const App = () => (
               <Route path="/game/conjugation" element={<ConjugationGame />} />
               <Route path="/game/cloze-combat" element={<PhraseClozeCombat />} />
               <Route path="/game/fix-bulgarian" element={<FixMyBulgarianGame />} />
+              <Route path="/game/listening-fill" element={<ListeningFillGame />} />
               <Route path="/lesson/cyrillic" element={<CyrillicLesson />} />
               <Route path="/lesson/greetings" element={<GreetingsLesson />} />
               <Route path="/lesson/numbers" element={<NumbersLesson />} />
