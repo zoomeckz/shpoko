@@ -12,7 +12,7 @@ import { useUserProgress } from "@/hooks/useUserProgress";
 import { lessons } from "@/data/lessons";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePictureSelector";
-import { Crown, Trophy, Flame, Calendar, BookOpen, Gamepad2, BookText, Brain } from "lucide-react";
+import { Crown, Trophy, Flame, Calendar, BookOpen, Gamepad2, BookText, Brain, Headphones } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type CategoryType = "daily" | "lessons" | "games" | "stories";
@@ -136,6 +136,17 @@ const Index = () => {
                   </div>
                   <h3 className="font-bold text-sm">Fix My Bulgarian</h3>
                   <p className="text-xs text-muted-foreground">Proofread</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link to="/game/listening-fill" state={{ returnCategory: "games" }}>
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-pink-400 bg-gradient-to-br from-pink-500/10 to-pink-400/5 h-full">
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <div className="p-3 bg-pink-500/20 rounded-full">
+                    <Headphones className="w-6 h-6 text-pink-500" />
+                  </div>
+                  <h3 className="font-bold text-sm">Listening Fill</h3>
+                  <p className="text-xs text-muted-foreground">Audio blanks</p>
                 </CardContent>
               </Card>
             </Link>
