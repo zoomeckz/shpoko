@@ -7,7 +7,7 @@ import { Volume2, ArrowLeft, ArrowRight, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useLessonNavigation } from "@/hooks/useLessonNavigation";
-import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { useTextToSpeechCached } from "@/hooks/useTextToSpeechCached";
 import { useAuth } from "@/contexts/AuthContext";
 import { LessonComplete } from "@/components/LessonComplete";
 import { getLessonNavigation } from "@/lib/lessonNavigation";
@@ -41,7 +41,7 @@ const XP_REWARD = 75;
 export const GreetingsLesson = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
-  const { isPlaying, playPronunciation } = useTextToSpeech();
+  const { isPlaying, playPronunciation } = useTextToSpeechCached();
   const { toast } = useToast();
   const { handleBack, navigate } = useLessonNavigation();
   const { user, updateXP } = useAuth();
