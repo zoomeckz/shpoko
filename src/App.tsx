@@ -43,7 +43,9 @@ import AnimalsLesson from "./pages/topic/AnimalsLesson";
 import JobsLesson from "./pages/topic/JobsLesson";
 import FamilyLesson from "./pages/topic/FamilyLesson";
 import RestaurantOrderingLesson from "./pages/topic/RestaurantOrderingLesson";
-
+import SynonymsLesson from "./pages/topic/SynonymsLesson";
+import PronounceWordGame from "./pages/PronounceWordGame";
+import PronounceSentenceGame from "./pages/PronounceSentenceGame";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -68,6 +70,8 @@ const App = () => (
               <Route path="/game/cloze-combat" element={<PhraseClozeCombat />} />
               <Route path="/game/fix-bulgarian" element={<FixMyBulgarianGame />} />
               <Route path="/game/listening-fill" element={<ListeningFillGame />} />
+              <Route path="/game/pronounce-word" element={<PronounceWordGame />} />
+              <Route path="/game/pronounce-sentence" element={<PronounceSentenceGame />} />
               <Route path="/lesson/cyrillic" element={<CyrillicLesson />} />
               <Route path="/lesson/greetings" element={<GreetingsLesson />} />
               <Route path="/lesson/numbers" element={<NumbersLesson />} />
@@ -94,6 +98,7 @@ const App = () => (
               <Route path="/topic/jobs" element={<JobsLesson />} />
               <Route path="/topic/family" element={<FamilyLesson />} />
               <Route path="/topic/restaurant-ordering" element={<RestaurantOrderingLesson />} />
+              <Route path="/topic/synonyms" element={<SynonymsLesson />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </InputModeProvider>

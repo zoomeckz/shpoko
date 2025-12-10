@@ -12,7 +12,7 @@ import { useUserProgress } from "@/hooks/useUserProgress";
 import { lessons } from "@/data/lessons";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePictureSelector";
-import { Crown, Trophy, Flame, Calendar, BookOpen, Gamepad2, BookText, Brain, Headphones } from "lucide-react";
+import { Crown, Trophy, Flame, Calendar, BookOpen, Gamepad2, BookText, Brain, Headphones, Mic, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type CategoryType = "daily" | "lessons" | "games" | "stories";
@@ -147,6 +147,28 @@ const Index = () => {
                   </div>
                   <h3 className="font-bold text-sm">Listening Fill</h3>
                   <p className="text-xs text-muted-foreground">Audio blanks</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link to="/game/pronounce-word" state={{ returnCategory: "games" }}>
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-cyan-400 bg-gradient-to-br from-cyan-500/10 to-cyan-400/5 h-full">
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <div className="p-3 bg-cyan-500/20 rounded-full">
+                    <Mic className="w-6 h-6 text-cyan-500" />
+                  </div>
+                  <h3 className="font-bold text-sm">Word Speak</h3>
+                  <p className="text-xs text-muted-foreground">Pronounce words</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link to="/game/pronounce-sentence" state={{ returnCategory: "games" }}>
+              <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-indigo-400 bg-gradient-to-br from-indigo-500/10 to-indigo-400/5 h-full">
+                <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                  <div className="p-3 bg-indigo-500/20 rounded-full">
+                    <MessageCircle className="w-6 h-6 text-indigo-500" />
+                  </div>
+                  <h3 className="font-bold text-sm">Sentence Speak</h3>
+                  <p className="text-xs text-muted-foreground">Full sentences</p>
                 </CardContent>
               </Card>
             </Link>
