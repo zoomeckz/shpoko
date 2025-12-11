@@ -18,6 +18,10 @@ export const lessonRouteToId: Record<string, string> = {
   "fill-blanks": "fill-blanks-basics",
   "match-cyrillic": "match-cyrillic-premium",
   "choose-word": "choose-word-premium",
+  "pronouns": "pronouns-topic",
+  "essential-verbs": "essential-verbs-topic",
+  "survival-phrases": "survival-phrases-topic",
+  "food-drinks-starter": "food-drinks-starter-topic",
 };
 
 const findLessonIndex = (lessonId: string): number => {

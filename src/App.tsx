@@ -45,6 +45,10 @@ import FamilyLesson from "./pages/topic/FamilyLesson";
 import RestaurantOrderingLesson from "./pages/topic/RestaurantOrderingLesson";
 import SynonymsLesson from "./pages/topic/SynonymsLesson";
 import DialogueBattleGame from "./pages/DialogueBattleGame";
+import PronounsLesson from "./pages/topic/PronounsLesson";
+import EssentialVerbsLesson from "./pages/topic/EssentialVerbsLesson";
+import SurvivalPhrasesLesson from "./pages/topic/SurvivalPhrasesLesson";
+import FoodDrinksStarterLesson from "./pages/topic/FoodDrinksStarterLesson";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -97,6 +101,10 @@ const App = () => (
               <Route path="/topic/family" element={<FamilyLesson />} />
               <Route path="/topic/restaurant-ordering" element={<RestaurantOrderingLesson />} />
               <Route path="/topic/synonyms" element={<SynonymsLesson />} />
+              <Route path="/topic/pronouns" element={<PronounsLesson />} />
+              <Route path="/topic/essential-verbs" element={<EssentialVerbsLesson />} />
+              <Route path="/topic/survival-phrases" element={<SurvivalPhrasesLesson />} />
+              <Route path="/topic/food-drinks-starter" element={<FoodDrinksStarterLesson />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </InputModeProvider>
