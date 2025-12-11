@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -47,6 +47,7 @@ export const GreetingsLesson = () => {
   const { handleBack, navigate } = useLessonNavigation();
   const { user, updateXP } = useAuth();
   const { saveProgress, isLessonCompleted } = useUserProgress();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const [userAnswer, setUserAnswer] = useState("");
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
@@ -99,6 +100,13 @@ export const GreetingsLesson = () => {
       setIsComplete(true);
     }
   }, [currentStep, testQuestions.length, isRevision, user?.id, correctAnswers, updateXP, saveProgress, toast]);
+
+  // Focus input on step change
+  useEffect(() => {
+    if (!isComplete && isCorrect === null) {
+      inputRef.current?.focus();
+    }
+  }, [currentStep, isComplete, isCorrect]);
 
   useLessonKeyboardNavigation({
     isAnswered: isCorrect !== null,
@@ -196,6 +204,7 @@ export const GreetingsLesson = () => {
 
           <div className="space-y-4">
             <Input
+              ref={inputRef}
               type="text"
               placeholder="Type the transliteration..."
               value={userAnswer}
@@ -212,7 +221,6 @@ export const GreetingsLesson = () => {
                   else if (userAnswer.trim()) checkAnswer();
                 }
               }}
-              autoFocus
             />
 
             {isCorrect !== null && (

@@ -472,15 +472,19 @@ const Stories = () => {
       setSelectedAnswer(null);
       setIsCorrect(null);
     } else {
-      // Complete story
-      const earnedXP = Math.round(selectedStory.xpReward * (correctAnswers / selectedStory.questions.length));
+      // Complete story - only award XP if not already completed
+      const storyLessonId = `story-${selectedStory.id}`;
+      const alreadyCompleted = isLessonCompleted(storyLessonId);
+      const earnedXP = alreadyCompleted ? 0 : Math.round(selectedStory.xpReward * (correctAnswers / selectedStory.questions.length));
       
       if (user && earnedXP > 0) {
         await updateXP(earnedXP);
-        
+      }
+      
+      if (user) {
         await supabase.from("user_progress").upsert({
           user_id: user.id,
-          lesson_id: `story-${selectedStory.id}`,
+          lesson_id: storyLessonId,
           completed: true,
           score: earnedXP,
           correct_answers: correctAnswers,
@@ -493,7 +497,7 @@ const Stories = () => {
       
       toast({
         title: "Story Complete!",
-        description: `You earned ${earnedXP} XP!`,
+        description: alreadyCompleted ? "Practice complete - no XP for already completed stories." : `You earned ${earnedXP} XP!`,
       });
       
       setPhase("complete");
@@ -714,7 +718,8 @@ const Stories = () => {
   }
 
   // Complete phase
-  const earnedXP = Math.round(selectedStory.xpReward * (correctAnswers / selectedStory.questions.length));
+  const alreadyCompleted = isLessonCompleted(`story-${selectedStory.id}`);
+  const earnedXP = alreadyCompleted ? 0 : Math.round(selectedStory.xpReward * (correctAnswers / selectedStory.questions.length));
 
   return (
     <div className="min-h-screen bg-background p-4 flex items-center justify-center">
