@@ -9,6 +9,7 @@ import { useUserProgress } from "@/hooks/useUserProgress";
 import { useInputMode } from "@/contexts/InputModeContext";
 import { LessonComplete } from "@/components/LessonComplete";
 import { supabase } from "@/integrations/supabase/client";
+import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
 
 interface TypeInQuestion {
   type: "type-in";
@@ -127,6 +128,12 @@ const FoodDrinksStarterLesson = () => {
       setShowComplete(true);
     }
   };
+
+  useLessonKeyboardNavigation({
+    isAnswered: isCorrect !== null,
+    onNext: nextQuestion,
+    disabled: showComplete,
+  });
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {

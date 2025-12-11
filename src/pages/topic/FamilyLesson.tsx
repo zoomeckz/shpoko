@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { LessonComplete } from "@/components/LessonComplete";
 import { useUserProgress } from "@/hooks/useUserProgress";
+import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
 
 interface TypeInQuestion {
   bulgarian: string;
@@ -113,6 +114,12 @@ export const FamilyLesson = () => {
       setIsComplete(true);
     }
   };
+
+  useLessonKeyboardNavigation({
+    isAnswered: isCorrect !== null,
+    onNext: nextQuestion,
+    disabled: isComplete,
+  });
 
   const getCurrentEmoji = () => {
     if (currentQuestion.type === "typeIn") {

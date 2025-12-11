@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { LessonComplete } from "@/components/LessonComplete";
 import { useUserProgress } from "@/hooks/useUserProgress";
+import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
 
 const LESSON_ID = "shapes-topic";
 const XP_REWARD = 65;
@@ -127,6 +128,12 @@ export const ShapesLesson = () => {
       setIsComplete(true);
     }
   };
+
+  useLessonKeyboardNavigation({
+    isAnswered: isCorrect !== null,
+    onNext: nextQuestion,
+    disabled: isComplete,
+  });
 
   if (isComplete) {
     return (
