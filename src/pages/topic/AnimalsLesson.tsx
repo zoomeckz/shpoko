@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { cn } from "@/lib/utils";
+import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
 
 const LESSON_ID = "animals-topic";
 const XP_REWARD = 70;
@@ -137,6 +138,12 @@ const AnimalsLesson = () => {
       setIsComplete(true);
     }
   };
+
+  useLessonKeyboardNavigation({
+    isAnswered: isCorrect !== null,
+    onNext: nextStep,
+    disabled: isComplete,
+  });
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {

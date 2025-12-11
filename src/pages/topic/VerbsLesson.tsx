@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { LessonComplete } from "@/components/LessonComplete";
 import { useUserProgress } from "@/hooks/useUserProgress";
+import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
 
 const LESSON_ID = "verbs-topic";
 const XP_REWARD = 80;
@@ -104,6 +105,12 @@ export const VerbsLesson = () => {
       setIsComplete(true);
     }
   };
+
+  useLessonKeyboardNavigation({
+    isAnswered: isCorrect !== null,
+    onNext: nextQuestion,
+    disabled: isComplete,
+  });
 
   if (isComplete) {
     return <LessonComplete lessonKey={LESSON_ID} score={earnedXP} xpEarned={earnedXP} correctAnswers={correctAnswers} totalQuestions={questions.length} isRevision={isRevision} />;

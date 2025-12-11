@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { LessonComplete } from "@/components/LessonComplete";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useInputMode } from "@/contexts/InputModeContext";
+import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
 
 interface SynonymPair {
   word: string;
@@ -108,6 +109,12 @@ const SynonymsLesson = () => {
       setIsComplete(true);
     }
   };
+
+  useLessonKeyboardNavigation({
+    isAnswered: feedback !== null,
+    onNext: nextQuestion,
+    disabled: isComplete,
+  });
 
   if (!isPremium) {
     return (

@@ -9,6 +9,7 @@ import { useUserProgress } from "@/hooks/useUserProgress";
 import { useInputMode } from "@/contexts/InputModeContext";
 import { LessonComplete } from "@/components/LessonComplete";
 import { supabase } from "@/integrations/supabase/client";
+import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
 
 interface TypeInQuestion {
   type: "type-in";
@@ -139,6 +140,12 @@ const PronounsLesson = () => {
       }
     }
   };
+
+  useLessonKeyboardNavigation({
+    isAnswered: isCorrect !== null,
+    onNext: nextQuestion,
+    disabled: showComplete,
+  });
 
   if (showComplete) {
     const score = Math.round((correctAnswers / questions.length) * 100);
