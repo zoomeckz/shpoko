@@ -1,4 +1,4 @@
-import { Heart, Flame, Trophy, Crown, LogOut } from "lucide-react";
+import { Heart, Flame, Trophy, Crown, LogOut, Info } from "lucide-react";
 import { ProgressCircle } from "@/components/ui/progress-circle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -91,6 +91,11 @@ export const Header = ({
 
             {/* Dark Mode Toggle */}
             <DarkModeToggle />
+
+            {/* About */}
+            <Button variant="ghost" size="icon" onClick={() => navigate("/about")}>
+              <Info className="w-5 h-5" />
+            </Button>
 
             {/* Logout */}
             <Button variant="ghost" size="icon" onClick={handleLogout}>
