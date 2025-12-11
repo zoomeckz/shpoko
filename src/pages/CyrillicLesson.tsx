@@ -100,10 +100,13 @@ export const CyrillicLesson = () => {
     }
   }, [currentStep, testQuestions.length, isRevision, user?.id, correctAnswers, updateXP, saveProgress, toast]);
 
-  // Focus input on step change
+  // Auto-focus input on step change
   useEffect(() => {
     if (!isComplete && isCorrect === null) {
-      inputRef.current?.focus();
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timer);
     }
   }, [currentStep, isComplete, isCorrect]);
 

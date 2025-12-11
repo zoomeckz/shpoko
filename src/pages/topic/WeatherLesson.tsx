@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,10 +52,21 @@ export const WeatherLesson = () => {
   const navigate = useNavigate();
   const { user, updateXP } = useAuth();
   const { canEarnXP, refetch } = useUserProgress();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const currentQuestion = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
   const isRevision = !canEarnXP(LESSON_ID);
+
+  // Auto-focus input on step change
+  useEffect(() => {
+    if (!isComplete && isCorrect === null && currentQuestion?.type === "typeIn") {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [currentStep, isComplete, isCorrect, currentQuestion?.type]);
 
   const playPronunciation = async (text: string) => {
     try {
@@ -140,7 +151,7 @@ export const WeatherLesson = () => {
                   </div>
                   {showHint && <p className="text-muted-foreground animate-fade-in">Hint: {(currentQuestion.data as TypeInQuestion).hint}</p>}
                 </div>
-                <Input type="text" placeholder="Type the transliteration..." value={userAnswer} onChange={(e) => setUserAnswer(e.target.value)} disabled={isCorrect !== null}
+                <Input ref={inputRef} type="text" placeholder="Type the transliteration..." value={userAnswer} onChange={(e) => setUserAnswer(e.target.value)} disabled={isCorrect !== null}
                   className={cn("text-center text-xl py-6", isCorrect === true && "border-green-500 bg-green-500/10", isCorrect === false && "border-red-500 bg-red-500/10")}
                   onKeyDown={(e) => { if (e.key === "Enter") { if (isCorrect !== null) nextQuestion(); else if (userAnswer.trim()) checkTypeInAnswer(); } }} />
                 {isCorrect !== null && (

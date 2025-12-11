@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -61,6 +61,7 @@ const AnimalsLesson = () => {
   const { toast } = useToast();
   const { playCorrect, playIncorrect, playComplete } = useSoundEffects();
   const { canEarnXP, refetch } = useUserProgress();
+  const inputRef = useRef<HTMLInputElement>(null);
   
   const [questions] = useState<Question[]>(() => generateMixedQuestions());
   const [currentStep, setCurrentStep] = useState(0);
@@ -74,6 +75,16 @@ const AnimalsLesson = () => {
   const currentQuestion = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
   const isRevision = !canEarnXP(LESSON_ID);
+
+  // Auto-focus input on step change
+  useEffect(() => {
+    if (!isComplete && isCorrect === null && currentQuestion?.type === "typeIn") {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [currentStep, isComplete, isCorrect, currentQuestion?.type]);
 
   const checkTypeInAnswer = () => {
     if (currentQuestion.type !== "typeIn") return;
