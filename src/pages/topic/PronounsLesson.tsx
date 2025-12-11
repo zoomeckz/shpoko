@@ -23,9 +23,11 @@ interface FillBlankQuestion {
   type: "fill-blank";
   sentence: string;
   blankedWord: string;
-  options: string[];
+  blankedWordRomanized: string;
+  options: { bulgarian: string; romanized: string }[];
   correctIndex: number;
   english: string;
+  explanation: string;
 }
 
 type Question = TypeInQuestion | FillBlankQuestion;
@@ -44,12 +46,12 @@ const typeInQuestions: TypeInQuestion[] = [
 ];
 
 const fillBlankQuestions: FillBlankQuestion[] = [
-  { type: "fill-blank", sentence: "___ съм студент.", blankedWord: "Аз", options: ["Аз", "Ти", "Той"], correctIndex: 0, english: "I am a student." },
-  { type: "fill-blank", sentence: "Той ___ в София.", blankedWord: "живее", options: ["имам", "живее", "съм"], correctIndex: 1, english: "He lives in Sofia." },
-  { type: "fill-blank", sentence: "Тя ___ музика.", blankedWord: "обича", options: ["обича", "харесва", "живее"], correctIndex: 0, english: "She loves music." },
-  { type: "fill-blank", sentence: "Ние ___ котка.", blankedWord: "имаме", options: ["имаме", "обичаме", "живеем"], correctIndex: 0, english: "We have a cat." },
-  { type: "fill-blank", sentence: "Вие ___ български.", blankedWord: "харесвате", options: ["живеете", "харесвате", "сте"], correctIndex: 1, english: "You like Bulgarian." },
-  { type: "fill-blank", sentence: "___ са от България.", blankedWord: "Те", options: ["Той", "Тя", "Те"], correctIndex: 2, english: "They are from Bulgaria." },
+  { type: "fill-blank", sentence: "___ съм студент.", blankedWord: "Аз", blankedWordRomanized: "Az", options: [{ bulgarian: "Аз", romanized: "Az" }, { bulgarian: "Ти", romanized: "Ti" }, { bulgarian: "Той", romanized: "Toy" }], correctIndex: 0, english: "I am a student.", explanation: "'Аз' (Az) means 'I' - the first person singular pronoun used when talking about yourself." },
+  { type: "fill-blank", sentence: "Той ___ в София.", blankedWord: "живее", blankedWordRomanized: "zhivee", options: [{ bulgarian: "имам", romanized: "imam" }, { bulgarian: "живее", romanized: "zhivee" }, { bulgarian: "съм", romanized: "sam" }], correctIndex: 1, english: "He lives in Sofia.", explanation: "'Живее' (zhivee) means 'lives' - the verb 'to live' conjugated for he/she/it (third person singular)." },
+  { type: "fill-blank", sentence: "Тя ___ музика.", blankedWord: "обича", blankedWordRomanized: "obicha", options: [{ bulgarian: "обича", romanized: "obicha" }, { bulgarian: "харесва", romanized: "haresva" }, { bulgarian: "живее", romanized: "zhivee" }], correctIndex: 0, english: "She loves music.", explanation: "'Обича' (obicha) means 'loves' - a stronger feeling than 'харесва' (likes). Used for deep affection." },
+  { type: "fill-blank", sentence: "Ние ___ котка.", blankedWord: "имаме", blankedWordRomanized: "imame", options: [{ bulgarian: "имаме", romanized: "imame" }, { bulgarian: "обичаме", romanized: "obichame" }, { bulgarian: "живеем", romanized: "zhiveem" }], correctIndex: 0, english: "We have a cat.", explanation: "'Имаме' (imame) means 'we have' - the verb 'to have' conjugated for 'we' (first person plural)." },
+  { type: "fill-blank", sentence: "Вие ___ български.", blankedWord: "харесвате", blankedWordRomanized: "haresvate", options: [{ bulgarian: "живеете", romanized: "zhiveete" }, { bulgarian: "харесвате", romanized: "haresvate" }, { bulgarian: "сте", romanized: "ste" }], correctIndex: 1, english: "You like Bulgarian.", explanation: "'Харесвате' (haresvate) means 'you like' - the polite/plural form of 'to like' for 'you' (second person plural)." },
+  { type: "fill-blank", sentence: "___ са от България.", blankedWord: "Те", blankedWordRomanized: "Te", options: [{ bulgarian: "Той", romanized: "Toy" }, { bulgarian: "Тя", romanized: "Tya" }, { bulgarian: "Те", romanized: "Te" }], correctIndex: 2, english: "They are from Bulgaria.", explanation: "'Те' (Te) means 'they' - the third person plural pronoun. 'Той' is 'he' and 'Тя' is 'she'." },
 ];
 
 const generateMixedQuestions = (): Question[] => {
@@ -232,25 +234,27 @@ const PronounsLesson = () => {
                   <Button
                     key={index}
                     variant={isCorrect === null ? "outline" : index === currentQuestion.correctIndex ? "default" : "outline"}
-                    className={`py-6 text-lg ${
+                    className={`py-6 text-lg flex flex-col ${
                       isCorrect !== null && index === currentQuestion.correctIndex ? "bg-green-500 hover:bg-green-500" : ""
                     } ${isCorrect === false && index !== currentQuestion.correctIndex ? "opacity-50" : ""}`}
                     onClick={() => selectFillBlankAnswer(index)}
                     disabled={isCorrect !== null}
                   >
-                    {option}
+                    <span>{option.bulgarian}</span>
+                    <span className="text-sm opacity-70">({option.romanized})</span>
                   </Button>
                 ))}
               </div>
 
               {isCorrect !== null && (
                 <div className={`mt-4 p-4 rounded-lg ${isCorrect ? "bg-green-100 dark:bg-green-900/30" : "bg-red-100 dark:bg-red-900/30"}`}>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mb-2">
                     {isCorrect ? <Check className="h-5 w-5 text-green-600" /> : <X className="h-5 w-5 text-red-600" />}
                     <span className={isCorrect ? "text-green-600" : "text-red-600"}>
-                      {isCorrect ? "Correct!" : `The answer is: ${currentQuestion.blankedWord}`}
+                      {isCorrect ? "Correct!" : `The answer is: ${currentQuestion.blankedWord} (${currentQuestion.blankedWordRomanized})`}
                     </span>
                   </div>
+                  <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
                 </div>
               )}
             </>
