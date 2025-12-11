@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -67,10 +67,21 @@ export const ColorsLesson = () => {
   const navigate = useNavigate();
   const { user, updateXP } = useAuth();
   const { canEarnXP, saveProgress, refetch } = useUserProgress();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const currentQuestion = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
   const isRevision = !canEarnXP(LESSON_ID);
+
+  // Auto-focus input on step change
+  useEffect(() => {
+    if (!isComplete && isCorrect === null && currentQuestion?.type === "typeIn") {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [currentStep, isComplete, isCorrect, currentQuestion?.type]);
 
   const playPronunciation = async (text: string) => {
     try {
@@ -209,6 +220,7 @@ export const ColorsLesson = () => {
 
                 <div className="space-y-4">
                   <Input
+                    ref={inputRef}
                     type="text"
                     placeholder="Type the transliteration..."
                     value={userAnswer}

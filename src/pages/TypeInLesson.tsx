@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -66,11 +66,22 @@ export const TypeInLesson = () => {
   const { toast } = useToast();
   const { user, updateXP } = useAuth();
   const { canEarnXP, saveProgress } = useUserProgress();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const currentQuestion = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
   const nav = getLessonNavigation("type-in-basics");
   const isRevision = !canEarnXP("type-in-basics");
+
+  // Auto-focus input on step change
+  useEffect(() => {
+    if (!isComplete && isCorrect === null && currentQuestion?.type === "typeIn") {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [currentStep, isComplete, isCorrect, currentQuestion?.type]);
 
   const playPronunciation = async (text: string) => {
     try {
