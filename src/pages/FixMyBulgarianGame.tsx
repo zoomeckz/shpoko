@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { useDailyGameXP } from "@/hooks/useDailyGameXP";
+import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
 
 interface MistakeSentence {
   words: string[];
@@ -173,7 +174,7 @@ const FixMyBulgarianGame = () => {
     }
   };
 
-  const nextRound = () => {
+  const nextRound = useCallback(() => {
     setShowFeedback(null);
     setSelectedWordIndex(null);
     setShowHint(false);
@@ -183,7 +184,12 @@ const FixMyBulgarianGame = () => {
     } else {
       endGame();
     }
-  };
+  }, [currentRound]);
+
+  useLessonKeyboardNavigation({
+    isAnswered: showFeedback !== null,
+    onNext: nextRound,
+  });
 
   const endGame = async () => {
     setGameState("finished");
