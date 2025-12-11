@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -128,7 +129,7 @@ export const ChooseWordLesson = () => {
     }
   };
 
-  const nextQuestion = async () => {
+  const nextQuestion = useCallback(async () => {
     if (currentStep < questions.length - 1) {
       setCurrentStep(currentStep + 1);
       setSelectedAnswer(null);
@@ -155,7 +156,12 @@ export const ChooseWordLesson = () => {
       });
       setIsComplete(true);
     }
-  };
+  }, [currentStep, questions.length, user, score, correctAnswers, updateXP, toast]);
+
+  useLessonKeyboardNavigation({
+    isAnswered: isCorrect !== null,
+    onNext: nextQuestion,
+  });
 
   if (isComplete) {
     return (

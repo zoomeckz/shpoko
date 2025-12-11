@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -75,7 +76,7 @@ export const GreetingsLesson = () => {
     }
   };
 
-  const nextQuestion = async () => {
+  const nextQuestion = useCallback(async () => {
     if (currentStep < testQuestions.length - 1) {
       setCurrentStep(prev => prev + 1);
       setUserAnswer("");
@@ -97,7 +98,12 @@ export const GreetingsLesson = () => {
       });
       setIsComplete(true);
     }
-  };
+  }, [currentStep, testQuestions.length, isRevision, user?.id, correctAnswers, updateXP, saveProgress, toast]);
+
+  useLessonKeyboardNavigation({
+    isAnswered: isCorrect !== null,
+    onNext: nextQuestion,
+  });
 
   if (isComplete) {
     return (
