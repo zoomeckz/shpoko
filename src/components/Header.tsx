@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import shpokoLogo from "@/assets/shpoko-logo.png";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { InputModeToggle } from "@/components/InputModeToggle";
+import LanguageModeToggle from "@/components/LanguageModeToggle";
 import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePictureSelector";
 import { calculateLevelProgress } from "@/lib/levelUtils";
 
@@ -88,6 +89,9 @@ export const Header = ({
                 Premium
               </Button>
             )}
+
+            {/* Language Mode Toggle */}
+            <LanguageModeToggle />
 
             {/* Dark Mode Toggle */}
             <DarkModeToggle />

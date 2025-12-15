@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguageMode } from "@/contexts/LanguageModeContext";
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
 import { WordOfTheDay } from "@/components/WordOfTheDay";
@@ -26,6 +27,7 @@ const categories = [
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
+  const { languageMode } = useLanguageMode();
   const { progress } = useUserProgress();
   const navigate = useNavigate();
   const location = useLocation();
@@ -80,6 +82,39 @@ const Index = () => {
           </div>
         );
       case "lessons":
+        if (languageMode === "spanish") {
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Link to="/spanish/alphabet">
+                <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-primary/50 h-full">
+                  <CardContent className="p-6 text-center">
+                    <div className="text-4xl mb-2">🔤</div>
+                    <h3 className="font-bold text-lg">Испанска азбука</h3>
+                    <p className="text-sm text-muted-foreground">Научи буквите</p>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link to="/spanish/greetings">
+                <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-primary/50 h-full">
+                  <CardContent className="p-6 text-center">
+                    <div className="text-4xl mb-2">👋</div>
+                    <h3 className="font-bold text-lg">Поздрави</h3>
+                    <p className="text-sm text-muted-foreground">Основни поздрави</p>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link to="/spanish/numbers">
+                <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-primary/50 h-full">
+                  <CardContent className="p-6 text-center">
+                    <div className="text-4xl mb-2">🔢</div>
+                    <h3 className="font-bold text-lg">Числа 1-20</h3>
+                    <p className="text-sm text-muted-foreground">Научи числата</p>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+          );
+        }
         return <LessonTopicSelector />;
       case "games":
         return (
