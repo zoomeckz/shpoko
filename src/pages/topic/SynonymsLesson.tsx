@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +45,14 @@ const SynonymsLesson = () => {
   const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(null);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [currentStep]);
 
   const isBulgarian = inputMode === "bulgarian";
   const isPremium = profile?.is_premium;
@@ -184,12 +192,12 @@ const SynonymsLesson = () => {
             {currentQuestion.type === "typing" ? (
               <div className="space-y-4">
                 <Input
+                  ref={inputRef}
                   value={userAnswer}
                   onChange={(e) => setUserAnswer(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && userAnswer && !feedback && checkAnswer()}
                   placeholder={isBulgarian ? "Въведете синоним" : "Type a synonym"}
                   className="text-center text-lg"
-                  autoFocus
                   disabled={!!feedback}
                 />
                 {feedback && (

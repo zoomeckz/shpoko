@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,14 @@ const generateMixedQuestions = (): Question[] => {
 export const ShapesLesson = () => {
   const [questions] = useState<Question[]>(() => generateMixedQuestions());
   const [currentStep, setCurrentStep] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [currentStep]);
   const [userAnswer, setUserAnswer] = useState("");
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
@@ -181,6 +189,7 @@ export const ShapesLesson = () => {
                   {showHint && <p className="text-muted-foreground animate-fade-in">Hint: {(currentQuestion.data as TypeInQuestion).hint}</p>}
                 </div>
                 <Input
+                  ref={inputRef}
                   type="text"
                   placeholder="Type the transliteration..."
                   value={userAnswer}
