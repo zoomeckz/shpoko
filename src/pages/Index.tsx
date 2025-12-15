@@ -18,11 +18,18 @@ import { cn } from "@/lib/utils";
 
 type CategoryType = "daily" | "lessons" | "games" | "stories";
 
-const categories = [
+const categoriesEN = [
   { id: "daily" as CategoryType, label: "Daily", icon: Calendar, description: "Daily activities" },
   { id: "lessons" as CategoryType, label: "Lessons", icon: BookOpen, description: "Learn Bulgarian" },
   { id: "games" as CategoryType, label: "Games", icon: Gamepad2, description: "Fun challenges" },
   { id: "stories" as CategoryType, label: "Stories", icon: BookText, description: "Read & learn" },
+];
+
+const categoriesBG = [
+  { id: "daily" as CategoryType, label: "Дневни", icon: Calendar, description: "Ежедневни задачи" },
+  { id: "lessons" as CategoryType, label: "Уроци", icon: BookOpen, description: "Научи испански" },
+  { id: "games" as CategoryType, label: "Игри", icon: Gamepad2, description: "Забавни предизвикателства" },
+  { id: "stories" as CategoryType, label: "Истории", icon: BookText, description: "Чети и учи" },
 ];
 
 const Index = () => {
@@ -84,31 +91,67 @@ const Index = () => {
       case "lessons":
         if (languageMode === "spanish") {
           return (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Link to="/spanish/alphabet">
                 <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-primary/50 h-full">
-                  <CardContent className="p-6 text-center">
-                    <div className="text-4xl mb-2">🔤</div>
-                    <h3 className="font-bold text-lg">Испанска азбука</h3>
-                    <p className="text-sm text-muted-foreground">Научи буквите</p>
+                  <CardContent className="p-4 text-center">
+                    <div className="text-3xl mb-2">🔤</div>
+                    <h3 className="font-bold">Азбука</h3>
+                    <p className="text-xs text-muted-foreground">Буквите</p>
                   </CardContent>
                 </Card>
               </Link>
               <Link to="/spanish/greetings">
                 <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-primary/50 h-full">
-                  <CardContent className="p-6 text-center">
-                    <div className="text-4xl mb-2">👋</div>
-                    <h3 className="font-bold text-lg">Поздрави</h3>
-                    <p className="text-sm text-muted-foreground">Основни поздрави</p>
+                  <CardContent className="p-4 text-center">
+                    <div className="text-3xl mb-2">👋</div>
+                    <h3 className="font-bold">Поздрави</h3>
+                    <p className="text-xs text-muted-foreground">Основни фрази</p>
                   </CardContent>
                 </Card>
               </Link>
               <Link to="/spanish/numbers">
                 <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-primary/50 h-full">
-                  <CardContent className="p-6 text-center">
-                    <div className="text-4xl mb-2">🔢</div>
-                    <h3 className="font-bold text-lg">Числа 1-20</h3>
-                    <p className="text-sm text-muted-foreground">Научи числата</p>
+                  <CardContent className="p-4 text-center">
+                    <div className="text-3xl mb-2">🔢</div>
+                    <h3 className="font-bold">Числа</h3>
+                    <p className="text-xs text-muted-foreground">1-20</p>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link to="/spanish/colors">
+                <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-green-400 h-full">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-3xl mb-2">🎨</div>
+                    <h3 className="font-bold">Цветове</h3>
+                    <p className="text-xs text-muted-foreground">Основни цветове</p>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link to="/spanish/animals">
+                <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-yellow-400 h-full">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-3xl mb-2">🐾</div>
+                    <h3 className="font-bold">Животни</h3>
+                    <p className="text-xs text-muted-foreground">Домашни и диви</p>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link to="/spanish/family">
+                <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-pink-400 h-full">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-3xl mb-2">👨‍👩‍👧‍👦</div>
+                    <h3 className="font-bold">Семейство</h3>
+                    <p className="text-xs text-muted-foreground">Роднини</p>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link to="/spanish/food">
+                <Card className="cursor-pointer hover:shadow-lg transition-shadow border-2 border-orange-400 h-full">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-3xl mb-2">🍽️</div>
+                    <h3 className="font-bold">Храна</h3>
+                    <p className="text-xs text-muted-foreground">Ядене и пиене</p>
                   </CardContent>
                 </Card>
               </Link>
@@ -233,7 +276,9 @@ const Index = () => {
                     <h3 className="text-xl font-bold">{profile?.username}</h3>
                     {profile?.is_premium && <Crown className="w-5 h-5 text-yellow-500" />}
                   </div>
-                  <p className="text-sm text-muted-foreground">Level {profile?.level || 1}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {languageMode === "spanish" ? "Ниво" : "Level"} {profile?.level || 1}
+                  </p>
                   <div className="flex items-center gap-4 mt-2">
                     <div className="flex items-center gap-1">
                       <Trophy className="w-4 h-4 text-primary" />
@@ -241,7 +286,9 @@ const Index = () => {
                     </div>
                     <div className="flex items-center gap-1">
                       <Flame className="w-4 h-4 text-warning" />
-                      <span className="font-medium">{profile?.streak || 0} day streak</span>
+                      <span className="font-medium">
+                        {profile?.streak || 0} {languageMode === "spanish" ? "дни серия" : "day streak"}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -266,7 +313,7 @@ const Index = () => {
 
         {/* Category Navigation */}
         <div className="grid grid-cols-4 gap-2 mb-6">
-          {categories.map((category) => {
+          {(languageMode === "spanish" ? categoriesBG : categoriesEN).map((category) => {
             const Icon = category.icon;
             const isSelected = selectedCategory === category.id;
             return (

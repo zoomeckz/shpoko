@@ -54,6 +54,10 @@ import FoodDrinksStarterLesson from "./pages/topic/FoodDrinksStarterLesson";
 import SpanishAlphabetLesson from "./pages/spanish/SpanishAlphabetLesson";
 import SpanishGreetingsLesson from "./pages/spanish/SpanishGreetingsLesson";
 import SpanishNumbersLesson from "./pages/spanish/SpanishNumbersLesson";
+import SpanishColorsLesson from "./pages/spanish/SpanishColorsLesson";
+import SpanishAnimalsLesson from "./pages/spanish/SpanishAnimalsLesson";
+import SpanishFamilyLesson from "./pages/spanish/SpanishFamilyLesson";
+import SpanishFoodLesson from "./pages/spanish/SpanishFoodLesson";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -115,6 +119,10 @@ const App = () => (
               <Route path="/spanish/alphabet" element={<SpanishAlphabetLesson />} />
               <Route path="/spanish/greetings" element={<SpanishGreetingsLesson />} />
               <Route path="/spanish/numbers" element={<SpanishNumbersLesson />} />
+              <Route path="/spanish/colors" element={<SpanishColorsLesson />} />
+              <Route path="/spanish/animals" element={<SpanishAnimalsLesson />} />
+              <Route path="/spanish/family" element={<SpanishFamilyLesson />} />
+              <Route path="/spanish/food" element={<SpanishFoodLesson />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </LanguageModeProvider>
