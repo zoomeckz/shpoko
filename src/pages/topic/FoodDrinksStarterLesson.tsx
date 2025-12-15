@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -66,6 +66,14 @@ const FoodDrinksStarterLesson = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [currentStep]);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [progress, setProgress] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
@@ -187,13 +195,13 @@ const FoodDrinksStarterLesson = () => {
 
               <div className="space-y-4">
                 <Input
+                  ref={inputRef}
                   value={userAnswer}
                   onChange={(e) => setUserAnswer(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder={`Type in ${inputMode === "bulgarian" ? "Bulgarian" : "romanized"}...`}
                   className="text-center text-xl py-6"
                   disabled={isCorrect !== null}
-                  autoFocus
                 />
 
                 {isCorrect === null ? (

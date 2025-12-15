@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,6 +56,14 @@ const generateMixedQuestions = (): Question[] => {
 export const FamilyLesson = () => {
   const [questions] = useState<Question[]>(() => generateMixedQuestions());
   const [currentStep, setCurrentStep] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [currentStep]);
   const [userAnswer, setUserAnswer] = useState("");
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
@@ -179,6 +187,7 @@ export const FamilyLesson = () => {
 
                 <div className="space-y-4">
                   <Input
+                    ref={inputRef}
                     type="text"
                     placeholder="Type the transliteration..."
                     value={userAnswer}
