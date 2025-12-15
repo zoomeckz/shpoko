@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { InputModeProvider } from "@/contexts/InputModeContext";
+import { LanguageModeProvider } from "@/contexts/LanguageModeContext";
 import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -49,6 +50,10 @@ import PronounsLesson from "./pages/topic/PronounsLesson";
 import EssentialVerbsLesson from "./pages/topic/EssentialVerbsLesson";
 import SurvivalPhrasesLesson from "./pages/topic/SurvivalPhrasesLesson";
 import FoodDrinksStarterLesson from "./pages/topic/FoodDrinksStarterLesson";
+// Spanish Lessons
+import SpanishAlphabetLesson from "./pages/spanish/SpanishAlphabetLesson";
+import SpanishGreetingsLesson from "./pages/spanish/SpanishGreetingsLesson";
+import SpanishNumbersLesson from "./pages/spanish/SpanishNumbersLesson";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -60,6 +65,7 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <InputModeProvider>
+            <LanguageModeProvider>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
@@ -105,8 +111,13 @@ const App = () => (
               <Route path="/topic/essential-verbs" element={<EssentialVerbsLesson />} />
               <Route path="/topic/survival-phrases" element={<SurvivalPhrasesLesson />} />
               <Route path="/topic/food-drinks-starter" element={<FoodDrinksStarterLesson />} />
+              {/* Spanish Lessons */}
+              <Route path="/spanish/alphabet" element={<SpanishAlphabetLesson />} />
+              <Route path="/spanish/greetings" element={<SpanishGreetingsLesson />} />
+              <Route path="/spanish/numbers" element={<SpanishNumbersLesson />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </LanguageModeProvider>
             </InputModeProvider>
           </AuthProvider>
         </BrowserRouter>
