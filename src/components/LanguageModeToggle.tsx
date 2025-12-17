@@ -30,7 +30,7 @@ const LanguageModeToggle: React.FC = () => {
     >
       <Languages className="h-4 w-4" />
       <span className="hidden sm:inline">
-        {languageMode === 'bulgarian' ? '🇧🇬 → 🇬🇧' : '🇪🇸 → 🇧🇬'}
+        {languageMode === 'bulgarian' ? '🇬🇧 → 🇧🇬' : '🇧🇬 → 🇪🇸'}
       </span>
     </Button>
   );
