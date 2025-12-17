@@ -1,7 +1,9 @@
 import { DailyGame } from "./DailyGame";
 import { Gamepad2, Palette, Hash } from "lucide-react";
+import { useLanguageMode } from "@/contexts/LanguageModeContext";
 
-const ANIMALS = [
+// Bulgarian lessons data
+const ANIMALS_BG = [
   { emoji: "🐕", english: "Dog", bulgarian: "kuche" },
   { emoji: "🐈", english: "Cat", bulgarian: "kotka" },
   { emoji: "🐦", english: "Bird", bulgarian: "ptitsa" },
@@ -24,7 +26,7 @@ const ANIMALS = [
   { emoji: "🐒", english: "Monkey", bulgarian: "maimuna" },
 ];
 
-const COLORS = [
+const COLORS_BG = [
   { emoji: "🔴", english: "Red", bulgarian: "cherveno" },
   { emoji: "🟠", english: "Orange", bulgarian: "oranzhevo" },
   { emoji: "🟡", english: "Yellow", bulgarian: "zhalto" },
@@ -39,7 +41,7 @@ const COLORS = [
   { emoji: "🩶", english: "Gray", bulgarian: "sivo" },
 ];
 
-const NUMBERS = [
+const NUMBERS_BG = [
   { emoji: "1️⃣", english: "One", bulgarian: "edno" },
   { emoji: "2️⃣", english: "Two", bulgarian: "dve" },
   { emoji: "3️⃣", english: "Three", bulgarian: "tri" },
@@ -58,25 +60,90 @@ const NUMBERS = [
   { emoji: "2️⃣0️⃣", english: "Twenty", bulgarian: "dvadeset" },
 ];
 
+// Spanish lessons data (with Bulgarian prompts)
+const ANIMALS_ES = [
+  { emoji: "🐕", english: "Куче", bulgarian: "perro" },
+  { emoji: "🐈", english: "Котка", bulgarian: "gato" },
+  { emoji: "🐦", english: "Птица", bulgarian: "pajaro" },
+  { emoji: "🐟", english: "Риба", bulgarian: "pez" },
+  { emoji: "🐎", english: "Кон", bulgarian: "caballo" },
+  { emoji: "🐄", english: "Крава", bulgarian: "vaca" },
+  { emoji: "🐖", english: "Прасе", bulgarian: "cerdo" },
+  { emoji: "🐑", english: "Овца", bulgarian: "oveja" },
+  { emoji: "🐐", english: "Коза", bulgarian: "cabra" },
+  { emoji: "🐓", english: "Петел", bulgarian: "gallo" },
+  { emoji: "🦆", english: "Патица", bulgarian: "pato" },
+  { emoji: "🐇", english: "Заек", bulgarian: "conejo" },
+  { emoji: "🐻", english: "Мечка", bulgarian: "oso" },
+  { emoji: "🦊", english: "Лисица", bulgarian: "zorro" },
+  { emoji: "🐺", english: "Вълк", bulgarian: "lobo" },
+  { emoji: "🦁", english: "Лъв", bulgarian: "leon" },
+  { emoji: "🐯", english: "Тигър", bulgarian: "tigre" },
+  { emoji: "🐘", english: "Слон", bulgarian: "elefante" },
+  { emoji: "🦒", english: "Жираф", bulgarian: "jirafa" },
+  { emoji: "🐒", english: "Маймуна", bulgarian: "mono" },
+];
+
+const COLORS_ES = [
+  { emoji: "🔴", english: "Червено", bulgarian: "rojo" },
+  { emoji: "🟠", english: "Оранжево", bulgarian: "naranja" },
+  { emoji: "🟡", english: "Жълто", bulgarian: "amarillo" },
+  { emoji: "🟢", english: "Зелено", bulgarian: "verde" },
+  { emoji: "🔵", english: "Синьо", bulgarian: "azul" },
+  { emoji: "🟣", english: "Лилаво", bulgarian: "morado" },
+  { emoji: "🟤", english: "Кафяво", bulgarian: "marron" },
+  { emoji: "⚫", english: "Черно", bulgarian: "negro" },
+  { emoji: "⚪", english: "Бяло", bulgarian: "blanco" },
+  { emoji: "🩷", english: "Розово", bulgarian: "rosa" },
+  { emoji: "🩵", english: "Светлосиньо", bulgarian: "celeste" },
+  { emoji: "🩶", english: "Сиво", bulgarian: "gris" },
+];
+
+const NUMBERS_ES = [
+  { emoji: "1️⃣", english: "Едно", bulgarian: "uno" },
+  { emoji: "2️⃣", english: "Две", bulgarian: "dos" },
+  { emoji: "3️⃣", english: "Три", bulgarian: "tres" },
+  { emoji: "4️⃣", english: "Четири", bulgarian: "cuatro" },
+  { emoji: "5️⃣", english: "Пет", bulgarian: "cinco" },
+  { emoji: "6️⃣", english: "Шест", bulgarian: "seis" },
+  { emoji: "7️⃣", english: "Седем", bulgarian: "siete" },
+  { emoji: "8️⃣", english: "Осем", bulgarian: "ocho" },
+  { emoji: "9️⃣", english: "Девет", bulgarian: "nueve" },
+  { emoji: "🔟", english: "Десет", bulgarian: "diez" },
+  { emoji: "1️⃣1️⃣", english: "Единадесет", bulgarian: "once" },
+  { emoji: "1️⃣2️⃣", english: "Дванадесет", bulgarian: "doce" },
+  { emoji: "1️⃣3️⃣", english: "Тринадесет", bulgarian: "trece" },
+  { emoji: "1️⃣4️⃣", english: "Четиринадесет", bulgarian: "catorce" },
+  { emoji: "1️⃣5️⃣", english: "Петнадесет", bulgarian: "quince" },
+  { emoji: "2️⃣0️⃣", english: "Двадесет", bulgarian: "veinte" },
+];
+
 export const DailyGames = () => {
+  const { languageMode } = useLanguageMode();
+  const isSpanish = languageMode === "spanish";
+
+  const animals = isSpanish ? ANIMALS_ES : ANIMALS_BG;
+  const colors = isSpanish ? COLORS_ES : COLORS_BG;
+  const numbers = isSpanish ? NUMBERS_ES : NUMBERS_BG;
+
   return (
     <>
       <DailyGame
-        title="Animals"
+        title={isSpanish ? "Животни" : "Animals"}
         gameType="animal"
-        items={ANIMALS}
+        items={animals}
         icon={<Gamepad2 className="w-6 h-6 text-yellow-500" />}
       />
       <DailyGame
-        title="Colors"
+        title={isSpanish ? "Цветове" : "Colors"}
         gameType="color"
-        items={COLORS}
+        items={colors}
         icon={<Palette className="w-6 h-6 text-yellow-500" />}
       />
       <DailyGame
-        title="Numbers"
+        title={isSpanish ? "Числа" : "Numbers"}
         gameType="number"
-        items={NUMBERS}
+        items={numbers}
         icon={<Hash className="w-6 h-6 text-yellow-500" />}
       />
     </>
