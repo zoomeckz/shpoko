@@ -58,6 +58,9 @@ import SpanishColorsLesson from "./pages/spanish/SpanishColorsLesson";
 import SpanishAnimalsLesson from "./pages/spanish/SpanishAnimalsLesson";
 import SpanishFamilyLesson from "./pages/spanish/SpanishFamilyLesson";
 import SpanishFoodLesson from "./pages/spanish/SpanishFoodLesson";
+// Quiz
+import QuizPage from "./pages/QuizPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -123,6 +126,8 @@ const App = () => (
               <Route path="/spanish/animals" element={<SpanishAnimalsLesson />} />
               <Route path="/spanish/family" element={<SpanishFamilyLesson />} />
               <Route path="/spanish/food" element={<SpanishFoodLesson />} />
+              {/* Quiz */}
+              <Route path="/quiz" element={<QuizPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </LanguageModeProvider>
