@@ -1,11 +1,9 @@
-import { Heart, Flame, Trophy, Crown, LogOut, Info } from "lucide-react";
+import { Flame, Trophy, Crown, LogOut, Info, FileQuestion } from "lucide-react";
 import { ProgressCircle } from "@/components/ui/progress-circle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import shpokoLogo from "@/assets/shpoko-logo.png";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
-import { InputModeToggle } from "@/components/InputModeToggle";
 import LanguageModeToggle from "@/components/LanguageModeToggle";
 import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePictureSelector";
 import { calculateLevelProgress } from "@/lib/levelUtils";
@@ -19,9 +17,7 @@ interface HeaderProps {
 
 export const Header = ({
   streak,
-  hearts,
   xp,
-  dailyGoalProgress
 }: HeaderProps) => {
   const {
     user,
@@ -63,18 +59,17 @@ export const Header = ({
               <span className="font-bold">{profile.streak}</span>
             </div>
             
-            {/* Hearts */}
-            <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-error/10 rounded-lg">
-              <Heart className="w-5 h-5 text-error fill-error" />
-              <span className="font-bold text-error">{hearts}</span>
-            </div>
-            
             {/* XP */}
             <div className="flex items-center gap-2 px-3 py-2 bg-primary/10 rounded-lg">
               <Trophy className="w-5 h-5 text-primary" />
               <span className="font-bold text-primary">{profile.xp} XP</span>
             </div>
 
+            {/* Quiz */}
+            <Button variant="outline" size="sm" onClick={() => navigate("/quiz")} className="hidden md:flex">
+              <FileQuestion className="w-4 h-4 mr-1" />
+              Quizzes
+            </Button>
 
             {/* Leaderboard */}
             <Button variant="outline" size="sm" onClick={() => navigate("/leaderboard")} className="hidden md:flex">

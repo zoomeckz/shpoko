@@ -14,7 +14,7 @@ import { lessons } from "@/data/lessons";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePictureSelector";
-import { Crown, Trophy, Flame, Calendar, BookOpen, Gamepad2, BookText, Brain, Headphones, MessageCircle, FileQuestion } from "lucide-react";
+import { Crown, Trophy, Flame, Calendar, BookOpen, Gamepad2, BookText, Brain, Headphones, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type CategoryType = "daily" | "lessons" | "games" | "stories";
@@ -292,15 +292,6 @@ const Index = () => {
                       </span>
                     </div>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="mt-3"
-                    onClick={() => navigate("/quiz")}
-                  >
-                    <FileQuestion className="w-4 h-4 mr-2" />
-                    {languageMode === "spanish" ? "Куизове" : "Quizzes"}
-                  </Button>
                 </div>
               </div>
             </CardContent>
