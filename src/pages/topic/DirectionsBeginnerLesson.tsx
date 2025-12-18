@@ -1,0 +1,240 @@
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { ArrowLeft, Check, X, Volume2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { LessonComplete } from "@/components/LessonComplete";
+import { useUserProgress } from "@/hooks/useUserProgress";
+import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
+
+interface Question {
+  emoji: string;
+  bulgarian: string;
+  answer: string;
+  options: { emoji: string; answer: string }[];
+}
+
+const LESSON_ID = "directions-beginner";
+const XP_REWARD = 60;
+
+const directionData = [
+  { emoji: "⬅️", bulgarian: "Ляво", answer: "lyavo" },
+  { emoji: "➡️", bulgarian: "Дясно", answer: "dyasno" },
+  { emoji: "⬆️", bulgarian: "Напред", answer: "napred" },
+  { emoji: "⬇️", bulgarian: "Назад", answer: "nazad" },
+  { emoji: "↖️", bulgarian: "Горе вляво", answer: "gore vlyavo" },
+  { emoji: "↗️", bulgarian: "Горе вдясно", answer: "gore vdyasno" },
+  { emoji: "↙️", bulgarian: "Долу вляво", answer: "dolu vlyavo" },
+  { emoji: "↘️", bulgarian: "Долу вдясно", answer: "dolu vdyasno" },
+  { emoji: "🔄", bulgarian: "Обратно", answer: "obratno" },
+  { emoji: "📍", bulgarian: "Тук", answer: "tuk" },
+  { emoji: "🎯", bulgarian: "Там", answer: "tam" },
+  { emoji: "🚶", bulgarian: "Право", answer: "pravo" },
+];
+
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
+const generateQuestions = (): Question[] => {
+  const shuffled = shuffleArray(directionData);
+  return shuffled.slice(0, 8).map(item => {
+    const wrongOptions = shuffleArray(directionData.filter(d => d.answer !== item.answer))
+      .slice(0, 3)
+      .map(d => ({ emoji: d.emoji, answer: d.answer }));
+    const options = shuffleArray([{ emoji: item.emoji, answer: item.answer }, ...wrongOptions]);
+    return {
+      emoji: item.emoji,
+      bulgarian: item.bulgarian,
+      answer: item.answer,
+      options,
+    };
+  });
+};
+
+export const DirectionsBeginnerLesson = () => {
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
+  const [earnedXP, setEarnedXP] = useState(0);
+  const [isRevision, setIsRevision] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, updateXP } = useAuth();
+  const { canEarnXP, isLessonCompleted, refetch } = useUserProgress();
+
+  useEffect(() => {
+    setQuestions(generateQuestions());
+    setIsRevision(isLessonCompleted(LESSON_ID));
+  }, []);
+
+  const currentQuestion = questions[currentStep];
+  const progress = questions.length > 0 ? ((currentStep + 1) / questions.length) * 100 : 0;
+
+  const playPronunciation = async (text: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("text-to-speech", {
+        body: { text, voice: "alloy" },
+      });
+      if (error) throw error;
+      const audio = new Audio(`data:audio/mp3;base64,${data.audioContent}`);
+      audio.play();
+    } catch (error) {
+      console.error("Error playing pronunciation:", error);
+    }
+  };
+
+  const handleSelect = (answer: string) => {
+    if (isCorrect !== null) return;
+    setSelectedAnswer(answer);
+    const correct = answer === currentQuestion.answer;
+    setIsCorrect(correct);
+    if (correct) setCorrectAnswers(prev => prev + 1);
+  };
+
+  const nextQuestion = async () => {
+    if (currentStep < questions.length - 1) {
+      setCurrentStep(currentStep + 1);
+      setSelectedAnswer(null);
+      setIsCorrect(null);
+    } else {
+      const canEarn = canEarnXP(LESSON_ID);
+      let xpEarned = 0;
+      
+      if (canEarn && !isRevision && user?.id) {
+        const baseXP = Math.round((correctAnswers / questions.length) * XP_REWARD);
+        xpEarned = baseXP;
+        await updateXP(xpEarned);
+        
+        await supabase.from("user_progress").upsert({
+          user_id: user.id,
+          lesson_id: LESSON_ID,
+          completed: true,
+          score: xpEarned,
+          correct_answers: correctAnswers,
+          total_answers: questions.length,
+          completed_at: new Date().toISOString(),
+        }, { onConflict: "user_id,lesson_id" });
+        
+        refetch();
+      }
+      
+      setEarnedXP(xpEarned);
+      setIsComplete(true);
+    }
+  };
+
+  useLessonKeyboardNavigation({
+    isAnswered: isCorrect !== null,
+    onNext: nextQuestion,
+    disabled: isComplete,
+  });
+
+  const handleBack = () => {
+    navigate("/", { state: { selectedCategory: location.state?.selectedCategory || "lessons" } });
+  };
+
+  if (isComplete) {
+    return (
+      <LessonComplete
+        lessonKey={LESSON_ID}
+        score={earnedXP}
+        xpEarned={earnedXP}
+        correctAnswers={correctAnswers}
+        totalQuestions={questions.length}
+        isRevision={isRevision}
+      />
+    );
+  }
+
+  if (!currentQuestion) return null;
+
+  return (
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="flex items-center gap-4 mb-6">
+          <Button variant="ghost" size="icon" onClick={handleBack}>
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div className="flex-1">
+            <Progress value={progress} className="h-3" />
+          </div>
+          <span className="text-sm font-medium">{currentStep + 1}/{questions.length}</span>
+        </div>
+
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-center">
+              Choose the correct direction emoji
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <p className="text-4xl font-bold">{currentQuestion.bulgarian}</p>
+                <Button variant="ghost" size="icon" onClick={() => playPronunciation(currentQuestion.bulgarian)}>
+                  <Volume2 className="w-6 h-6" />
+                </Button>
+              </div>
+              <p className="text-muted-foreground">({currentQuestion.answer})</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {currentQuestion.options.map((option, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  className={cn(
+                    "h-24 text-5xl",
+                    isCorrect !== null && option.answer === currentQuestion.answer && "bg-green-500 border-green-500",
+                    isCorrect === false && selectedAnswer === option.answer && "bg-red-500 border-red-500"
+                  )}
+                  onClick={() => handleSelect(option.answer)}
+                  disabled={isCorrect !== null}
+                >
+                  {option.emoji}
+                </Button>
+              ))}
+            </div>
+
+            {isCorrect !== null && (
+              <div className={cn(
+                "flex items-center justify-center gap-2 p-4 rounded-lg animate-fade-in",
+                isCorrect ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
+              )}>
+                {isCorrect ? (
+                  <><Check className="w-6 h-6" /><span className="font-bold">Correct!</span></>
+                ) : (
+                  <><X className="w-6 h-6" /><span className="font-bold">The answer is: {currentQuestion.emoji}</span></>
+                )}
+              </div>
+            )}
+
+            {isCorrect !== null && (
+              <Button onClick={nextQuestion} className="w-full">
+                {currentStep < questions.length - 1 ? "Next" : "Complete Lesson"}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+        <div className="text-center text-muted-foreground">
+          <p>Correct: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DirectionsBeginnerLesson;

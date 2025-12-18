@@ -1,4 +1,4 @@
-import { Flame, Trophy, Crown, LogOut, Info, FileQuestion } from "lucide-react";
+import { Flame, Trophy, Crown, LogOut, Info, ClipboardList } from "lucide-react";
 import { ProgressCircle } from "@/components/ui/progress-circle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -67,7 +67,7 @@ export const Header = ({
 
             {/* Quiz */}
             <Button variant="outline" size="sm" onClick={() => navigate("/quiz")} className="hidden md:flex">
-              <FileQuestion className="w-4 h-4 mr-1" />
+              <ClipboardList className="w-4 h-4 mr-1" />
               Quizzes
             </Button>
 
