@@ -39,6 +39,9 @@ import WeekdaysLesson from "./pages/topic/WeekdaysLesson";
 import FoodDrinksLesson from "./pages/topic/FoodDrinksLesson";
 import RestaurantLesson from "./pages/topic/RestaurantLesson";
 import DirectionsLesson from "./pages/topic/DirectionsLesson";
+import DirectionsBeginnerLesson from "./pages/topic/DirectionsBeginnerLesson";
+import DirectionsIntermediateLesson from "./pages/topic/DirectionsIntermediateLesson";
+import DirectionsAdvancedLesson from "./pages/topic/DirectionsAdvancedLesson";
 import WeatherLesson from "./pages/topic/WeatherLesson";
 import AnimalsLesson from "./pages/topic/AnimalsLesson";
 import JobsLesson from "./pages/topic/JobsLesson";
@@ -50,6 +53,9 @@ import PronounsLesson from "./pages/topic/PronounsLesson";
 import EssentialVerbsLesson from "./pages/topic/EssentialVerbsLesson";
 import SurvivalPhrasesLesson from "./pages/topic/SurvivalPhrasesLesson";
 import FoodDrinksStarterLesson from "./pages/topic/FoodDrinksStarterLesson";
+import ParticlesBeginnerLesson from "./pages/topic/ParticlesBeginnerLesson";
+import ParticlesIntermediateLesson from "./pages/topic/ParticlesIntermediateLesson";
+import ParticlesAdvancedLesson from "./pages/topic/ParticlesAdvancedLesson";
 // Spanish Lessons
 import SpanishAlphabetLesson from "./pages/spanish/SpanishAlphabetLesson";
 import SpanishGreetingsLesson from "./pages/spanish/SpanishGreetingsLesson";
@@ -108,6 +114,9 @@ const App = () => (
               <Route path="/topic/food-drinks" element={<FoodDrinksLesson />} />
               <Route path="/topic/restaurant" element={<RestaurantLesson />} />
               <Route path="/topic/directions" element={<DirectionsLesson />} />
+              <Route path="/topic/directions-beginner" element={<DirectionsBeginnerLesson />} />
+              <Route path="/topic/directions-intermediate" element={<DirectionsIntermediateLesson />} />
+              <Route path="/topic/directions-advanced" element={<DirectionsAdvancedLesson />} />
               <Route path="/topic/weather" element={<WeatherLesson />} />
               <Route path="/topic/animals" element={<AnimalsLesson />} />
               <Route path="/topic/jobs" element={<JobsLesson />} />
@@ -118,6 +127,9 @@ const App = () => (
               <Route path="/topic/essential-verbs" element={<EssentialVerbsLesson />} />
               <Route path="/topic/survival-phrases" element={<SurvivalPhrasesLesson />} />
               <Route path="/topic/food-drinks-starter" element={<FoodDrinksStarterLesson />} />
+              <Route path="/topic/particles-beginner" element={<ParticlesBeginnerLesson />} />
+              <Route path="/topic/particles-intermediate" element={<ParticlesIntermediateLesson />} />
+              <Route path="/topic/particles-advanced" element={<ParticlesAdvancedLesson />} />
               {/* Spanish Lessons */}
               <Route path="/spanish/alphabet" element={<SpanishAlphabetLesson />} />
               <Route path="/spanish/greetings" element={<SpanishGreetingsLesson />} />
