@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,15 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Save, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+
+const CATEGORIES = [
+  { value: "general", label: "General" },
+  { value: "vocabulary", label: "Vocabulary" },
+  { value: "grammar", label: "Grammar" },
+  { value: "verbs", label: "Verbs" },
+  { value: "phrases", label: "Phrases" },
+  { value: "culture", label: "Culture" },
+];
 
 interface Question {
   id?: string;
@@ -29,11 +38,52 @@ export const QuizCreator = ({ onBack, editQuizId }: QuizCreatorProps) => {
   const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("general");
   const [isPublic, setIsPublic] = useState(false);
   const [isTimed, setIsTimed] = useState(false);
   const [timeLimit, setTimeLimit] = useState(60);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(!!editQuizId);
+
+  useEffect(() => {
+    if (editQuizId) {
+      loadQuizForEditing();
+    }
+  }, [editQuizId]);
+
+  const loadQuizForEditing = async () => {
+    try {
+      const { data: quiz, error: quizError } = await supabase
+        .from("quizzes")
+        .select("*")
+        .eq("id", editQuizId)
+        .single();
+
+      if (quizError) throw quizError;
+
+      setTitle(quiz.title);
+      setDescription(quiz.description || "");
+      setCategory((quiz as any).category || "general");
+      setIsPublic(quiz.is_public);
+      setIsTimed(quiz.is_timed);
+      setTimeLimit(quiz.time_limit_seconds || 60);
+
+      const { data: questionsData, error: questionsError } = await supabase
+        .from("quiz_questions")
+        .select("*")
+        .eq("quiz_id", editQuizId)
+        .order("order_index");
+
+      if (questionsError) throw questionsError;
+      setQuestions(questionsData || []);
+    } catch (error: any) {
+      toast.error("Failed to load quiz for editing");
+      onBack();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addQuestion = () => {
     setQuestions([
@@ -96,39 +146,76 @@ export const QuizCreator = ({ onBack, editQuizId }: QuizCreatorProps) => {
 
     setSaving(true);
     try {
-      // Create quiz
-      const { data: quiz, error: quizError } = await supabase
-        .from("quizzes")
-        .insert({
-          creator_id: user.id,
-          title: title.trim(),
-          description: description.trim() || null,
-          is_public: isPublic,
-          is_timed: isTimed,
-          time_limit_seconds: isTimed ? timeLimit : null,
-        })
-        .select()
-        .single();
+      if (editQuizId) {
+        // Update existing quiz
+        const { error: quizError } = await supabase
+          .from("quizzes")
+          .update({
+            title: title.trim(),
+            description: description.trim() || null,
+            category,
+            is_public: isPublic,
+            is_timed: isTimed,
+            time_limit_seconds: isTimed ? timeLimit : null,
+          })
+          .eq("id", editQuizId);
 
-      if (quizError) throw quizError;
+        if (quizError) throw quizError;
 
-      // Create questions
-      const questionsToInsert = questions.map((q, idx) => ({
-        quiz_id: quiz.id,
-        question_text: q.question_text.trim(),
-        question_type: q.question_type,
-        correct_answer: q.correct_answer.trim(),
-        options: q.question_type === "choose_word" ? q.options.filter(o => o.trim()) : [],
-        order_index: idx,
-      }));
+        // Delete existing questions and re-insert
+        await supabase.from("quiz_questions").delete().eq("quiz_id", editQuizId);
 
-      const { error: questionsError } = await supabase
-        .from("quiz_questions")
-        .insert(questionsToInsert);
+        const questionsToInsert = questions.map((q, idx) => ({
+          quiz_id: editQuizId,
+          question_text: q.question_text.trim(),
+          question_type: q.question_type,
+          correct_answer: q.correct_answer.trim(),
+          options: q.question_type === "choose_word" ? q.options.filter(o => o.trim()) : [],
+          order_index: idx,
+        }));
 
-      if (questionsError) throw questionsError;
+        const { error: questionsError } = await supabase
+          .from("quiz_questions")
+          .insert(questionsToInsert);
 
-      toast.success("Quiz created successfully!");
+        if (questionsError) throw questionsError;
+
+        toast.success("Quiz updated successfully!");
+      } else {
+        // Create new quiz
+        const { data: quiz, error: quizError } = await supabase
+          .from("quizzes")
+          .insert({
+            creator_id: user.id,
+            title: title.trim(),
+            description: description.trim() || null,
+            category,
+            is_public: isPublic,
+            is_timed: isTimed,
+            time_limit_seconds: isTimed ? timeLimit : null,
+          })
+          .select()
+          .single();
+
+        if (quizError) throw quizError;
+
+        const questionsToInsert = questions.map((q, idx) => ({
+          quiz_id: quiz.id,
+          question_text: q.question_text.trim(),
+          question_type: q.question_type,
+          correct_answer: q.correct_answer.trim(),
+          options: q.question_type === "choose_word" ? q.options.filter(o => o.trim()) : [],
+          order_index: idx,
+        }));
+
+        const { error: questionsError } = await supabase
+          .from("quiz_questions")
+          .insert(questionsToInsert);
+
+        if (questionsError) throw questionsError;
+
+        toast.success("Quiz created successfully!");
+      }
       onBack();
     } catch (error: any) {
       toast.error(error.message || "Failed to save quiz");
@@ -137,13 +224,28 @@ export const QuizCreator = ({ onBack, editQuizId }: QuizCreatorProps) => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  const AddQuestionButton = () => (
+    <Button onClick={addQuestion} variant="outline" className="w-full">
+      <Plus className="w-4 h-4 mr-2" />
+      Add Question
+    </Button>
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={onBack}>
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <h2 className="text-2xl font-bold">Create Quiz</h2>
+        <h2 className="text-2xl font-bold">{editQuizId ? "Edit Quiz" : "Create Quiz"}</h2>
       </div>
 
       <Card>
@@ -169,6 +271,22 @@ export const QuizCreator = ({ onBack, editQuizId }: QuizCreatorProps) => {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your quiz..."
             />
+          </div>
+
+          <div>
+            <Label htmlFor="category">Category</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORIES.map((cat) => (
+                  <SelectItem key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex items-center justify-between">
@@ -213,82 +331,105 @@ export const QuizCreator = ({ onBack, editQuizId }: QuizCreatorProps) => {
         </CardHeader>
         <CardContent className="space-y-6">
           {questions.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              No questions yet. Click "Add Question" to start.
-            </p>
+            <div className="text-center py-8 space-y-4">
+              <p className="text-muted-foreground">
+                No questions yet. Click "Add Question" to start.
+              </p>
+              <AddQuestionButton />
+            </div>
           ) : (
-            questions.map((question, qIndex) => (
-              <Card key={qIndex} className="border-2">
-                <CardContent className="pt-4 space-y-4">
-                  <div className="flex items-start justify-between">
-                    <span className="font-bold text-lg">Q{qIndex + 1}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeQuestion(qIndex)}
-                      className="text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-
-                  <div>
-                    <Label>Question Type</Label>
-                    <Select
-                      value={question.question_type}
-                      onValueChange={(v) => updateQuestion(qIndex, "question_type", v)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="choose_word">Choose the correct word</SelectItem>
-                        <SelectItem value="fill_blank">Fill in the blank</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label>Question Text</Label>
-                    <Input
-                      value={question.question_text}
-                      onChange={(e) => updateQuestion(qIndex, "question_text", e.target.value)}
-                      placeholder="Enter your question..."
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Correct Answer</Label>
-                    <Input
-                      value={question.correct_answer}
-                      onChange={(e) => updateQuestion(qIndex, "correct_answer", e.target.value)}
-                      placeholder="Enter the correct answer..."
-                    />
-                  </div>
-
-                  {question.question_type === "choose_word" && (
-                    <div className="space-y-2">
-                      <Label>Options (include the correct answer)</Label>
-                      {question.options.map((option, oIndex) => (
-                        <Input
-                          key={oIndex}
-                          value={option}
-                          onChange={(e) => updateOption(qIndex, oIndex, e.target.value)}
-                          placeholder={`Option ${oIndex + 1}`}
-                        />
-                      ))}
+            <>
+              {questions.map((question, qIndex) => (
+                <Card key={qIndex} className="border-2">
+                  <CardContent className="pt-4 space-y-4">
+                    <div className="flex items-start justify-between">
+                      <span className="font-bold text-lg">Q{qIndex + 1}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeQuestion(qIndex)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))
+
+                    <div>
+                      <Label>Question Type</Label>
+                      <Select
+                        value={question.question_type}
+                        onValueChange={(v) => updateQuestion(qIndex, "question_type", v)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="choose_word">Choose the correct word</SelectItem>
+                          <SelectItem value="fill_blank">Fill in the blank</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label>Question Text</Label>
+                      {question.question_type === "fill_blank" && (
+                        <p className="text-xs text-muted-foreground mb-1">
+                          Use <code className="bg-muted px-1 rounded">x</code> to mark blanks. 
+                          Example: "I x to the store" or "x x nice day" for consecutive blanks.
+                        </p>
+                      )}
+                      <Input
+                        value={question.question_text}
+                        onChange={(e) => updateQuestion(qIndex, "question_text", e.target.value)}
+                        placeholder={
+                          question.question_type === "fill_blank" 
+                            ? "Enter sentence with x for blanks..."
+                            : "Enter your question..."
+                        }
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Correct Answer</Label>
+                      {question.question_type === "fill_blank" && (
+                        <p className="text-xs text-muted-foreground mb-1">
+                          For multiple blanks, separate answers with commas (e.g., "went, a")
+                        </p>
+                      )}
+                      <Input
+                        value={question.correct_answer}
+                        onChange={(e) => updateQuestion(qIndex, "correct_answer", e.target.value)}
+                        placeholder="Enter the correct answer..."
+                      />
+                    </div>
+
+                    {question.question_type === "choose_word" && (
+                      <div className="space-y-2">
+                        <Label>Options (include the correct answer)</Label>
+                        {question.options.map((option, oIndex) => (
+                          <Input
+                            key={oIndex}
+                            value={option}
+                            onChange={(e) => updateOption(qIndex, oIndex, e.target.value)}
+                            placeholder={`Option ${oIndex + 1}`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+              
+              {/* Add Question button at the bottom */}
+              <AddQuestionButton />
+            </>
           )}
         </CardContent>
       </Card>
 
       <Button onClick={saveQuiz} disabled={saving} className="w-full" size="lg">
         <Save className="w-4 h-4 mr-2" />
-        {saving ? "Saving..." : "Save Quiz"}
+        {saving ? "Saving..." : editQuizId ? "Update Quiz" : "Save Quiz"}
       </Button>
     </div>
   );

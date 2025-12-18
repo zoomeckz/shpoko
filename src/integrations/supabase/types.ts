@@ -161,6 +161,7 @@ export type Database = {
           id: string
           quiz_id: string
           rating: number | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -169,6 +170,7 @@ export type Database = {
           id?: string
           quiz_id: string
           rating?: number | null
+          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -177,6 +179,7 @@ export type Database = {
           id?: string
           quiz_id?: string
           rating?: number | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -232,6 +235,7 @@ export type Database = {
       }
       quizzes: {
         Row: {
+          category: string | null
           created_at: string
           creator_id: string
           description: string | null
@@ -243,6 +247,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          category?: string | null
           created_at?: string
           creator_id: string
           description?: string | null
@@ -254,6 +259,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          category?: string | null
           created_at?: string
           creator_id?: string
           description?: string | null
@@ -371,6 +377,16 @@ export type Database = {
           streak: number
           username: string
           xp: number
+        }[]
+      }
+      get_weekly_top_quiz: {
+        Args: never
+        Returns: {
+          avg_rating: number
+          creator_id: string
+          quiz_id: string
+          quiz_title: string
+          rating_count: number
         }[]
       }
       has_role: {

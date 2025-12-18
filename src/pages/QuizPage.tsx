@@ -12,6 +12,7 @@ import { ArrowLeft } from "lucide-react";
 type ViewState = 
   | { type: "list" }
   | { type: "create" }
+  | { type: "edit"; quizId: string }
   | { type: "play"; quizId: string }
   | { type: "feedback"; quizId: string };
 
@@ -41,10 +42,13 @@ const QuizPage = () => {
             onCreateNew={() => setView({ type: "create" })}
             onPlayQuiz={(quizId) => setView({ type: "play", quizId })}
             onViewFeedback={(quizId) => setView({ type: "feedback", quizId })}
+            onEditQuiz={(quizId) => setView({ type: "edit", quizId })}
           />
         );
       case "create":
         return <QuizCreator onBack={() => setView({ type: "list" })} />;
+      case "edit":
+        return <QuizCreator onBack={() => setView({ type: "list" })} editQuizId={view.quizId} />;
       case "play":
         return <QuizPlayer quizId={view.quizId} onBack={() => setView({ type: "list" })} />;
       case "feedback":
