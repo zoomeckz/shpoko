@@ -38,7 +38,7 @@ export const QuizPlayer = ({ quizId, onBack }: QuizPlayerProps) => {
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [userAnswer, setUserAnswer] = useState("");
+  const [userAnswers, setUserAnswers] = useState<string[]>([]);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [score, setScore] = useState(0);
   const [gameState, setGameState] = useState<"loading" | "playing" | "finished">("loading");
@@ -46,9 +46,12 @@ export const QuizPlayer = ({ quizId, onBack }: QuizPlayerProps) => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackRating, setFeedbackRating] = useState(0);
   const [feedbackComment, setFeedbackComment] = useState("");
+  const [canRateThisWeek, setCanRateThisWeek] = useState(true);
+  const [existingFeedbackId, setExistingFeedbackId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchQuiz();
+    checkWeeklyRating();
   }, [quizId]);
 
   useEffect(() => {
@@ -66,6 +69,27 @@ export const QuizPlayer = ({ quizId, onBack }: QuizPlayerProps) => {
 
     return () => clearInterval(timer);
   }, [gameState, quiz, timeLeft]);
+
+  const checkWeeklyRating = async () => {
+    if (!user) return;
+
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    weekStart.setHours(0, 0, 0, 0);
+
+    const { data, error } = await supabase
+      .from("quiz_feedback")
+      .select("id, created_at")
+      .eq("quiz_id", quizId)
+      .eq("user_id", user.id)
+      .gte("created_at", weekStart.toISOString())
+      .maybeSingle();
+
+    if (!error && data) {
+      setCanRateThisWeek(false);
+      setExistingFeedbackId(data.id);
+    }
+  };
 
   const fetchQuiz = async () => {
     try {
@@ -104,18 +128,45 @@ export const QuizPlayer = ({ quizId, onBack }: QuizPlayerProps) => {
     }
   };
 
+  // Parse blanks from question text (x markers)
+  const parseBlankCount = (text: string): number => {
+    const matches = text.match(/\bx\b/gi);
+    return matches ? matches.length : 0;
+  };
+
+  // Format question text with blank indicators
+  const formatQuestionText = (text: string): string => {
+    return text.replace(/\bx\b/gi, "_____");
+  };
+
   const checkAnswer = () => {
-    if (!userAnswer.trim()) return;
     const current = questions[currentIndex];
-    const correct = userAnswer.toLowerCase().trim() === current.correct_answer.toLowerCase().trim();
-    setIsCorrect(correct);
-    if (correct) setScore((s) => s + 1);
+    const blankCount = parseBlankCount(current.question_text);
+    
+    if (blankCount > 1) {
+      // Multiple blanks - check all answers
+      const correctAnswers = current.correct_answer.split(",").map(a => a.trim().toLowerCase());
+      const userAnswersLower = userAnswers.map(a => a.trim().toLowerCase());
+      
+      const allCorrect = correctAnswers.every((answer, idx) => 
+        userAnswersLower[idx] === answer
+      );
+      
+      setIsCorrect(allCorrect);
+      if (allCorrect) setScore((s) => s + 1);
+    } else {
+      // Single answer
+      const userAnswer = userAnswers[0] || "";
+      const correct = userAnswer.toLowerCase().trim() === current.correct_answer.toLowerCase().trim();
+      setIsCorrect(correct);
+      if (correct) setScore((s) => s + 1);
+    }
   };
 
   const selectOption = (option: string) => {
     const current = questions[currentIndex];
     const correct = option.toLowerCase() === current.correct_answer.toLowerCase();
-    setUserAnswer(option);
+    setUserAnswers([option]);
     setIsCorrect(correct);
     if (correct) setScore((s) => s + 1);
   };
@@ -123,7 +174,7 @@ export const QuizPlayer = ({ quizId, onBack }: QuizPlayerProps) => {
   const nextQuestion = () => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex((i) => i + 1);
-      setUserAnswer("");
+      setUserAnswers([]);
       setIsCorrect(null);
       if (quiz?.is_timed && quiz.time_limit_seconds) {
         setTimeLeft(quiz.time_limit_seconds);
@@ -155,8 +206,13 @@ export const QuizPlayer = ({ quizId, onBack }: QuizPlayerProps) => {
       return;
     }
 
+    if (!canRateThisWeek) {
+      toast.error("You've already rated this quiz this week");
+      return;
+    }
+
     try {
-      const { error } = await supabase.from("quiz_feedback").upsert({
+      const { error } = await supabase.from("quiz_feedback").insert({
         quiz_id: quizId,
         user_id: user.id,
         rating: feedbackRating,
@@ -166,6 +222,7 @@ export const QuizPlayer = ({ quizId, onBack }: QuizPlayerProps) => {
       if (error) throw error;
       toast.success("Thanks for your feedback!");
       setShowFeedback(false);
+      setCanRateThisWeek(false);
     } catch (error: any) {
       toast.error("Failed to submit feedback");
     }
@@ -197,11 +254,16 @@ export const QuizPlayer = ({ quizId, onBack }: QuizPlayerProps) => {
             
             <div className="flex gap-2 justify-center flex-wrap">
               <Button onClick={onBack}>Back to Quizzes</Button>
-              {!isCreator && (
+              {!isCreator && canRateThisWeek && (
                 <Button variant="outline" onClick={() => setShowFeedback(true)}>
                   <MessageSquare className="w-4 h-4 mr-2" />
                   Leave Feedback
                 </Button>
+              )}
+              {!isCreator && !canRateThisWeek && (
+                <p className="text-sm text-muted-foreground">
+                  You've already rated this quiz this week
+                </p>
               )}
             </div>
           </CardContent>
@@ -253,6 +315,7 @@ export const QuizPlayer = ({ quizId, onBack }: QuizPlayerProps) => {
 
   const current = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
+  const blankCount = current.question_type === "fill_blank" ? parseBlankCount(current.question_text) : 0;
 
   return (
     <div className="space-y-4">
@@ -279,29 +342,67 @@ export const QuizPlayer = ({ quizId, onBack }: QuizPlayerProps) => {
           <CardTitle className="text-xl">{quiz.title}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <p className="text-lg font-medium">{current.question_text}</p>
+          <p className="text-lg font-medium">{formatQuestionText(current.question_text)}</p>
 
           {current.question_type === "fill_blank" ? (
             <div className="space-y-4">
-              <Input
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                placeholder="Type your answer..."
-                className={cn(
-                  "text-center text-lg py-6",
-                  isCorrect === true && "border-green-500 bg-green-500/10",
-                  isCorrect === false && "border-red-500 bg-red-500/10"
-                )}
-                disabled={isCorrect !== null}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    if (isCorrect !== null) nextQuestion();
-                    else checkAnswer();
-                  }
-                }}
-              />
+              {blankCount > 1 ? (
+                // Multiple blanks
+                <div className="space-y-2">
+                  {Array.from({ length: blankCount }).map((_, idx) => (
+                    <Input
+                      key={idx}
+                      value={userAnswers[idx] || ""}
+                      onChange={(e) => {
+                        const newAnswers = [...userAnswers];
+                        newAnswers[idx] = e.target.value;
+                        setUserAnswers(newAnswers);
+                      }}
+                      placeholder={`Answer ${idx + 1}...`}
+                      className={cn(
+                        "text-center text-lg py-6",
+                        isCorrect === true && "border-green-500 bg-green-500/10",
+                        isCorrect === false && "border-red-500 bg-red-500/10"
+                      )}
+                      disabled={isCorrect !== null}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          if (isCorrect !== null) nextQuestion();
+                          else if (userAnswers.filter(a => a?.trim()).length === blankCount) checkAnswer();
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : (
+                // Single blank
+                <Input
+                  value={userAnswers[0] || ""}
+                  onChange={(e) => setUserAnswers([e.target.value])}
+                  placeholder="Type your answer..."
+                  className={cn(
+                    "text-center text-lg py-6",
+                    isCorrect === true && "border-green-500 bg-green-500/10",
+                    isCorrect === false && "border-red-500 bg-red-500/10"
+                  )}
+                  disabled={isCorrect !== null}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      if (isCorrect !== null) nextQuestion();
+                      else checkAnswer();
+                    }
+                  }}
+                />
+              )}
               {isCorrect === null && (
-                <Button onClick={checkAnswer} className="w-full" disabled={!userAnswer.trim()}>
+                <Button 
+                  onClick={checkAnswer} 
+                  className="w-full" 
+                  disabled={blankCount > 1 
+                    ? userAnswers.filter(a => a?.trim()).length !== blankCount 
+                    : !userAnswers[0]?.trim()
+                  }
+                >
                   Check Answer
                 </Button>
               )}
@@ -316,7 +417,7 @@ export const QuizPlayer = ({ quizId, onBack }: QuizPlayerProps) => {
                     "h-auto py-4 text-wrap",
                     isCorrect !== null && option.toLowerCase() === current.correct_answer.toLowerCase() &&
                       "bg-green-500/20 border-green-500",
-                    isCorrect !== null && userAnswer === option && !isCorrect &&
+                    isCorrect !== null && userAnswers[0] === option && !isCorrect &&
                       "bg-red-500/20 border-red-500"
                   )}
                   onClick={() => selectOption(option)}
