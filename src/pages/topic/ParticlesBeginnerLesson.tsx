@@ -309,21 +309,13 @@ export const ParticlesBeginnerLesson = () => {
               </div>
 
               <div className="space-y-3">
-                <p className="text-sm font-medium">Examples (hover to see meaning):</p>
+                <p className="text-sm font-medium">Examples:</p>
                 {currentParticle.examples.map((example, idx) => (
-                  <TooltipProvider key={idx}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="bg-card border rounded-lg p-3 cursor-help hover:bg-accent/30 transition-colors">
-                          <p className="font-medium">{example.bulgarian}</p>
-                          <p className="text-sm text-muted-foreground">{example.romanized}</p>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{example.english}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <div key={idx} className="bg-card border rounded-lg p-3">
+                    <p className="font-medium">{example.bulgarian}</p>
+                    <p className="text-sm text-muted-foreground">{example.romanized}</p>
+                    <p className="text-sm text-primary mt-1">{example.english}</p>
+                  </div>
                 ))}
               </div>
 
