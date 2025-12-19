@@ -56,6 +56,7 @@ import FoodDrinksStarterLesson from "./pages/topic/FoodDrinksStarterLesson";
 import ParticlesBeginnerLesson from "./pages/topic/ParticlesBeginnerLesson";
 import ParticlesIntermediateLesson from "./pages/topic/ParticlesIntermediateLesson";
 import ParticlesAdvancedLesson from "./pages/topic/ParticlesAdvancedLesson";
+import { CyrillicLettersLesson } from "./pages/topic/CyrillicLettersLesson";
 // Spanish Lessons
 import SpanishAlphabetLesson from "./pages/spanish/SpanishAlphabetLesson";
 import SpanishGreetingsLesson from "./pages/spanish/SpanishGreetingsLesson";
@@ -130,6 +131,7 @@ const App = () => (
               <Route path="/topic/particles-beginner" element={<ParticlesBeginnerLesson />} />
               <Route path="/topic/particles-intermediate" element={<ParticlesIntermediateLesson />} />
               <Route path="/topic/particles-advanced" element={<ParticlesAdvancedLesson />} />
+              <Route path="/topic/cyrillic-letters" element={<CyrillicLettersLesson />} />
               {/* Spanish Lessons */}
               <Route path="/spanish/alphabet" element={<SpanishAlphabetLesson />} />
               <Route path="/spanish/greetings" element={<SpanishGreetingsLesson />} />
