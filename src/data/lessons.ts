@@ -27,6 +27,18 @@ export const lessons: Lesson[] = [
     route: "/lesson/cyrillic",
   },
   {
+    id: "cyrillic-letters",
+    title: "Cyrillic Letters Deep Dive",
+    description: "Learn, quiz, and match Cyrillic letters with their romanizations",
+    level: 2,
+    xpReward: 80,
+    progress: 0,
+    status: "available",
+    difficulty: "beginner",
+    category: "Basics",
+    route: "/topic/cyrillic-letters",
+  },
+  {
     id: "pronouns-topic",
     title: "Pronouns & Sentences",
     description: "Learn pronouns (аз, ти, той...) and simple sentence structures",
