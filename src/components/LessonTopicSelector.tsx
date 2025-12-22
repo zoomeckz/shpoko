@@ -11,15 +11,10 @@ import { useStreakUnlocks } from "@/hooks/useStreakUnlocks";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useLanguageMode } from "@/contexts/LanguageModeContext";
+import { getTranslations } from "@/lib/translations";
 
 type DifficultyLevel = "beginner" | "intermediate" | "advanced" | "premium";
-
-const difficulties: { id: DifficultyLevel; label: string; color: string; icon: string }[] = [
-  { id: "beginner", label: "Beginner", color: "bg-green-500", icon: "🌱" },
-  { id: "intermediate", label: "Intermediate", color: "bg-blue-500", icon: "📚" },
-  { id: "advanced", label: "Advanced", color: "bg-purple-500", icon: "🎓" },
-  { id: "premium", label: "Premium", color: "bg-yellow-500", icon: "👑" },
-];
 
 const getLessonsByDifficulty = (difficulty: string) => {
   if (difficulty === "premium") {
@@ -44,9 +39,10 @@ interface LessonItemProps {
   isCompleted: boolean;
   onClick: () => void;
   premiumIndex?: number;
+  t: ReturnType<typeof getTranslations>;
 }
 
-const LessonItem = ({ lesson, isCompleted, onClick, premiumIndex }: LessonItemProps) => {
+const LessonItem = ({ lesson, isCompleted, onClick, premiumIndex, t }: LessonItemProps) => {
   const { profile } = useAuth();
   const { isPremiumLessonUnlocked } = useStreakUnlocks();
   const { canEarnXP } = useUserProgress();
@@ -91,20 +87,20 @@ const LessonItem = ({ lesson, isCompleted, onClick, premiumIndex }: LessonItemPr
               )}
               {isUnlockedByStreak && !hasFullPremium && (
                 <Badge variant="outline" className="text-xs border-warning text-warning">
-                  Streak
+                  {t.streak}
                 </Badge>
               )}
               {isRevisionOnly && (
                 <Badge variant="outline" className="text-xs border-muted-foreground text-muted-foreground">
                   <RotateCcw className="w-3 h-3 mr-1" />
-                  Revise
+                  {t.revise}
                 </Badge>
               )}
             </div>
             <p className="text-xs text-muted-foreground truncate">{lesson.description}</p>
           </div>
           <Badge variant="secondary" className="flex-shrink-0">
-            {lesson.xpReward} XP
+            {lesson.xpReward} {t.xp}
           </Badge>
         </div>
       </TooltipTrigger>
@@ -134,6 +130,15 @@ export const LessonTopicSelector = () => {
   const { isLessonCompleted } = useUserProgress();
   const { unlockedPremiumLessons, daysUntilNextUnlock } = useStreakUnlocks();
   const navigate = useNavigate();
+  const { uiLanguage } = useLanguageMode();
+  const t = getTranslations(uiLanguage);
+
+  const difficulties: { id: DifficultyLevel; label: string; color: string; icon: string }[] = [
+    { id: "beginner", label: t.beginner, color: "bg-green-500", icon: "🌱" },
+    { id: "intermediate", label: t.intermediate, color: "bg-blue-500", icon: "📚" },
+    { id: "advanced", label: t.advanced, color: "bg-purple-500", icon: "🎓" },
+    { id: "premium", label: t.premium, color: "bg-yellow-500", icon: "👑" },
+  ];
 
   const beginnerCompletion = useTierCompletion("beginner");
   const intermediateCompletion = useTierCompletion("intermediate");
@@ -153,7 +158,7 @@ export const LessonTopicSelector = () => {
   if (!selectedDifficulty) {
     return (
       <div className="space-y-4">
-        <h2 className="text-xl font-bold text-center mb-6">Choose Your Level</h2>
+        <h2 className="text-xl font-bold text-center mb-6">{t.chooseYourLevel}</h2>
         
         <div className="grid grid-cols-2 gap-4">
           {difficulties.map((diff) => {
@@ -176,17 +181,17 @@ export const LessonTopicSelector = () => {
                   <div className="text-4xl mb-3">{diff.icon}</div>
                   <h3 className="font-bold text-lg mb-1">{diff.label}</h3>
                   <p className="text-sm text-muted-foreground mb-2">
-                    {lessonCount} lessons
+                    {lessonCount} {t.lessonsCount}
                   </p>
                   {completion && (
                     <Badge variant={completion.isComplete ? "default" : "secondary"} className="text-xs">
-                      {completion.completedCount}/{completion.totalCount} completed
+                      {completion.completedCount}/{completion.totalCount} {t.completed}
                     </Badge>
                   )}
                   {diff.id === "premium" && unlockedPremiumLessons > 0 && (
                     <Badge variant="outline" className="text-xs border-warning text-warning ml-2">
                       <Flame className="w-3 h-3 mr-1" />
-                      {unlockedPremiumLessons} unlocked
+                      {unlockedPremiumLessons} {t.unlocked}
                     </Badge>
                   )}
                 </CardContent>
@@ -213,16 +218,16 @@ export const LessonTopicSelector = () => {
       {/* Back button and header */}
       <div className="flex items-center gap-4 mb-4">
         <Button variant="ghost" size="sm" onClick={() => setSelectedDifficulty(null)}>
-          ← Back
+          {t.back}
         </Button>
         <div className="flex items-center gap-2">
           <span className="text-2xl">{diffInfo.icon}</span>
-          <h2 className="text-xl font-bold">{diffInfo.label} Lessons</h2>
+          <h2 className="text-xl font-bold">{diffInfo.label} {t.lessonsLabel}</h2>
         </div>
         {unlockedPremiumLessons > 0 && selectedDifficulty === "premium" && (
           <Badge variant="outline" className="text-warning border-warning ml-auto">
             <Flame className="w-3 h-3 mr-1" />
-            {unlockedPremiumLessons} Unlocked
+            {unlockedPremiumLessons} {t.unlocked}
           </Badge>
         )}
       </div>
@@ -246,15 +251,15 @@ export const LessonTopicSelector = () => {
                 {tierCompletion.isComplete ? <GraduationCap className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
               </div>
               <div className="flex-1">
-                <div className="font-bold capitalize">{selectedDifficulty} Assessment</div>
+                <div className="font-bold capitalize">{diffInfo.label} {t.assessment}</div>
                 <p className="text-sm text-muted-foreground">
                   {tierCompletion.isComplete 
-                    ? "Test your knowledge of all lessons!" 
-                    : `Complete ${tierCompletion.totalCount - tierCompletion.completedCount} more lessons to unlock`}
+                    ? t.testYourKnowledge
+                    : `${tierCompletion.totalCount - tierCompletion.completedCount} ${t.completeMoreLessons}`}
                 </p>
               </div>
               {tierCompletion.isComplete && (
-                <Badge className="bg-primary">Take Test</Badge>
+                <Badge className="bg-primary">{t.takeTest}</Badge>
               )}
             </div>
           </CardContent>
@@ -293,6 +298,7 @@ export const LessonTopicSelector = () => {
                       onClick={() => handleLessonClick(lesson)}
                       premiumIndex={selectedDifficulty === "premium" ? 
                         lessons.filter(l => l.isPremium).indexOf(lesson) : undefined}
+                      t={t}
                     />
                   ))}
                 </CardContent>
@@ -305,15 +311,15 @@ export const LessonTopicSelector = () => {
       {selectedDifficulty === "premium" && (
         <p className="text-xs text-muted-foreground text-center py-2">
           <Flame className="w-3 h-3 inline mr-1" />
-          Every 5 streak days unlocks 1 premium lesson!
-          {daysUntilNextUnlock > 0 && ` (${daysUntilNextUnlock} days to next)`}
+          {t.everyStreakUnlocks}
+          {daysUntilNextUnlock > 0 && ` (${daysUntilNextUnlock} ${t.daysToNext})`}
         </p>
       )}
 
       {diffLessons.length === 0 && (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
-            No lessons available in this category yet.
+            {t.noLessonsAvailable}
           </CardContent>
         </Card>
       )}

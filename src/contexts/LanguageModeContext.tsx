@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-export type LanguageMode = 'bulgarian' | 'spanish';
+export type LanguageMode = 'bulgarian' | 'spanish' | 'swedish';
 
 interface LanguageModeContextType {
   languageMode: LanguageMode;
   setLanguageMode: (mode: LanguageMode) => void;
   // UI language (what the interface shows)
-  uiLanguage: 'english' | 'bulgarian';
+  uiLanguage: 'english' | 'bulgarian' | 'swedish';
   // Target language (what user is learning)
   targetLanguage: 'bulgarian' | 'spanish';
 }
@@ -24,10 +24,12 @@ export const LanguageModeProvider: React.FC<{ children: ReactNode }> = ({ childr
     localStorage.setItem('languageMode', mode);
   };
 
-  // When learning Bulgarian: UI is English, target is Bulgarian
-  // When learning Spanish: UI is Bulgarian, target is Spanish
-  const uiLanguage = languageMode === 'bulgarian' ? 'english' : 'bulgarian';
-  const targetLanguage = languageMode === 'bulgarian' ? 'bulgarian' : 'spanish';
+  // When learning Bulgarian (English UI): UI is English, target is Bulgarian
+  // When learning Spanish (Bulgarian UI): UI is Bulgarian, target is Spanish  
+  // When learning Bulgarian (Swedish UI): UI is Swedish, target is Bulgarian
+  const uiLanguage = languageMode === 'bulgarian' ? 'english' : 
+                     languageMode === 'swedish' ? 'swedish' : 'bulgarian';
+  const targetLanguage = languageMode === 'spanish' ? 'spanish' : 'bulgarian';
 
   return (
     <LanguageModeContext.Provider value={{ 
