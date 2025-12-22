@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguageMode } from "@/contexts/LanguageModeContext";
+import { getTranslations } from "@/lib/translations";
 import { Card, CardContent } from "@/components/ui/card";
 import { Trophy, Crown, ArrowRight } from "lucide-react";
 
@@ -18,6 +20,8 @@ export const LeaderboardRankTracker = () => {
   const [totalUsers, setTotalUsers] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const { profile } = useAuth();
+  const { uiLanguage } = useLanguageMode();
+  const t = getTranslations(uiLanguage);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -45,10 +49,10 @@ export const LeaderboardRankTracker = () => {
   }
 
   const getRankDisplay = () => {
-    if (!userRank) return "Not ranked";
-    if (userRank === 1) return "🥇 1st Place";
-    if (userRank === 2) return "🥈 2nd Place";
-    if (userRank === 3) return "🥉 3rd Place";
+    if (!userRank) return t.notRanked;
+    if (userRank === 1) return uiLanguage === 'swedish' ? "🥇 1:a plats" : uiLanguage === 'bulgarian' ? "🥇 1-во място" : "🥇 1st Place";
+    if (userRank === 2) return uiLanguage === 'swedish' ? "🥈 2:a plats" : uiLanguage === 'bulgarian' ? "🥈 2-ро място" : "🥈 2nd Place";
+    if (userRank === 3) return uiLanguage === 'swedish' ? "🥉 3:e plats" : uiLanguage === 'bulgarian' ? "🥉 3-то място" : "🥉 3rd Place";
     return `#${userRank}`;
   };
 
@@ -72,7 +76,7 @@ export const LeaderboardRankTracker = () => {
               <Trophy className="w-8 h-8 text-yellow-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Leaderboard Rank</p>
+              <p className="text-sm text-muted-foreground">{t.leaderboardRank}</p>
               <div className="flex items-center gap-2">
                 <span className={`text-2xl font-bold ${getRankColor()}`}>
                   {getRankDisplay()}
@@ -83,7 +87,7 @@ export const LeaderboardRankTracker = () => {
               </div>
               {totalUsers > 0 && userRank && (
                 <p className="text-xs text-muted-foreground">
-                  out of {totalUsers} learners
+                  {t.outOfLearners.replace('{count}', totalUsers.toString())}
                 </p>
               )}
             </div>

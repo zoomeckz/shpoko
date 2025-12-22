@@ -5,45 +5,73 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, ChevronRight, Star, Sparkles } from "lucide-react";
 import { ShpokoMascot } from "@/components/ShpokoMascot";
+import { useLanguageMode } from "@/contexts/LanguageModeContext";
+import { getTranslations } from "@/lib/translations";
 
 interface Story {
   id: string;
-  title: string;
+  titleEN: string;
+  titleSV: string;
+  titleBG: string;
   level: "beginner" | "intermediate" | "advanced";
   xpReward: number;
-  preview: string;
+  previewEN: string;
+  previewSV: string;
+  previewBG: string;
 }
 
 const stories: Story[] = [
   {
     id: "morning",
-    title: "Good Morning",
+    titleEN: "Good Morning",
+    titleSV: "God morgon",
+    titleBG: "Добро утро",
     level: "beginner",
     xpReward: 15,
-    preview: "A simple story about morning routines...",
+    previewEN: "A simple story about morning routines...",
+    previewSV: "En enkel berättelse om morgonrutiner...",
+    previewBG: "Проста история за сутрешни рутини...",
   },
   {
     id: "market",
-    title: "At the Market",
+    titleEN: "At the Market",
+    titleSV: "På marknaden",
+    titleBG: "На пазара",
     level: "beginner",
     xpReward: 15,
-    preview: "Shopping for fresh apples...",
+    previewEN: "Shopping for fresh apples...",
+    previewSV: "Handla färska äpplen...",
+    previewBG: "Пазаруване на пресни ябълки...",
   },
   {
     id: "family",
-    title: "My Family",
+    titleEN: "My Family",
+    titleSV: "Min familj",
+    titleBG: "Моето семейство",
     level: "beginner",
     xpReward: 15,
-    preview: "Learn about family members...",
+    previewEN: "Learn about family members...",
+    previewSV: "Lär dig om familjemedlemmar...",
+    previewBG: "Научете за членовете на семейството...",
   },
   {
     id: "weather",
-    title: "The Weather",
+    titleEN: "The Weather",
+    titleSV: "Vädret",
+    titleBG: "Времето",
     level: "beginner",
     xpReward: 15,
-    preview: "A sunny day outside...",
+    previewEN: "A sunny day outside...",
+    previewSV: "En solig dag utomhus...",
+    previewBG: "Слънчев ден навън...",
   },
 ];
+
+const levelLabels = {
+  english: { beginner: "beginner", intermediate: "intermediate", advanced: "advanced" },
+  swedish: { beginner: "nybörjare", intermediate: "medel", advanced: "avancerad" },
+  bulgarian: { beginner: "начинаещ", intermediate: "средно", advanced: "напреднал" },
+};
 
 const levelColors = {
   beginner: "bg-green-500/10 text-green-600 border-green-500/30",
@@ -53,6 +81,24 @@ const levelColors = {
 
 export const ShortStories = () => {
   const navigate = useNavigate();
+  const { uiLanguage } = useLanguageMode();
+  const t = getTranslations(uiLanguage);
+
+  const getTitle = (story: Story) => {
+    if (uiLanguage === 'swedish') return story.titleSV;
+    if (uiLanguage === 'bulgarian') return story.titleBG;
+    return story.titleEN;
+  };
+
+  const getPreview = (story: Story) => {
+    if (uiLanguage === 'swedish') return story.previewSV;
+    if (uiLanguage === 'bulgarian') return story.previewBG;
+    return story.previewEN;
+  };
+
+  const getLevelLabel = (level: "beginner" | "intermediate" | "advanced") => {
+    return levelLabels[uiLanguage][level];
+  };
 
   return (
     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
@@ -60,12 +106,12 @@ export const ShortStories = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-primary" />
-            <CardTitle className="text-lg">Short Stories</CardTitle>
+            <CardTitle className="text-lg">{t.shortStories}</CardTitle>
           </div>
           <ShpokoMascot size="xs" />
         </div>
         <p className="text-sm text-muted-foreground">
-          Read stories & answer questions to earn XP!
+          {t.readStoriesDescription}
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -76,10 +122,10 @@ export const ShortStories = () => {
             className="p-3 rounded-lg border bg-card hover:border-primary hover:shadow-sm transition-all cursor-pointer"
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="font-medium">{story.title}</span>
+              <span className="font-medium">{getTitle(story)}</span>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className={levelColors[story.level]}>
-                  {story.level}
+                  {getLevelLabel(story.level)}
                 </Badge>
                 <Badge className="bg-primary/10 text-primary border-0">
                   <Star className="w-3 h-3 mr-1 fill-current" />
@@ -87,7 +133,7 @@ export const ShortStories = () => {
                 </Badge>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">{story.preview}</p>
+            <p className="text-xs text-muted-foreground">{getPreview(story)}</p>
           </div>
         ))}
 
@@ -97,7 +143,7 @@ export const ShortStories = () => {
           variant="outline"
         >
           <Sparkles className="w-4 h-4" />
-          View All Stories
+          {t.viewAllStories}
           <ChevronRight className="w-4 h-4" />
         </Button>
       </CardContent>

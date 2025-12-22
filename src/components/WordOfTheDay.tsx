@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { ShpokoMascot } from "@/components/ShpokoMascot";
 import { useLanguageMode } from "@/contexts/LanguageModeContext";
+import { getTranslations } from "@/lib/translations";
 
 interface DailyWord {
   word: string;
@@ -9,21 +10,21 @@ interface DailyWord {
   examples: {
     bulgarian: string;
     pronunciation: string;
-    english: string;
+    translation: string;
   }[];
 }
 
 // Bulgarian words (for learning Bulgarian - English UI)
-const bulgarianWordsOfTheDay: DailyWord[] = [
+const bulgarianWordsEN: DailyWord[] = [
   {
     word: "Харесвам",
     pronunciation: "Kharesvam",
     meaning: "To like",
     examples: [
-      { bulgarian: "Харесва ми.", pronunciation: "Kharesva mi.", english: "I like it." },
-      { bulgarian: "Харесва ли ти?", pronunciation: "Kharesva li ti?", english: "Do you like it?" },
-      { bulgarian: "Тя ме харесва.", pronunciation: "Tya me kharesva.", english: "She likes me." },
-      { bulgarian: "Харесвам тази книга.", pronunciation: "Kharesvam tazi kniga.", english: "I like this book." },
+      { bulgarian: "Харесва ми.", pronunciation: "Kharesva mi.", translation: "I like it." },
+      { bulgarian: "Харесва ли ти?", pronunciation: "Kharesva li ti?", translation: "Do you like it?" },
+      { bulgarian: "Тя ме харесва.", pronunciation: "Tya me kharesva.", translation: "She likes me." },
+      { bulgarian: "Харесвам тази книга.", pronunciation: "Kharesvam tazi kniga.", translation: "I like this book." },
     ],
   },
   {
@@ -31,10 +32,10 @@ const bulgarianWordsOfTheDay: DailyWord[] = [
     pronunciation: "Iskam",
     meaning: "To want",
     examples: [
-      { bulgarian: "Искам вода.", pronunciation: "Iskam voda.", english: "I want water." },
-      { bulgarian: "Какво искаш?", pronunciation: "Kakvo iskash?", english: "What do you want?" },
-      { bulgarian: "Той иска да яде.", pronunciation: "Toy iska da yade.", english: "He wants to eat." },
-      { bulgarian: "Искам да отида.", pronunciation: "Iskam da otida.", english: "I want to go." },
+      { bulgarian: "Искам вода.", pronunciation: "Iskam voda.", translation: "I want water." },
+      { bulgarian: "Какво искаш?", pronunciation: "Kakvo iskash?", translation: "What do you want?" },
+      { bulgarian: "Той иска да яде.", pronunciation: "Toy iska da yade.", translation: "He wants to eat." },
+      { bulgarian: "Искам да отида.", pronunciation: "Iskam da otida.", translation: "I want to go." },
     ],
   },
   {
@@ -42,10 +43,10 @@ const bulgarianWordsOfTheDay: DailyWord[] = [
     pronunciation: "Moga",
     meaning: "Can / To be able",
     examples: [
-      { bulgarian: "Мога да помогна.", pronunciation: "Moga da pomogna.", english: "I can help." },
-      { bulgarian: "Можеш ли?", pronunciation: "Mozhesh li?", english: "Can you?" },
-      { bulgarian: "Не мога.", pronunciation: "Ne moga.", english: "I can't." },
-      { bulgarian: "Мога да говоря.", pronunciation: "Moga da govorya.", english: "I can speak." },
+      { bulgarian: "Мога да помогна.", pronunciation: "Moga da pomogna.", translation: "I can help." },
+      { bulgarian: "Можеш ли?", pronunciation: "Mozhesh li?", translation: "Can you?" },
+      { bulgarian: "Не мога.", pronunciation: "Ne moga.", translation: "I can't." },
+      { bulgarian: "Мога да говоря.", pronunciation: "Moga da govorya.", translation: "I can speak." },
     ],
   },
   {
@@ -53,10 +54,10 @@ const bulgarianWordsOfTheDay: DailyWord[] = [
     pronunciation: "Obicham",
     meaning: "To love",
     examples: [
-      { bulgarian: "Обичам те.", pronunciation: "Obicham te.", english: "I love you." },
-      { bulgarian: "Обичам храна.", pronunciation: "Obicham hrana.", english: "I love food." },
-      { bulgarian: "Тя ме обича.", pronunciation: "Tya me obicha.", english: "She loves me." },
-      { bulgarian: "Обичам да чета.", pronunciation: "Obicham da cheta.", english: "I love to read." },
+      { bulgarian: "Обичам те.", pronunciation: "Obicham te.", translation: "I love you." },
+      { bulgarian: "Обичам храна.", pronunciation: "Obicham hrana.", translation: "I love food." },
+      { bulgarian: "Тя ме обича.", pronunciation: "Tya me obicha.", translation: "She loves me." },
+      { bulgarian: "Обичам да чета.", pronunciation: "Obicham da cheta.", translation: "I love to read." },
     ],
   },
   {
@@ -64,10 +65,69 @@ const bulgarianWordsOfTheDay: DailyWord[] = [
     pronunciation: "Imam",
     meaning: "To have",
     examples: [
-      { bulgarian: "Имам време.", pronunciation: "Imam vreme.", english: "I have time." },
-      { bulgarian: "Имаш ли?", pronunciation: "Imash li?", english: "Do you have?" },
-      { bulgarian: "Нямам.", pronunciation: "Nyamam.", english: "I don't have." },
-      { bulgarian: "Имам идея.", pronunciation: "Imam ideya.", english: "I have an idea." },
+      { bulgarian: "Имам време.", pronunciation: "Imam vreme.", translation: "I have time." },
+      { bulgarian: "Имаш ли?", pronunciation: "Imash li?", translation: "Do you have?" },
+      { bulgarian: "Нямам.", pronunciation: "Nyamam.", translation: "I don't have." },
+      { bulgarian: "Имам идея.", pronunciation: "Imam ideya.", translation: "I have an idea." },
+    ],
+  },
+];
+
+// Bulgarian words (for learning Bulgarian - Swedish UI)
+const bulgarianWordsSV: DailyWord[] = [
+  {
+    word: "Харесвам",
+    pronunciation: "Kharesvam",
+    meaning: "Att gilla",
+    examples: [
+      { bulgarian: "Харесва ми.", pronunciation: "Kharesva mi.", translation: "Jag gillar det." },
+      { bulgarian: "Харесва ли ти?", pronunciation: "Kharesva li ti?", translation: "Gillar du det?" },
+      { bulgarian: "Тя ме харесва.", pronunciation: "Tya me kharesva.", translation: "Hon gillar mig." },
+      { bulgarian: "Харесвам тази книга.", pronunciation: "Kharesvam tazi kniga.", translation: "Jag gillar den här boken." },
+    ],
+  },
+  {
+    word: "Искам",
+    pronunciation: "Iskam",
+    meaning: "Att vilja",
+    examples: [
+      { bulgarian: "Искам вода.", pronunciation: "Iskam voda.", translation: "Jag vill ha vatten." },
+      { bulgarian: "Какво искаш?", pronunciation: "Kakvo iskash?", translation: "Vad vill du ha?" },
+      { bulgarian: "Той иска да яде.", pronunciation: "Toy iska da yade.", translation: "Han vill äta." },
+      { bulgarian: "Искам да отида.", pronunciation: "Iskam da otida.", translation: "Jag vill gå." },
+    ],
+  },
+  {
+    word: "Мога",
+    pronunciation: "Moga",
+    meaning: "Kan / Att kunna",
+    examples: [
+      { bulgarian: "Мога да помогна.", pronunciation: "Moga da pomogna.", translation: "Jag kan hjälpa." },
+      { bulgarian: "Можеш ли?", pronunciation: "Mozhesh li?", translation: "Kan du?" },
+      { bulgarian: "Не мога.", pronunciation: "Ne moga.", translation: "Jag kan inte." },
+      { bulgarian: "Мога да говоря.", pronunciation: "Moga da govorya.", translation: "Jag kan tala." },
+    ],
+  },
+  {
+    word: "Обичам",
+    pronunciation: "Obicham",
+    meaning: "Att älska",
+    examples: [
+      { bulgarian: "Обичам те.", pronunciation: "Obicham te.", translation: "Jag älskar dig." },
+      { bulgarian: "Обичам храна.", pronunciation: "Obicham hrana.", translation: "Jag älskar mat." },
+      { bulgarian: "Тя ме обича.", pronunciation: "Tya me obicha.", translation: "Hon älskar mig." },
+      { bulgarian: "Обичам да чета.", pronunciation: "Obicham da cheta.", translation: "Jag älskar att läsa." },
+    ],
+  },
+  {
+    word: "Имам",
+    pronunciation: "Imam",
+    meaning: "Att ha",
+    examples: [
+      { bulgarian: "Имам време.", pronunciation: "Imam vreme.", translation: "Jag har tid." },
+      { bulgarian: "Имаш ли?", pronunciation: "Imash li?", translation: "Har du?" },
+      { bulgarian: "Нямам.", pronunciation: "Nyamam.", translation: "Jag har inte." },
+      { bulgarian: "Имам идея.", pronunciation: "Imam ideya.", translation: "Jag har en idé." },
     ],
   },
 ];
@@ -155,7 +215,8 @@ const getSpanishWordOfTheDay = (words: SpanishDailyWord[]): SpanishDailyWord => 
 };
 
 export const WordOfTheDay = () => {
-  const { languageMode } = useLanguageMode();
+  const { languageMode, uiLanguage } = useLanguageMode();
+  const t = getTranslations(uiLanguage);
 
   if (languageMode === "spanish") {
     const word = getSpanishWordOfTheDay(spanishWordsOfTheDay);
@@ -163,7 +224,7 @@ export const WordOfTheDay = () => {
       <Card className="p-3 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
         <div className="flex items-center justify-center gap-2 mb-2">
           <ShpokoMascot size="xs" />
-          <h2 className="text-sm font-bold text-foreground">Дума на деня</h2>
+          <h2 className="text-sm font-bold text-foreground">{t.wordOfTheDay}</h2>
         </div>
 
         <div className="text-center mb-3">
@@ -184,13 +245,15 @@ export const WordOfTheDay = () => {
     );
   }
 
-  // Bulgarian mode (default)
-  const word = getWordOfTheDay(bulgarianWordsOfTheDay);
+  // Bulgarian mode (English or Swedish UI)
+  const words = uiLanguage === 'swedish' ? bulgarianWordsSV : bulgarianWordsEN;
+  const word = getWordOfTheDay(words);
+  
   return (
     <Card className="p-3 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
       <div className="flex items-center justify-center gap-2 mb-2">
         <ShpokoMascot size="xs" />
-        <h2 className="text-sm font-bold text-foreground">Word of the Day</h2>
+        <h2 className="text-sm font-bold text-foreground">{t.wordOfTheDay}</h2>
       </div>
 
       <div className="text-center mb-3">
@@ -203,7 +266,7 @@ export const WordOfTheDay = () => {
         {word.examples.slice(0, 2).map((example, index) => (
           <div key={index} className="p-1.5 bg-card/80 rounded text-xs border border-border/50 text-center">
             <div className="font-medium text-primary">{example.bulgarian}</div>
-            <div className="text-muted-foreground">{example.pronunciation} — {example.english}</div>
+            <div className="text-muted-foreground">{example.pronunciation} — {example.translation}</div>
           </div>
         ))}
       </div>
