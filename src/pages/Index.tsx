@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguageMode } from "@/contexts/LanguageModeContext";
+import { getTranslations } from "@/lib/translations";
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
 import { WordOfTheDay } from "@/components/WordOfTheDay";
@@ -12,33 +13,26 @@ import { DailyGames } from "@/components/DailyGames";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { lessons } from "@/data/lessons";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePictureSelector";
 import { Crown, Trophy, Flame, Calendar, BookOpen, Gamepad2, BookText, Brain, Headphones, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type CategoryType = "daily" | "lessons" | "games" | "stories";
 
-const categoriesEN = [
-  { id: "daily" as CategoryType, label: "Daily", icon: Calendar, description: "Daily activities" },
-  { id: "lessons" as CategoryType, label: "Lessons", icon: BookOpen, description: "Learn Bulgarian" },
-  { id: "games" as CategoryType, label: "Games", icon: Gamepad2, description: "Fun challenges" },
-  { id: "stories" as CategoryType, label: "Stories", icon: BookText, description: "Read & learn" },
-];
-
-const categoriesBG = [
-  { id: "daily" as CategoryType, label: "Дневни", icon: Calendar, description: "Ежедневни задачи" },
-  { id: "lessons" as CategoryType, label: "Уроци", icon: BookOpen, description: "Научи испански" },
-  { id: "games" as CategoryType, label: "Игри", icon: Gamepad2, description: "Забавни предизвикателства" },
-  { id: "stories" as CategoryType, label: "Истории", icon: BookText, description: "Чети и учи" },
-];
-
 const Index = () => {
   const { user, profile, loading } = useAuth();
-  const { languageMode } = useLanguageMode();
+  const { languageMode, uiLanguage } = useLanguageMode();
+  const t = getTranslations(uiLanguage);
   const { progress } = useUserProgress();
   const navigate = useNavigate();
   const location = useLocation();
+  
+  const categories = [
+    { id: "daily" as CategoryType, label: t.daily, icon: Calendar, description: t.dailyActivities },
+    { id: "lessons" as CategoryType, label: t.lessons, icon: BookOpen, description: t.learnBulgarian },
+    { id: "games" as CategoryType, label: t.games, icon: Gamepad2, description: t.funChallenges },
+    { id: "stories" as CategoryType, label: t.stories, icon: BookText, description: t.readAndLearn },
+  ];
   
   // Initialize category from navigation state if coming back from a game
   const initialCategory = (location.state?.selectedCategory as CategoryType) || "daily";
@@ -169,8 +163,8 @@ const Index = () => {
                   <div className="p-3 bg-purple-500/20 rounded-full">
                     <Brain className="w-6 h-6 text-purple-500" />
                   </div>
-                  <h3 className="font-bold text-sm">Contexto</h3>
-                  <p className="text-xs text-muted-foreground">Guess the word</p>
+                  <h3 className="font-bold text-sm">{t.contexto}</h3>
+                  <p className="text-xs text-muted-foreground">{t.guessTheWord}</p>
                 </CardContent>
               </Card>
             </Link>
@@ -180,8 +174,8 @@ const Index = () => {
                   <div className="p-3 bg-yellow-500/20 rounded-full">
                     <Gamepad2 className="w-6 h-6 text-yellow-500" />
                   </div>
-                  <h3 className="font-bold text-sm">Rapid Fire</h3>
-                  <p className="text-xs text-muted-foreground">7s rounds</p>
+                  <h3 className="font-bold text-sm">{t.rapidFire}</h3>
+                  <p className="text-xs text-muted-foreground">{t.sevenSecRounds}</p>
                 </CardContent>
               </Card>
             </Link>
@@ -191,8 +185,8 @@ const Index = () => {
                   <div className="p-3 bg-green-500/20 rounded-full">
                     <BookOpen className="w-6 h-6 text-green-500" />
                   </div>
-                  <h3 className="font-bold text-sm">Conjugation</h3>
-                  <p className="text-xs text-muted-foreground">Verb forms</p>
+                  <h3 className="font-bold text-sm">{t.conjugation}</h3>
+                  <p className="text-xs text-muted-foreground">{t.verbForms}</p>
                 </CardContent>
               </Card>
             </Link>
@@ -202,8 +196,8 @@ const Index = () => {
                   <div className="p-3 bg-red-500/20 rounded-full">
                     <Brain className="w-6 h-6 text-red-500" />
                   </div>
-                  <h3 className="font-bold text-sm">Cloze Combat</h3>
-                  <p className="text-xs text-muted-foreground">Find wrong word</p>
+                  <h3 className="font-bold text-sm">{t.clozeCombat}</h3>
+                  <p className="text-xs text-muted-foreground">{t.findWrongWord}</p>
                 </CardContent>
               </Card>
             </Link>
@@ -213,8 +207,8 @@ const Index = () => {
                   <div className="p-3 bg-blue-500/20 rounded-full">
                     <BookText className="w-6 h-6 text-blue-500" />
                   </div>
-                  <h3 className="font-bold text-sm">Fix My Bulgarian</h3>
-                  <p className="text-xs text-muted-foreground">Proofread</p>
+                  <h3 className="font-bold text-sm">{t.fixMyBulgarian}</h3>
+                  <p className="text-xs text-muted-foreground">{t.proofread}</p>
                 </CardContent>
               </Card>
             </Link>
@@ -224,8 +218,8 @@ const Index = () => {
                   <div className="p-3 bg-pink-500/20 rounded-full">
                     <Headphones className="w-6 h-6 text-pink-500" />
                   </div>
-                  <h3 className="font-bold text-sm">Listening Fill</h3>
-                  <p className="text-xs text-muted-foreground">Audio blanks</p>
+                  <h3 className="font-bold text-sm">{t.listeningFill}</h3>
+                  <p className="text-xs text-muted-foreground">{t.audioBlanks}</p>
                 </CardContent>
               </Card>
             </Link>
@@ -235,8 +229,8 @@ const Index = () => {
                   <div className="p-3 bg-cyan-500/20 rounded-full">
                     <MessageCircle className="w-6 h-6 text-cyan-500" />
                   </div>
-                  <h3 className="font-bold text-sm">Dialogue Battle</h3>
-                  <p className="text-xs text-muted-foreground">Real conversations</p>
+                  <h3 className="font-bold text-sm">{t.dialogueBattle}</h3>
+                  <p className="text-xs text-muted-foreground">{t.realConversations}</p>
                 </CardContent>
               </Card>
             </Link>
@@ -278,7 +272,7 @@ const Index = () => {
                     {profile?.is_premium && <Crown className="w-5 h-5 text-yellow-500" />}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {languageMode === "spanish" ? "Ниво" : "Level"} {profile?.level || 1}
+                    {t.level} {profile?.level || 1}
                   </p>
                   <div className="flex items-center gap-4 mt-2">
                     <div className="flex items-center gap-1">
@@ -288,7 +282,7 @@ const Index = () => {
                     <div className="flex items-center gap-1">
                       <Flame className="w-4 h-4 text-warning" />
                       <span className="font-medium">
-                        {profile?.streak || 0} {languageMode === "spanish" ? "дни серия" : "day streak"}
+                        {profile?.streak || 0} {t.dayStreak}
                       </span>
                     </div>
                   </div>
@@ -314,7 +308,7 @@ const Index = () => {
 
         {/* Category Navigation */}
         <div className="grid grid-cols-4 gap-2 mb-6">
-          {(languageMode === "spanish" ? categoriesBG : categoriesEN).map((category) => {
+          {categories.map((category) => {
             const Icon = category.icon;
             const isSelected = selectedCategory === category.id;
             return (

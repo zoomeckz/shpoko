@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguageMode } from "@/contexts/LanguageModeContext";
+import { getTranslations } from "@/lib/translations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -44,8 +45,8 @@ function levenshteinDistance(a: string, b: string): number {
 
 export const DailyGame = ({ title, gameType, items, icon }: DailyGameProps) => {
   const { user, profile, updateXP } = useAuth();
-  const { languageMode } = useLanguageMode();
-  const isSpanish = languageMode === "spanish";
+  const { uiLanguage } = useLanguageMode();
+  const t = getTranslations(uiLanguage);
   const { playCorrect, playIncorrect, playComplete, playSkip } = useSoundEffects();
   const [isOpen, setIsOpen] = useState(false);
   const [gameState, setGameState] = useState<"idle" | "playing" | "finished">("idle");
@@ -215,7 +216,7 @@ export const DailyGame = ({ title, gameType, items, icon }: DailyGameProps) => {
     if (!nextPlayTime) return "";
     const now = new Date();
     const diff = nextPlayTime.getTime() - now.getTime();
-    if (diff <= 0) return "Now!";
+    if (diff <= 0) return uiLanguage === 'swedish' ? "Nu!" : uiLanguage === 'bulgarian' ? "Сега!" : "Now!";
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     return `${hours}h ${minutes}m`;
@@ -244,7 +245,7 @@ export const DailyGame = ({ title, gameType, items, icon }: DailyGameProps) => {
             </div>
             <h3 className={cn("font-bold", isPlayed ? "text-sm" : "text-lg")}>{title}</h3>
             <p className="text-xs text-muted-foreground">
-              {canPlay ? (isSpanish ? "Играй сега!" : "Play now!") : `${formatTimeRemaining()}`}
+              {canPlay ? t.playNow : `${formatTimeRemaining()}`}
             </p>
             {highScore > 0 && (
               <div className={cn("flex items-center gap-1", isPlayed ? "text-green-500" : "text-yellow-500")}>
@@ -271,37 +272,35 @@ export const DailyGame = ({ title, gameType, items, icon }: DailyGameProps) => {
         ) : gameState === "idle" ? (
           <div className="space-y-4 text-center py-4">
             <p className="text-muted-foreground">
-              {isSpanish 
-                ? "Напиши испанското име възможно най-бързо!" 
-                : "Type the Bulgarian name (romanized) as fast as you can!"}
+              {t.typeBulgarianName}
             </p>
             <div className="flex justify-center gap-4">
               <div className="text-center">
                 <Star className="w-6 h-6 text-yellow-500 mx-auto" />
-                <p className="text-sm">{isSpanish ? "Точност" : "Accuracy"}</p>
-                <p className="text-xs text-muted-foreground">{isSpanish ? "До 100 точки" : "Up to 100 pts"}</p>
+                <p className="text-sm">{t.accuracy}</p>
+                <p className="text-xs text-muted-foreground">{t.upToPoints}</p>
               </div>
               <div className="text-center">
                 <Clock className="w-6 h-6 text-primary mx-auto" />
-                <p className="text-sm">{isSpanish ? "Скорост" : "Speed"}</p>
-                <p className="text-xs text-muted-foreground">{isSpanish ? "До 50 точки" : "Up to 50 pts"}</p>
+                <p className="text-sm">{t.speed}</p>
+                <p className="text-xs text-muted-foreground">{uiLanguage === 'swedish' ? 'Upp till 50 poäng' : uiLanguage === 'bulgarian' ? 'До 50 точки' : 'Up to 50 pts'}</p>
               </div>
             </div>
             {highScore > 0 && (
               <p className="text-sm">
-                {isSpanish ? "Твой рекорд: " : "Your high score: "}<span className="font-bold text-yellow-500">{highScore}</span>
+                {t.yourHighScore} <span className="font-bold text-yellow-500">{highScore}</span>
               </p>
             )}
             {canPlay ? (
               <Button onClick={startGame} size="lg" className="w-full">
-                {isSpanish ? "Започни игра (60с)" : "Start Game (60s)"}
+                {t.startGame}
               </Button>
             ) : (
               <div className="space-y-2">
-                <p className="text-error">{isSpanish ? "Върни се след " : "Come back in "}{formatTimeRemaining()}</p>
+                <p className="text-error">{t.comeBackIn} {formatTimeRemaining()}</p>
                 <Button disabled className="w-full">
                   <Lock className="w-4 h-4 mr-2" />
-                  {isSpanish ? "Играта е заключена" : "Game Locked"}
+                  {t.gameLocked}
                 </Button>
               </div>
             )}
@@ -327,17 +326,17 @@ export const DailyGame = ({ title, gameType, items, icon }: DailyGameProps) => {
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder={isSpanish ? "Напиши испанското име..." : "Type Bulgarian name..."}
+                  placeholder={t.typeBulgarianName}
                   className="text-center text-lg"
                   autoFocus
                 />
                 <div className="flex gap-2">
                   <Button onClick={skipQuestion} variant="outline" className="flex-1">
                     <SkipForward className="w-4 h-4 mr-2" />
-                    {isSpanish ? "Пропусни" : "Skip"}
+                    {t.skip}
                   </Button>
                   <Button onClick={submitAnswer} className="flex-1">
-                    {isSpanish ? "Изпрати" : "Submit"}
+                    {t.submit}
                   </Button>
                 </div>
               </div>
@@ -347,30 +346,30 @@ export const DailyGame = ({ title, gameType, items, icon }: DailyGameProps) => {
             {feedback && (
               <div className={`p-3 rounded-lg text-center ${feedback.type === "success" ? "bg-green-500/20 text-green-600" : "bg-blue-500/20 text-blue-600"}`}>
                 <p className="font-medium">
-                  +{feedback.points} {isSpanish ? "точки" : "points"} {feedback.points === 0 && (isSpanish ? "(Пропуснато)" : "(Skipped)")}
+                  +{feedback.points} {t.points} {feedback.points === 0 && `(${t.skipped})`}
                 </p>
-                <p className="text-sm">{isSpanish ? "Отговор: " : "Correct: "}<span className="font-bold">{feedback.correct}</span></p>
+                <p className="text-sm">{t.correctAnswer} <span className="font-bold">{feedback.correct}</span></p>
               </div>
             )}
 
-            <p className="text-center text-sm text-muted-foreground">{isSpanish ? "Отговорено" : "Answered"}: {answeredCount}</p>
+            <p className="text-center text-sm text-muted-foreground">{t.answered}: {answeredCount}</p>
           </div>
         ) : (
           <div className="space-y-4 text-center py-4">
             <div className="text-6xl">🎉</div>
-            <h3 className="text-2xl font-bold">{isSpanish ? "Край на играта!" : "Game Over!"}</h3>
+            <h3 className="text-2xl font-bold">{t.gameOver}</h3>
             <div className="space-y-2">
               <p className="text-lg">
-                {isSpanish ? "Краен резултат: " : "Final Score: "}<span className="font-bold text-primary">{score}</span>
+                {t.finalScore} <span className="font-bold text-primary">{score}</span>
               </p>
-              <p className="text-sm text-muted-foreground">{isSpanish ? "Отговорено" : "Answered"}: {answeredCount}</p>
-              {score > 0 && score >= highScore && <p className="text-yellow-500 font-bold">🏆 {isSpanish ? "Нов рекорд!" : "New High Score!"}</p>}
+              <p className="text-sm text-muted-foreground">{t.answered}: {answeredCount}</p>
+              {score > 0 && score >= highScore && <p className="text-yellow-500 font-bold">🏆 {t.newHighScore}</p>}
               <p className="text-sm">
-                {isSpanish ? "Спечелен опит: " : "XP Earned: "}<span className="font-bold text-primary">+{Math.floor(score / 10)}</span>
+                {t.xpEarned} <span className="font-bold text-primary">+{Math.floor(score / 10)}</span>
               </p>
             </div>
             <Button onClick={() => setIsOpen(false)} className="w-full">
-              {isSpanish ? "Затвори" : "Close"}
+              {t.close}
             </Button>
           </div>
         )}
