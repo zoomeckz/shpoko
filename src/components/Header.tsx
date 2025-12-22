@@ -7,6 +7,8 @@ import { DarkModeToggle } from "@/components/DarkModeToggle";
 import LanguageModeToggle from "@/components/LanguageModeToggle";
 import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePictureSelector";
 import { calculateLevelProgress } from "@/lib/levelUtils";
+import { useLanguageMode } from "@/contexts/LanguageModeContext";
+import { getTranslations } from "@/lib/translations";
 
 interface HeaderProps {
   streak: number;
@@ -25,6 +27,8 @@ export const Header = ({
     signOut
   } = useAuth();
   const navigate = useNavigate();
+  const { uiLanguage } = useLanguageMode();
+  const t = getTranslations(uiLanguage);
 
   const handleLogout = async () => {
     await signOut();
@@ -42,7 +46,7 @@ export const Header = ({
                 <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-accent rounded-lg cursor-pointer hover:bg-accent/80 transition-colors">
                   <ProfilePicture pictureId={profile.profile_picture} size="xs" />
                   <span className="font-medium">{profile.username}</span>
-                  <span className="text-sm text-muted-foreground">Lv.{profile.level}</span>
+                  <span className="text-sm text-muted-foreground">{t.level}{profile.level}</span>
                   {profile.is_premium && <Crown className="w-4 h-4 text-yellow-500" />}
                 </div>
               }
@@ -62,26 +66,26 @@ export const Header = ({
             {/* XP */}
             <div className="flex items-center gap-2 px-3 py-2 bg-primary/10 rounded-lg">
               <Trophy className="w-5 h-5 text-primary" />
-              <span className="font-bold text-primary">{profile.xp} XP</span>
+              <span className="font-bold text-primary">{profile.xp} {t.xp}</span>
             </div>
 
             {/* Quiz */}
             <Button variant="outline" size="sm" onClick={() => navigate("/quiz")} className="hidden md:flex">
               <ClipboardList className="w-4 h-4 mr-1" />
-              Quizzes
+              {t.quizzes}
             </Button>
 
             {/* Leaderboard */}
             <Button variant="outline" size="sm" onClick={() => navigate("/leaderboard")} className="hidden md:flex">
               <Trophy className="w-4 h-4 mr-1 text-primary" />
-              Leaderboard
+              {t.leaderboard}
             </Button>
 
             {/* Premium */}
             {!profile.is_premium && (
               <Button variant="outline" size="sm" onClick={() => navigate("/premium")} className="hidden md:flex">
                 <Crown className="w-4 h-4 mr-1 text-yellow-500" />
-                Premium
+                {t.premium}
               </Button>
             )}
 
@@ -105,7 +109,7 @@ export const Header = ({
           <>
             <DarkModeToggle />
             <Button onClick={() => navigate("/auth")}>
-              Sign In
+              {t.signIn}
             </Button>
           </>
         )}
