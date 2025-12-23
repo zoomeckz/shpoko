@@ -10,11 +10,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { LessonComplete } from "@/components/LessonComplete";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
+import { useLanguageMode } from "@/contexts/LanguageModeContext";
+import { getTranslations } from "@/lib/translations";
 
 interface TypeInQuestion {
   bulgarian: string;
   answer: string;
-  hint: string;
+  hintKey: keyof ReturnType<typeof getTranslations>;
   emoji: string;
 }
 
@@ -23,7 +25,7 @@ interface FillBlankQuestion {
   blank: string;
   options: string[];
   correctIndex: number;
-  translation: string;
+  translationKey: keyof ReturnType<typeof getTranslations>;
   emoji: string;
 }
 
@@ -33,17 +35,17 @@ const LESSON_ID = "family-topic";
 const XP_REWARD = 70;
 
 const typeInQuestions: TypeInQuestion[] = [
-  { bulgarian: "Майка", answer: "mayka", hint: "Mother", emoji: "👩" },
-  { bulgarian: "Баща", answer: "bashta", hint: "Father", emoji: "👨" },
-  { bulgarian: "Сестра", answer: "sestra", hint: "Sister", emoji: "👧" },
-  { bulgarian: "Брат", answer: "brat", hint: "Brother", emoji: "👦" },
-  { bulgarian: "Баба", answer: "baba", hint: "Grandmother", emoji: "👵" },
+  { bulgarian: "Майка", answer: "mayka", hintKey: "hintMother", emoji: "👩" },
+  { bulgarian: "Баща", answer: "bashta", hintKey: "hintFather", emoji: "👨" },
+  { bulgarian: "Сестра", answer: "sestra", hintKey: "hintSister", emoji: "👧" },
+  { bulgarian: "Брат", answer: "brat", hintKey: "hintBrother", emoji: "👦" },
+  { bulgarian: "Баба", answer: "baba", hintKey: "hintGrandmother", emoji: "👵" },
 ];
 
 const fillBlankQuestions: FillBlankQuestion[] = [
-  { sentence: "Моята ____ е много добра", blank: "майка", options: ["майка", "баща", "брат", "сестра"], correctIndex: 0, translation: "My mother is very kind", emoji: "👩" },
-  { sentence: "____ ми е на 70 години", blank: "Дядо", options: ["Баба", "Дядо", "Брат", "Сестра"], correctIndex: 1, translation: "My grandfather is 70 years old", emoji: "👴" },
-  { sentence: "Имам една ____", blank: "сестра", options: ["брат", "баща", "сестра", "дядо"], correctIndex: 2, translation: "I have one sister", emoji: "👧" },
+  { sentence: "Моята ____ е много добра", blank: "майка", options: ["майка", "баща", "брат", "сестра"], correctIndex: 0, translationKey: "myMotherIsKind", emoji: "👩" },
+  { sentence: "____ ми е на 70 години", blank: "Дядо", options: ["Баба", "Дядо", "Брат", "Сестра"], correctIndex: 1, translationKey: "myGrandfatherIs70", emoji: "👴" },
+  { sentence: "Имам една ____", blank: "сестра", options: ["брат", "баща", "сестра", "дядо"], correctIndex: 2, translationKey: "iHaveOneSister", emoji: "👧" },
 ];
 
 const generateMixedQuestions = (): Question[] => {
@@ -57,6 +59,8 @@ export const FamilyLesson = () => {
   const [questions] = useState<Question[]>(() => generateMixedQuestions());
   const [currentStep, setCurrentStep] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { uiLanguage } = useLanguageMode();
+  const t = getTranslations(uiLanguage);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -161,14 +165,14 @@ export const FamilyLesson = () => {
           </div>
           <span className="text-sm font-medium">{currentStep + 1}/{questions.length}</span>
           {isRevision && (
-            <span className="text-xs bg-muted px-2 py-1 rounded">Revision</span>
+            <span className="text-xs bg-muted px-2 py-1 rounded">{t.revision}</span>
           )}
         </div>
 
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-center">
-              Family - {currentQuestion.type === "typeIn" ? "Type the transliteration" : "Fill in the blank"}
+              {t.familyLesson} - {currentQuestion.type === "typeIn" ? t.typeTransliteration : t.fillInBlank}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -181,7 +185,9 @@ export const FamilyLesson = () => {
                 <div className="text-center">
                   <p className="text-5xl font-bold mb-4">{(currentQuestion.data as TypeInQuestion).bulgarian}</p>
                   {showHint && (
-                    <p className="text-muted-foreground animate-fade-in">Hint: {(currentQuestion.data as TypeInQuestion).hint}</p>
+                    <p className="text-muted-foreground animate-fade-in">
+                      {t.showHint}: {t[(currentQuestion.data as TypeInQuestion).hintKey]}
+                    </p>
                   )}
                 </div>
 
@@ -189,7 +195,7 @@ export const FamilyLesson = () => {
                   <Input
                     ref={inputRef}
                     type="text"
-                    placeholder="Type the transliteration..."
+                    placeholder={t.typeTransliteration + "..."}
                     value={userAnswer}
                     onChange={(e) => setUserAnswer(e.target.value)}
                     disabled={isCorrect !== null}
@@ -212,9 +218,9 @@ export const FamilyLesson = () => {
                       isCorrect ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
                     )}>
                       {isCorrect ? (
-                        <><Check className="w-6 h-6" /><span className="font-bold">Correct!</span></>
+                        <><Check className="w-6 h-6" /><span className="font-bold">{t.correct}</span></>
                       ) : (
-                        <><X className="w-6 h-6" /><span className="font-bold">The answer is: {(currentQuestion.data as TypeInQuestion).answer}</span></>
+                        <><X className="w-6 h-6" /><span className="font-bold">{t.theAnswerIs} {(currentQuestion.data as TypeInQuestion).answer}</span></>
                       )}
                     </div>
                   )}
@@ -223,12 +229,12 @@ export const FamilyLesson = () => {
                 <div className="flex gap-4">
                   {isCorrect === null ? (
                     <>
-                      <Button variant="outline" onClick={() => setShowHint(true)} disabled={showHint} className="flex-1">Show Hint</Button>
-                      <Button onClick={checkTypeInAnswer} disabled={!userAnswer.trim()} className="flex-1">Check</Button>
+                      <Button variant="outline" onClick={() => setShowHint(true)} disabled={showHint} className="flex-1">{t.showHint}</Button>
+                      <Button onClick={checkTypeInAnswer} disabled={!userAnswer.trim()} className="flex-1">{t.check}</Button>
                     </>
                   ) : (
                     <Button onClick={nextQuestion} className="w-full">
-                      {currentStep < questions.length - 1 ? "Next" : "Complete"}
+                      {currentStep < questions.length - 1 ? t.next : t.complete}
                     </Button>
                   )}
                 </div>
@@ -237,7 +243,7 @@ export const FamilyLesson = () => {
               <>
                 <div className="text-center">
                   <p className="text-3xl font-bold mb-2">{(currentQuestion.data as FillBlankQuestion).sentence}</p>
-                  <p className="text-lg font-bold text-primary">{(currentQuestion.data as FillBlankQuestion).translation}</p>
+                  <p className="text-lg font-bold text-primary">{t[(currentQuestion.data as FillBlankQuestion).translationKey]}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -266,13 +272,13 @@ export const FamilyLesson = () => {
                       isCorrect ? "bg-green-500/20 text-green-600" : "bg-red-500/20 text-red-600"
                     )}>
                       {isCorrect ? (
-                        <><Check className="w-6 h-6" /><span className="font-bold">Correct!</span></>
+                        <><Check className="w-6 h-6" /><span className="font-bold">{t.correct}</span></>
                       ) : (
-                        <><X className="w-6 h-6" /><span className="font-bold">Answer: {(currentQuestion.data as FillBlankQuestion).options[(currentQuestion.data as FillBlankQuestion).correctIndex]}</span></>
+                        <><X className="w-6 h-6" /><span className="font-bold">{t.theAnswerIs} {(currentQuestion.data as FillBlankQuestion).options[(currentQuestion.data as FillBlankQuestion).correctIndex]}</span></>
                       )}
                     </div>
                     <Button onClick={nextQuestion} className="w-full">
-                      {currentStep < questions.length - 1 ? "Next" : "Complete"}
+                      {currentStep < questions.length - 1 ? t.next : t.complete}
                     </Button>
                   </>
                 )}
@@ -282,7 +288,7 @@ export const FamilyLesson = () => {
         </Card>
 
         <div className="text-center text-muted-foreground">
-          <p>{isRevision ? "Revision Mode" : ""} Correct: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}</p>
+          <p>{isRevision ? t.revisionMode : ""} {t.correct}: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}</p>
         </div>
       </div>
     </div>

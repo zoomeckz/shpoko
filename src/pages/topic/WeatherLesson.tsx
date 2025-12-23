@@ -11,26 +11,39 @@ import { useAuth } from "@/contexts/AuthContext";
 import { LessonComplete } from "@/components/LessonComplete";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
+import { useLanguageMode } from "@/contexts/LanguageModeContext";
+import { getTranslations } from "@/lib/translations";
 
 const LESSON_ID = "weather-talk";
 const XP_REWARD = 85;
 
-interface TypeInQuestion { bulgarian: string; answer: string; hint: string; }
-interface FillBlankQuestion { sentence: string; options: string[]; correctIndex: number; translation: string; }
+interface TypeInQuestion { 
+  bulgarian: string; 
+  answer: string; 
+  hintKey: keyof ReturnType<typeof getTranslations>; 
+}
+
+interface FillBlankQuestion { 
+  sentence: string; 
+  options: string[]; 
+  correctIndex: number; 
+  translationKey: keyof ReturnType<typeof getTranslations>; 
+}
+
 type Question = { type: "typeIn"; data: TypeInQuestion } | { type: "fillBlank"; data: FillBlankQuestion };
 
 const typeInQuestions: TypeInQuestion[] = [
-  { bulgarian: "Слънце", answer: "slantse", hint: "Sun" },
-  { bulgarian: "Дъжд", answer: "dazhd", hint: "Rain" },
-  { bulgarian: "Сняг", answer: "snyag", hint: "Snow" },
-  { bulgarian: "Вятър", answer: "vyatar", hint: "Wind" },
-  { bulgarian: "Студено", answer: "studeno", hint: "Cold" },
+  { bulgarian: "Слънце", answer: "slantse", hintKey: "hintSun" },
+  { bulgarian: "Дъжд", answer: "dazhd", hintKey: "hintRain" },
+  { bulgarian: "Сняг", answer: "snyag", hintKey: "hintSnow" },
+  { bulgarian: "Вятър", answer: "vyatar", hintKey: "hintWind" },
+  { bulgarian: "Студено", answer: "studeno", hintKey: "hintCold" },
 ];
 
 const fillBlankQuestions: FillBlankQuestion[] = [
-  { sentence: "Днес е много ____", options: ["студено", "горещо", "топло", "слънчево"], correctIndex: 1, translation: "Today is very hot" },
-  { sentence: "Навън вали ____", options: ["слънце", "вятър", "дъжд", "мъгла"], correctIndex: 2, translation: "It is raining outside" },
-  { sentence: "Зимата е ____", options: ["топла", "горещо", "студена", "слънчева"], correctIndex: 2, translation: "Winter is cold" },
+  { sentence: "Днес е много ____", options: ["студено", "горещо", "топло", "слънчево"], correctIndex: 1, translationKey: "todayIsVeryHot" },
+  { sentence: "Навън вали ____", options: ["слънце", "вятър", "дъжд", "мъгла"], correctIndex: 2, translationKey: "itIsRaining" },
+  { sentence: "Зимата е ____", options: ["топла", "горещо", "студена", "слънчева"], correctIndex: 2, translationKey: "winterIsCold" },
 ];
 
 const generateMixedQuestions = (): Question[] => {
@@ -53,12 +66,13 @@ export const WeatherLesson = () => {
   const { user, updateXP } = useAuth();
   const { canEarnXP, refetch } = useUserProgress();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { uiLanguage } = useLanguageMode();
+  const t = getTranslations(uiLanguage);
 
   const currentQuestion = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
   const isRevision = !canEarnXP(LESSON_ID);
 
-  // Auto-focus input on step change
   useEffect(() => {
     if (!isComplete && isCorrect === null && currentQuestion?.type === "typeIn") {
       const timer = setTimeout(() => {
@@ -134,12 +148,12 @@ export const WeatherLesson = () => {
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}><ArrowLeft className="w-5 h-5" /></Button>
           <div className="flex-1"><Progress value={progress} className="h-3" /></div>
           <span className="text-sm font-medium">{currentStep + 1}/{questions.length}</span>
-          {isRevision && <span className="text-xs bg-muted px-2 py-1 rounded">Revision</span>}
+          {isRevision && <span className="text-xs bg-muted px-2 py-1 rounded">{t.revision}</span>}
         </div>
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-center">Weather - {currentQuestion.type === "typeIn" ? "Type the transliteration" : "Fill in the blank"}</CardTitle>
+            <CardTitle className="text-center">{t.weatherLesson} - {currentQuestion.type === "typeIn" ? t.typeTransliteration : t.fillInBlank}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {currentQuestion.type === "typeIn" ? (
@@ -149,27 +163,27 @@ export const WeatherLesson = () => {
                     <p className="text-5xl font-bold">{(currentQuestion.data as TypeInQuestion).bulgarian}</p>
                     <Button variant="ghost" size="icon" onClick={() => playPronunciation((currentQuestion.data as TypeInQuestion).bulgarian)}><Volume2 className="w-6 h-6" /></Button>
                   </div>
-                  {showHint && <p className="text-muted-foreground animate-fade-in">Hint: {(currentQuestion.data as TypeInQuestion).hint}</p>}
+                  {showHint && <p className="text-muted-foreground animate-fade-in">{t.showHint}: {t[(currentQuestion.data as TypeInQuestion).hintKey]}</p>}
                 </div>
-                <Input ref={inputRef} type="text" placeholder="Type the transliteration..." value={userAnswer} onChange={(e) => setUserAnswer(e.target.value)} disabled={isCorrect !== null}
+                <Input ref={inputRef} type="text" placeholder={t.typeTransliteration + "..."} value={userAnswer} onChange={(e) => setUserAnswer(e.target.value)} disabled={isCorrect !== null}
                   className={cn("text-center text-xl py-6", isCorrect === true && "border-green-500 bg-green-500/10", isCorrect === false && "border-red-500 bg-red-500/10")}
                   onKeyDown={(e) => { if (e.key === "Enter") { if (isCorrect !== null) nextQuestion(); else if (userAnswer.trim()) checkTypeInAnswer(); } }} />
                 {isCorrect !== null && (
                   <div className={cn("flex items-center justify-center gap-2 p-4 rounded-lg animate-fade-in", isCorrect ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500")}>
-                    {isCorrect ? <><Check className="w-6 h-6" /><span className="font-bold">Correct!</span></> : <><X className="w-6 h-6" /><span className="font-bold">Answer: {(currentQuestion.data as TypeInQuestion).answer}</span></>}
+                    {isCorrect ? <><Check className="w-6 h-6" /><span className="font-bold">{t.correct}</span></> : <><X className="w-6 h-6" /><span className="font-bold">{t.theAnswerIs} {(currentQuestion.data as TypeInQuestion).answer}</span></>}
                   </div>
                 )}
                 <div className="flex gap-4">
                   {isCorrect === null ? (
-                    <><Button variant="outline" onClick={() => setShowHint(true)} disabled={showHint} className="flex-1">Show Hint</Button><Button onClick={checkTypeInAnswer} disabled={!userAnswer.trim()} className="flex-1">Check</Button></>
-                  ) : <Button onClick={nextQuestion} className="w-full">{currentStep < questions.length - 1 ? "Next" : "Complete"}</Button>}
+                    <><Button variant="outline" onClick={() => setShowHint(true)} disabled={showHint} className="flex-1">{t.showHint}</Button><Button onClick={checkTypeInAnswer} disabled={!userAnswer.trim()} className="flex-1">{t.check}</Button></>
+                  ) : <Button onClick={nextQuestion} className="w-full">{currentStep < questions.length - 1 ? t.next : t.complete}</Button>}
                 </div>
               </>
             ) : (
               <>
                 <div className="text-center">
                   <p className="text-3xl font-bold mb-2">{(currentQuestion.data as FillBlankQuestion).sentence}</p>
-                  <p className="text-lg text-primary">{(currentQuestion.data as FillBlankQuestion).translation}</p>
+                  <p className="text-lg text-primary">{t[(currentQuestion.data as FillBlankQuestion).translationKey]}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   {(currentQuestion.data as FillBlankQuestion).options.map((option, index) => (
@@ -182,16 +196,16 @@ export const WeatherLesson = () => {
                 {isCorrect !== null && (
                   <>
                     <div className={cn("flex items-center justify-center gap-2 p-4 rounded-lg animate-fade-in", isCorrect ? "bg-green-500/20 text-green-600" : "bg-red-500/20 text-red-600")}>
-                      {isCorrect ? <><Check className="w-6 h-6" /><span className="font-bold">Correct!</span></> : <><X className="w-6 h-6" /><span className="font-bold">Answer: {(currentQuestion.data as FillBlankQuestion).options[(currentQuestion.data as FillBlankQuestion).correctIndex]}</span></>}
+                      {isCorrect ? <><Check className="w-6 h-6" /><span className="font-bold">{t.correct}</span></> : <><X className="w-6 h-6" /><span className="font-bold">{t.theAnswerIs} {(currentQuestion.data as FillBlankQuestion).options[(currentQuestion.data as FillBlankQuestion).correctIndex]}</span></>}
                     </div>
-                    <Button onClick={nextQuestion} className="w-full">{currentStep < questions.length - 1 ? "Next" : "Complete"}</Button>
+                    <Button onClick={nextQuestion} className="w-full">{currentStep < questions.length - 1 ? t.next : t.complete}</Button>
                   </>
                 )}
               </>
             )}
           </CardContent>
         </Card>
-        <div className="text-center text-muted-foreground"><p>{isRevision ? "Revision Mode" : ""} Correct: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}</p></div>
+        <div className="text-center text-muted-foreground"><p>{isRevision ? t.revisionMode : ""} {t.correct}: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}</p></div>
       </div>
     </div>
   );

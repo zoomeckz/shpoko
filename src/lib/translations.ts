@@ -162,6 +162,93 @@ interface Translations {
   audioBlanks: string;
   dialogueBattle: string;
   realConversations: string;
+  
+  // Lesson UI
+  lessonComplete: string;
+  revisionComplete: string;
+  greatPractice: string;
+  correctAnswers: string;
+  reviseAgain: string;
+  nextLesson: string;
+  previousLesson: string;
+  backToLessons: string;
+  typeTransliteration: string;
+  fillInBlank: string;
+  chooseCorrect: string;
+  showHint: string;
+  check: string;
+  next: string;
+  complete: string;
+  completeLesson: string;
+  theAnswerIs: string;
+  revision: string;
+  revisionMode: string;
+  
+  // Lesson titles
+  colorsLesson: string;
+  animalsLesson: string;
+  numbersLesson: string;
+  familyLesson: string;
+  weatherLesson: string;
+  foodDrinksLesson: string;
+  verbsLesson: string;
+  adjectivesLesson: string;
+  pronounsLesson: string;
+  directionsLesson: string;
+  weekdaysLesson: string;
+  jobsLesson: string;
+  shapesLesson: string;
+  survivalPhrasesLesson: string;
+  
+  // Lesson hints (translations for Bulgarian words)
+  hintRed: string;
+  hintBlue: string;
+  hintGreen: string;
+  hintYellow: string;
+  hintOrange: string;
+  hintDog: string;
+  hintCat: string;
+  hintBird: string;
+  hintFish: string;
+  hintHorse: string;
+  hintMother: string;
+  hintFather: string;
+  hintSister: string;
+  hintBrother: string;
+  hintGrandmother: string;
+  hintSun: string;
+  hintRain: string;
+  hintSnow: string;
+  hintWind: string;
+  hintCold: string;
+  hintBread: string;
+  hintWater: string;
+  hintCoffee: string;
+  hintTea: string;
+  hintMilk: string;
+  hintMeat: string;
+  hintEgg: string;
+  hintCheese: string;
+  hintFruit: string;
+  hintVegetable: string;
+  hintBeer: string;
+  hintWine: string;
+  hintJuice: string;
+  hintSoup: string;
+  
+  // Fill blank translations
+  theSkyIsBlue: string;
+  theGrassIsGreen: string;
+  theSunIsYellow: string;
+  theCowGivesMilk: string;
+  thePigLivesOnFarm: string;
+  theRabbitEatsCarrots: string;
+  myMotherIsKind: string;
+  myGrandfatherIs70: string;
+  iHaveOneSister: string;
+  todayIsVeryHot: string;
+  itIsRaining: string;
+  winterIsCold: string;
 }
 
 const englishTranslations: Translations = {
@@ -323,6 +410,93 @@ const englishTranslations: Translations = {
   audioBlanks: 'Audio blanks',
   dialogueBattle: 'Dialogue Battle',
   realConversations: 'Real conversations',
+  
+  // Lesson UI
+  lessonComplete: 'Lesson Complete!',
+  revisionComplete: 'Revision Complete!',
+  greatPractice: 'Great practice session!',
+  correctAnswers: 'correct answers',
+  reviseAgain: 'Revise Again',
+  nextLesson: 'Next:',
+  previousLesson: 'Previous:',
+  backToLessons: 'Back to Lessons',
+  typeTransliteration: 'Type the transliteration',
+  fillInBlank: 'Fill in the blank',
+  chooseCorrect: 'Choose the correct answer',
+  showHint: 'Show Hint',
+  check: 'Check',
+  next: 'Next',
+  complete: 'Complete',
+  completeLesson: 'Complete Lesson',
+  theAnswerIs: 'The answer is:',
+  revision: 'Revision',
+  revisionMode: 'Revision Mode',
+  
+  // Lesson titles
+  colorsLesson: 'Colors',
+  animalsLesson: 'Animals',
+  numbersLesson: 'Numbers',
+  familyLesson: 'Family',
+  weatherLesson: 'Weather',
+  foodDrinksLesson: 'Food & Drinks',
+  verbsLesson: 'Verbs',
+  adjectivesLesson: 'Adjectives',
+  pronounsLesson: 'Pronouns',
+  directionsLesson: 'Directions',
+  weekdaysLesson: 'Weekdays',
+  jobsLesson: 'Jobs',
+  shapesLesson: 'Shapes',
+  survivalPhrasesLesson: 'Survival Phrases',
+  
+  // Lesson hints
+  hintRed: 'Red',
+  hintBlue: 'Blue',
+  hintGreen: 'Green',
+  hintYellow: 'Yellow',
+  hintOrange: 'Orange',
+  hintDog: 'Dog',
+  hintCat: 'Cat',
+  hintBird: 'Bird',
+  hintFish: 'Fish',
+  hintHorse: 'Horse',
+  hintMother: 'Mother',
+  hintFather: 'Father',
+  hintSister: 'Sister',
+  hintBrother: 'Brother',
+  hintGrandmother: 'Grandmother',
+  hintSun: 'Sun',
+  hintRain: 'Rain',
+  hintSnow: 'Snow',
+  hintWind: 'Wind',
+  hintCold: 'Cold',
+  hintBread: 'Bread',
+  hintWater: 'Water',
+  hintCoffee: 'Coffee',
+  hintTea: 'Tea',
+  hintMilk: 'Milk',
+  hintMeat: 'Meat',
+  hintEgg: 'Egg',
+  hintCheese: 'Cheese',
+  hintFruit: 'Fruit',
+  hintVegetable: 'Vegetable',
+  hintBeer: 'Beer',
+  hintWine: 'Wine',
+  hintJuice: 'Juice',
+  hintSoup: 'Soup',
+  
+  // Fill blank translations
+  theSkyIsBlue: 'The sky is blue',
+  theGrassIsGreen: 'The grass is green',
+  theSunIsYellow: 'The sun is yellow',
+  theCowGivesMilk: 'The cow gives milk',
+  thePigLivesOnFarm: 'The pig lives on a farm',
+  theRabbitEatsCarrots: 'The rabbit eats carrots',
+  myMotherIsKind: 'My mother is very kind',
+  myGrandfatherIs70: 'My grandfather is 70 years old',
+  iHaveOneSister: 'I have one sister',
+  todayIsVeryHot: 'Today is very hot',
+  itIsRaining: 'It is raining outside',
+  winterIsCold: 'Winter is cold',
 };
 
 const swedishTranslations: Translations = {
@@ -484,6 +658,93 @@ const swedishTranslations: Translations = {
   audioBlanks: 'Ljudluckor',
   dialogueBattle: 'Dialogkamp',
   realConversations: 'Riktiga samtal',
+  
+  // Lesson UI
+  lessonComplete: 'Lektion klar!',
+  revisionComplete: 'Repetition klar!',
+  greatPractice: 'Bra övning!',
+  correctAnswers: 'rätta svar',
+  reviseAgain: 'Repetera igen',
+  nextLesson: 'Nästa:',
+  previousLesson: 'Föregående:',
+  backToLessons: 'Tillbaka till lektioner',
+  typeTransliteration: 'Skriv translittereringen',
+  fillInBlank: 'Fyll i luckan',
+  chooseCorrect: 'Välj rätt svar',
+  showHint: 'Visa ledtråd',
+  check: 'Kontrollera',
+  next: 'Nästa',
+  complete: 'Slutför',
+  completeLesson: 'Slutför lektion',
+  theAnswerIs: 'Svaret är:',
+  revision: 'Repetition',
+  revisionMode: 'Repetitionsläge',
+  
+  // Lesson titles
+  colorsLesson: 'Färger',
+  animalsLesson: 'Djur',
+  numbersLesson: 'Siffror',
+  familyLesson: 'Familj',
+  weatherLesson: 'Väder',
+  foodDrinksLesson: 'Mat & Dryck',
+  verbsLesson: 'Verb',
+  adjectivesLesson: 'Adjektiv',
+  pronounsLesson: 'Pronomen',
+  directionsLesson: 'Riktningar',
+  weekdaysLesson: 'Veckodagar',
+  jobsLesson: 'Yrken',
+  shapesLesson: 'Former',
+  survivalPhrasesLesson: 'Överlevnadsfraser',
+  
+  // Lesson hints
+  hintRed: 'Röd',
+  hintBlue: 'Blå',
+  hintGreen: 'Grön',
+  hintYellow: 'Gul',
+  hintOrange: 'Orange',
+  hintDog: 'Hund',
+  hintCat: 'Katt',
+  hintBird: 'Fågel',
+  hintFish: 'Fisk',
+  hintHorse: 'Häst',
+  hintMother: 'Mamma',
+  hintFather: 'Pappa',
+  hintSister: 'Syster',
+  hintBrother: 'Bror',
+  hintGrandmother: 'Mormor/Farmor',
+  hintSun: 'Sol',
+  hintRain: 'Regn',
+  hintSnow: 'Snö',
+  hintWind: 'Vind',
+  hintCold: 'Kallt',
+  hintBread: 'Bröd',
+  hintWater: 'Vatten',
+  hintCoffee: 'Kaffe',
+  hintTea: 'Te',
+  hintMilk: 'Mjölk',
+  hintMeat: 'Kött',
+  hintEgg: 'Ägg',
+  hintCheese: 'Ost',
+  hintFruit: 'Frukt',
+  hintVegetable: 'Grönsak',
+  hintBeer: 'Öl',
+  hintWine: 'Vin',
+  hintJuice: 'Juice',
+  hintSoup: 'Soppa',
+  
+  // Fill blank translations
+  theSkyIsBlue: 'Himlen är blå',
+  theGrassIsGreen: 'Gräset är grönt',
+  theSunIsYellow: 'Solen är gul',
+  theCowGivesMilk: 'Kon ger mjölk',
+  thePigLivesOnFarm: 'Grisen bor på en gård',
+  theRabbitEatsCarrots: 'Kaninen äter morötter',
+  myMotherIsKind: 'Min mamma är väldigt snäll',
+  myGrandfatherIs70: 'Min farfar/morfar är 70 år',
+  iHaveOneSister: 'Jag har en syster',
+  todayIsVeryHot: 'Idag är det väldigt varmt',
+  itIsRaining: 'Det regnar ute',
+  winterIsCold: 'Vintern är kall',
 };
 
 const bulgarianTranslations: Translations = {
@@ -645,6 +906,93 @@ const bulgarianTranslations: Translations = {
   audioBlanks: 'Аудио празнини',
   dialogueBattle: 'Диалогова битка',
   realConversations: 'Реални разговори',
+  
+  // Lesson UI
+  lessonComplete: 'Урокът е завършен!',
+  revisionComplete: 'Преговорът е завършен!',
+  greatPractice: 'Страхотна практика!',
+  correctAnswers: 'правилни отговори',
+  reviseAgain: 'Преговори отново',
+  nextLesson: 'Следващ:',
+  previousLesson: 'Предишен:',
+  backToLessons: 'Към уроците',
+  typeTransliteration: 'Напиши транслитерацията',
+  fillInBlank: 'Попълни празното',
+  chooseCorrect: 'Избери правилния отговор',
+  showHint: 'Покажи подсказка',
+  check: 'Провери',
+  next: 'Напред',
+  complete: 'Завърши',
+  completeLesson: 'Завърши урока',
+  theAnswerIs: 'Отговорът е:',
+  revision: 'Преговор',
+  revisionMode: 'Режим преговор',
+  
+  // Lesson titles
+  colorsLesson: 'Цветове',
+  animalsLesson: 'Животни',
+  numbersLesson: 'Числа',
+  familyLesson: 'Семейство',
+  weatherLesson: 'Времето',
+  foodDrinksLesson: 'Храна и напитки',
+  verbsLesson: 'Глаголи',
+  adjectivesLesson: 'Прилагателни',
+  pronounsLesson: 'Местоимения',
+  directionsLesson: 'Посоки',
+  weekdaysLesson: 'Дни от седмицата',
+  jobsLesson: 'Професии',
+  shapesLesson: 'Форми',
+  survivalPhrasesLesson: 'Фрази за оцеляване',
+  
+  // Lesson hints (Spanish translations for Bulgarian speakers)
+  hintRed: 'Rojo',
+  hintBlue: 'Azul',
+  hintGreen: 'Verde',
+  hintYellow: 'Amarillo',
+  hintOrange: 'Naranja',
+  hintDog: 'Perro',
+  hintCat: 'Gato',
+  hintBird: 'Pájaro',
+  hintFish: 'Pez',
+  hintHorse: 'Caballo',
+  hintMother: 'Madre',
+  hintFather: 'Padre',
+  hintSister: 'Hermana',
+  hintBrother: 'Hermano',
+  hintGrandmother: 'Abuela',
+  hintSun: 'Sol',
+  hintRain: 'Lluvia',
+  hintSnow: 'Nieve',
+  hintWind: 'Viento',
+  hintCold: 'Frío',
+  hintBread: 'Pan',
+  hintWater: 'Agua',
+  hintCoffee: 'Café',
+  hintTea: 'Té',
+  hintMilk: 'Leche',
+  hintMeat: 'Carne',
+  hintEgg: 'Huevo',
+  hintCheese: 'Queso',
+  hintFruit: 'Fruta',
+  hintVegetable: 'Verdura',
+  hintBeer: 'Cerveza',
+  hintWine: 'Vino',
+  hintJuice: 'Jugo',
+  hintSoup: 'Sopa',
+  
+  // Fill blank translations
+  theSkyIsBlue: 'El cielo es azul',
+  theGrassIsGreen: 'La hierba es verde',
+  theSunIsYellow: 'El sol es amarillo',
+  theCowGivesMilk: 'La vaca da leche',
+  thePigLivesOnFarm: 'El cerdo vive en una granja',
+  theRabbitEatsCarrots: 'El conejo come zanahorias',
+  myMotherIsKind: 'Mi madre es muy amable',
+  myGrandfatherIs70: 'Mi abuelo tiene 70 años',
+  iHaveOneSister: 'Tengo una hermana',
+  todayIsVeryHot: 'Hoy hace mucho calor',
+  itIsRaining: 'Está lloviendo afuera',
+  winterIsCold: 'El invierno es frío',
 };
 
 const tunisianTranslations: Translations = {
@@ -806,6 +1154,93 @@ const tunisianTranslations: Translations = {
   audioBlanks: 'فراغات صوتية',
   dialogueBattle: 'معركة الحوار',
   realConversations: 'محادثات حقيقية',
+  
+  // Lesson UI
+  lessonComplete: 'الدرس كمل!',
+  revisionComplete: 'المراجعة كملت!',
+  greatPractice: 'تمرين ممتاز!',
+  correctAnswers: 'أجوبة صحيحة',
+  reviseAgain: 'راجع مرة أخرى',
+  nextLesson: 'الجاي:',
+  previousLesson: 'اللي فات:',
+  backToLessons: 'ارجع للدروس',
+  typeTransliteration: 'اكتب النقل الحرفي',
+  fillInBlank: 'عبّي الفراغ',
+  chooseCorrect: 'اختار الجواب الصحيح',
+  showHint: 'ورّي تلميح',
+  check: 'تحقق',
+  next: 'التالي',
+  complete: 'كمّل',
+  completeLesson: 'كمّل الدرس',
+  theAnswerIs: 'الجواب هو:',
+  revision: 'مراجعة',
+  revisionMode: 'وضع المراجعة',
+  
+  // Lesson titles
+  colorsLesson: 'الألوان',
+  animalsLesson: 'الحيوانات',
+  numbersLesson: 'الأرقام',
+  familyLesson: 'العائلة',
+  weatherLesson: 'الطقس',
+  foodDrinksLesson: 'الماكلة والشراب',
+  verbsLesson: 'الأفعال',
+  adjectivesLesson: 'الصفات',
+  pronounsLesson: 'الضمائر',
+  directionsLesson: 'الاتجاهات',
+  weekdaysLesson: 'أيام الأسبوع',
+  jobsLesson: 'المهن',
+  shapesLesson: 'الأشكال',
+  survivalPhrasesLesson: 'عبارات البقاء',
+  
+  // Lesson hints (Tunisian Arabic translations)
+  hintRed: 'أحمر',
+  hintBlue: 'أزرق',
+  hintGreen: 'أخضر',
+  hintYellow: 'أصفر',
+  hintOrange: 'برتقالي',
+  hintDog: 'كلب',
+  hintCat: 'قطوس',
+  hintBird: 'عصفور',
+  hintFish: 'حوت',
+  hintHorse: 'عود',
+  hintMother: 'أم',
+  hintFather: 'بو',
+  hintSister: 'أخت',
+  hintBrother: 'خو',
+  hintGrandmother: 'عمّة/جدّة',
+  hintSun: 'شمس',
+  hintRain: 'مطر',
+  hintSnow: 'ثلج',
+  hintWind: 'ريح',
+  hintCold: 'برد',
+  hintBread: 'خبز',
+  hintWater: 'ماء',
+  hintCoffee: 'قهوة',
+  hintTea: 'تاي',
+  hintMilk: 'حليب',
+  hintMeat: 'لحم',
+  hintEgg: 'بيضة',
+  hintCheese: 'جبن',
+  hintFruit: 'غلّة',
+  hintVegetable: 'خضرة',
+  hintBeer: 'بيرة',
+  hintWine: 'نبيذ',
+  hintJuice: 'عصير',
+  hintSoup: 'شربة',
+  
+  // Fill blank translations
+  theSkyIsBlue: 'السما زرقاء',
+  theGrassIsGreen: 'العشب أخضر',
+  theSunIsYellow: 'الشمس صفراء',
+  theCowGivesMilk: 'البقرة تعطي حليب',
+  thePigLivesOnFarm: 'الحلوف يعيش في المزرعة',
+  theRabbitEatsCarrots: 'الأرنب ياكل جزر',
+  myMotherIsKind: 'أمي طيّبة برشا',
+  myGrandfatherIs70: 'جدي عمرو 70 سنة',
+  iHaveOneSister: 'عندي أخت وحدة',
+  todayIsVeryHot: 'اليوم سخانة برشا',
+  itIsRaining: 'الدنيا تمطر برّا',
+  winterIsCold: 'الشتاء بارد',
 };
 
 export const getTranslations = (language: UILanguage): Translations => {
