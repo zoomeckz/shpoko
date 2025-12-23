@@ -11,11 +11,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { LessonComplete } from "@/components/LessonComplete";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
+import { useLanguageMode } from "@/contexts/LanguageModeContext";
+import { getTranslations } from "@/lib/translations";
 
 interface TypeInQuestion {
   bulgarian: string;
   answer: string;
-  hint: string;
+  hintKey: keyof ReturnType<typeof getTranslations>;
   color: string;
 }
 
@@ -24,7 +26,7 @@ interface FillBlankQuestion {
   blank: string;
   options: string[];
   correctIndex: number;
-  translation: string;
+  translationKey: keyof ReturnType<typeof getTranslations>;
   color: string;
 }
 
@@ -34,17 +36,17 @@ const LESSON_ID = "colors-topic";
 const XP_REWARD = 65;
 
 const typeInQuestions: TypeInQuestion[] = [
-  { bulgarian: "Червено", answer: "cherveno", hint: "Red", color: "#ef4444" },
-  { bulgarian: "Синьо", answer: "sinyo", hint: "Blue", color: "#3b82f6" },
-  { bulgarian: "Зелено", answer: "zeleno", hint: "Green", color: "#22c55e" },
-  { bulgarian: "Жълто", answer: "zhalto", hint: "Yellow", color: "#eab308" },
-  { bulgarian: "Оранжево", answer: "oranzhevo", hint: "Orange", color: "#f97316" },
+  { bulgarian: "Червено", answer: "cherveno", hintKey: "hintRed", color: "#ef4444" },
+  { bulgarian: "Синьо", answer: "sinyo", hintKey: "hintBlue", color: "#3b82f6" },
+  { bulgarian: "Зелено", answer: "zeleno", hintKey: "hintGreen", color: "#22c55e" },
+  { bulgarian: "Жълто", answer: "zhalto", hintKey: "hintYellow", color: "#eab308" },
+  { bulgarian: "Оранжево", answer: "oranzhevo", hintKey: "hintOrange", color: "#f97316" },
 ];
 
 const fillBlankQuestions: FillBlankQuestion[] = [
-  { sentence: "Небето е ____", blank: "синьо", options: ["червено", "синьо", "зелено", "жълто"], correctIndex: 1, translation: "The sky is blue", color: "#3b82f6" },
-  { sentence: "Тревата е ____", blank: "зелена", options: ["зелена", "синя", "червена", "бяла"], correctIndex: 0, translation: "The grass is green", color: "#22c55e" },
-  { sentence: "Слънцето е ____", blank: "жълто", options: ["синьо", "зелено", "жълто", "черно"], correctIndex: 2, translation: "The sun is yellow", color: "#eab308" },
+  { sentence: "Небето е ____", blank: "синьо", options: ["червено", "синьо", "зелено", "жълто"], correctIndex: 1, translationKey: "theSkyIsBlue", color: "#3b82f6" },
+  { sentence: "Тревата е ____", blank: "зелена", options: ["зелена", "синя", "червена", "бяла"], correctIndex: 0, translationKey: "theGrassIsGreen", color: "#22c55e" },
+  { sentence: "Слънцето е ____", blank: "жълто", options: ["синьо", "зелено", "жълто", "черно"], correctIndex: 2, translationKey: "theSunIsYellow", color: "#eab308" },
 ];
 
 const generateMixedQuestions = (): Question[] => {
@@ -68,12 +70,13 @@ export const ColorsLesson = () => {
   const { user, updateXP } = useAuth();
   const { canEarnXP, saveProgress, refetch } = useUserProgress();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { uiLanguage } = useLanguageMode();
+  const t = getTranslations(uiLanguage);
 
   const currentQuestion = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
   const isRevision = !canEarnXP(LESSON_ID);
 
-  // Auto-focus input on step change
   useEffect(() => {
     if (!isComplete && isCorrect === null && currentQuestion?.type === "typeIn") {
       const timer = setTimeout(() => {
@@ -188,14 +191,14 @@ export const ColorsLesson = () => {
           </div>
           <span className="text-sm font-medium">{currentStep + 1}/{questions.length}</span>
           {isRevision && (
-            <span className="text-xs bg-muted px-2 py-1 rounded">Revision</span>
+            <span className="text-xs bg-muted px-2 py-1 rounded">{t.revision}</span>
           )}
         </div>
 
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-center">
-              Colors - {currentQuestion.type === "typeIn" ? "Type the transliteration" : "Fill in the blank"}
+              {t.colorsLesson} - {currentQuestion.type === "typeIn" ? t.typeTransliteration : t.fillInBlank}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -214,7 +217,9 @@ export const ColorsLesson = () => {
                     </Button>
                   </div>
                   {showHint && (
-                    <p className="text-muted-foreground animate-fade-in">Hint: {(currentQuestion.data as TypeInQuestion).hint}</p>
+                    <p className="text-muted-foreground animate-fade-in">
+                      {t.showHint}: {t[(currentQuestion.data as TypeInQuestion).hintKey]}
+                    </p>
                   )}
                 </div>
 
@@ -222,7 +227,7 @@ export const ColorsLesson = () => {
                   <Input
                     ref={inputRef}
                     type="text"
-                    placeholder="Type the transliteration..."
+                    placeholder={t.typeTransliteration + "..."}
                     value={userAnswer}
                     onChange={(e) => setUserAnswer(e.target.value)}
                     disabled={isCorrect !== null}
@@ -245,9 +250,9 @@ export const ColorsLesson = () => {
                       isCorrect ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
                     )}>
                       {isCorrect ? (
-                        <><Check className="w-6 h-6" /><span className="font-bold">Correct!</span></>
+                        <><Check className="w-6 h-6" /><span className="font-bold">{t.correct}</span></>
                       ) : (
-                        <><X className="w-6 h-6" /><span className="font-bold">The answer is: {(currentQuestion.data as TypeInQuestion).answer}</span></>
+                        <><X className="w-6 h-6" /><span className="font-bold">{t.theAnswerIs} {(currentQuestion.data as TypeInQuestion).answer}</span></>
                       )}
                     </div>
                   )}
@@ -256,12 +261,12 @@ export const ColorsLesson = () => {
                 <div className="flex gap-4">
                   {isCorrect === null ? (
                     <>
-                      <Button variant="outline" onClick={() => setShowHint(true)} disabled={showHint} className="flex-1">Show Hint</Button>
-                      <Button onClick={checkTypeInAnswer} disabled={!userAnswer.trim()} className="flex-1">Check</Button>
+                      <Button variant="outline" onClick={() => setShowHint(true)} disabled={showHint} className="flex-1">{t.showHint}</Button>
+                      <Button onClick={checkTypeInAnswer} disabled={!userAnswer.trim()} className="flex-1">{t.check}</Button>
                     </>
                   ) : (
                     <Button onClick={nextQuestion} className="w-full">
-                      {currentStep < questions.length - 1 ? "Next" : "Complete"}
+                      {currentStep < questions.length - 1 ? t.next : t.complete}
                     </Button>
                   )}
                 </div>
@@ -270,7 +275,7 @@ export const ColorsLesson = () => {
               <>
                 <div className="text-center">
                   <p className="text-3xl font-bold mb-2">{(currentQuestion.data as FillBlankQuestion).sentence}</p>
-                  <p className="text-lg font-bold text-primary">{(currentQuestion.data as FillBlankQuestion).translation}</p>
+                  <p className="text-lg font-bold text-primary">{t[(currentQuestion.data as FillBlankQuestion).translationKey]}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -299,13 +304,13 @@ export const ColorsLesson = () => {
                       isCorrect ? "bg-green-500/20 text-green-600" : "bg-red-500/20 text-red-600"
                     )}>
                       {isCorrect ? (
-                        <><Check className="w-6 h-6" /><span className="font-bold">Correct!</span></>
+                        <><Check className="w-6 h-6" /><span className="font-bold">{t.correct}</span></>
                       ) : (
-                        <><X className="w-6 h-6" /><span className="font-bold">Answer: {(currentQuestion.data as FillBlankQuestion).options[(currentQuestion.data as FillBlankQuestion).correctIndex]}</span></>
+                        <><X className="w-6 h-6" /><span className="font-bold">{t.theAnswerIs} {(currentQuestion.data as FillBlankQuestion).options[(currentQuestion.data as FillBlankQuestion).correctIndex]}</span></>
                       )}
                     </div>
                     <Button onClick={nextQuestion} className="w-full">
-                      {currentStep < questions.length - 1 ? "Next" : "Complete"}
+                      {currentStep < questions.length - 1 ? t.next : t.complete}
                     </Button>
                   </>
                 )}
@@ -315,7 +320,7 @@ export const ColorsLesson = () => {
         </Card>
 
         <div className="text-center text-muted-foreground">
-          <p>{isRevision ? "Revision Mode" : ""} Correct: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}</p>
+          <p>{isRevision ? t.revisionMode : ""} {t.correct}: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}</p>
         </div>
       </div>
     </div>

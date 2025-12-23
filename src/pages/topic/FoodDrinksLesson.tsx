@@ -11,11 +11,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { LessonComplete } from "@/components/LessonComplete";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
+import { useLanguageMode } from "@/contexts/LanguageModeContext";
+import { getTranslations } from "@/lib/translations";
 
 interface BaseQuestion {
   bulgarian: string;
   answer: string;
-  hint: string;
+  hintKey: keyof ReturnType<typeof getTranslations>;
 }
 
 interface TypeInQuestion extends BaseQuestion {
@@ -33,21 +35,21 @@ const LESSON_ID = "food-drinks";
 const XP_REWARD = 90;
 
 const allQuestions: BaseQuestion[] = [
-  { bulgarian: "Хляб", answer: "hlyab", hint: "Bread" },
-  { bulgarian: "Вода", answer: "voda", hint: "Water" },
-  { bulgarian: "Кафе", answer: "kafe", hint: "Coffee" },
-  { bulgarian: "Чай", answer: "chay", hint: "Tea" },
-  { bulgarian: "Мляко", answer: "mlyako", hint: "Milk" },
-  { bulgarian: "Месо", answer: "meso", hint: "Meat" },
-  { bulgarian: "Риба", answer: "riba", hint: "Fish" },
-  { bulgarian: "Яйце", answer: "yaytse", hint: "Egg" },
-  { bulgarian: "Сирене", answer: "sirene", hint: "Cheese" },
-  { bulgarian: "Плод", answer: "plod", hint: "Fruit" },
-  { bulgarian: "Зеленчук", answer: "zelenchuk", hint: "Vegetable" },
-  { bulgarian: "Бира", answer: "bira", hint: "Beer" },
-  { bulgarian: "Вино", answer: "vino", hint: "Wine" },
-  { bulgarian: "Сок", answer: "sok", hint: "Juice" },
-  { bulgarian: "Супа", answer: "supa", hint: "Soup" },
+  { bulgarian: "Хляб", answer: "hlyab", hintKey: "hintBread" },
+  { bulgarian: "Вода", answer: "voda", hintKey: "hintWater" },
+  { bulgarian: "Кафе", answer: "kafe", hintKey: "hintCoffee" },
+  { bulgarian: "Чай", answer: "chay", hintKey: "hintTea" },
+  { bulgarian: "Мляко", answer: "mlyako", hintKey: "hintMilk" },
+  { bulgarian: "Месо", answer: "meso", hintKey: "hintMeat" },
+  { bulgarian: "Риба", answer: "riba", hintKey: "hintFish" },
+  { bulgarian: "Яйце", answer: "yaytse", hintKey: "hintEgg" },
+  { bulgarian: "Сирене", answer: "sirene", hintKey: "hintCheese" },
+  { bulgarian: "Плод", answer: "plod", hintKey: "hintFruit" },
+  { bulgarian: "Зеленчук", answer: "zelenchuk", hintKey: "hintVegetable" },
+  { bulgarian: "Бира", answer: "bira", hintKey: "hintBeer" },
+  { bulgarian: "Вино", answer: "vino", hintKey: "hintWine" },
+  { bulgarian: "Сок", answer: "sok", hintKey: "hintJuice" },
+  { bulgarian: "Супа", answer: "supa", hintKey: "hintSoup" },
 ];
 
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -74,6 +76,8 @@ export const FoodDrinksLesson = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { uiLanguage } = useLanguageMode();
+  const t = getTranslations(uiLanguage);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -190,7 +194,7 @@ export const FoodDrinksLesson = () => {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-center">
-              Food & Drinks - {currentQuestion.type === "typeIn" ? "Type the transliteration" : "Choose the correct answer"}
+              {t.foodDrinksLesson} - {currentQuestion.type === "typeIn" ? t.typeTransliteration : t.chooseCorrect}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -201,7 +205,7 @@ export const FoodDrinksLesson = () => {
                   <Volume2 className="w-6 h-6" />
                 </Button>
               </div>
-              {showHint && <p className="text-muted-foreground animate-fade-in">Hint: {currentQuestion.hint}</p>}
+              {showHint && <p className="text-muted-foreground animate-fade-in">{t.showHint}: {t[currentQuestion.hintKey]}</p>}
             </div>
 
             {currentQuestion.type === "typeIn" ? (
@@ -209,7 +213,7 @@ export const FoodDrinksLesson = () => {
                 <Input
                   ref={inputRef}
                   type="text"
-                  placeholder="Type the transliteration..."
+                  placeholder={t.typeTransliteration + "..."}
                   value={userAnswer}
                   onChange={(e) => setUserAnswer(e.target.value)}
                   disabled={isCorrect !== null}
@@ -254,9 +258,9 @@ export const FoodDrinksLesson = () => {
                 isCorrect ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
               )}>
                 {isCorrect ? (
-                  <><Check className="w-6 h-6" /><span className="font-bold">Correct!</span></>
+                  <><Check className="w-6 h-6" /><span className="font-bold">{t.correct}</span></>
                 ) : (
-                  <><X className="w-6 h-6" /><span className="font-bold">The answer is: {currentQuestion.answer}</span></>
+                  <><X className="w-6 h-6" /><span className="font-bold">{t.theAnswerIs} {currentQuestion.answer}</span></>
                 )}
               </div>
             )}
@@ -265,22 +269,22 @@ export const FoodDrinksLesson = () => {
               {isCorrect === null && currentQuestion.type === "typeIn" ? (
                 <>
                   <Button variant="outline" onClick={() => setShowHint(true)} disabled={showHint} className="flex-1">
-                    Show Hint
+                    {t.showHint}
                   </Button>
                   <Button onClick={() => checkAnswer()} disabled={!userAnswer.trim()} className="flex-1">
-                    Check
+                    {t.check}
                   </Button>
                 </>
               ) : isCorrect !== null ? (
                 <Button onClick={nextQuestion} className="w-full">
-                  {currentStep < questions.length - 1 ? "Next" : "Complete Lesson"}
+                  {currentStep < questions.length - 1 ? t.next : t.completeLesson}
                 </Button>
               ) : null}
             </div>
           </CardContent>
         </Card>
         <div className="text-center text-muted-foreground">
-          <p>Correct: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}</p>
+          <p>{t.correct}: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}</p>
         </div>
       </div>
     </div>

@@ -13,13 +13,15 @@ import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { cn } from "@/lib/utils";
 import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
+import { useLanguageMode } from "@/contexts/LanguageModeContext";
+import { getTranslations } from "@/lib/translations";
 
 const LESSON_ID = "animals-topic";
 const XP_REWARD = 70;
 
 interface TypeInQuestion {
   emoji: string;
-  english: string;
+  hintKey: keyof ReturnType<typeof getTranslations>;
   bulgarian: string;
   answer: string;
 }
@@ -28,24 +30,24 @@ interface FillBlankQuestion {
   sentence: string;
   options: string[];
   correctIndex: number;
-  translation: string;
+  translationKey: keyof ReturnType<typeof getTranslations>;
   emoji: string;
 }
 
 type Question = { type: "typeIn"; data: TypeInQuestion } | { type: "fillBlank"; data: FillBlankQuestion };
 
 const typeInQuestions: TypeInQuestion[] = [
-  { emoji: "🐕", english: "Dog", bulgarian: "куче", answer: "kuche" },
-  { emoji: "🐈", english: "Cat", bulgarian: "котка", answer: "kotka" },
-  { emoji: "🐦", english: "Bird", bulgarian: "птица", answer: "ptitsa" },
-  { emoji: "🐟", english: "Fish", bulgarian: "риба", answer: "riba" },
-  { emoji: "🐎", english: "Horse", bulgarian: "кон", answer: "kon" },
+  { emoji: "🐕", hintKey: "hintDog", bulgarian: "куче", answer: "kuche" },
+  { emoji: "🐈", hintKey: "hintCat", bulgarian: "котка", answer: "kotka" },
+  { emoji: "🐦", hintKey: "hintBird", bulgarian: "птица", answer: "ptitsa" },
+  { emoji: "🐟", hintKey: "hintFish", bulgarian: "риба", answer: "riba" },
+  { emoji: "🐎", hintKey: "hintHorse", bulgarian: "кон", answer: "kon" },
 ];
 
 const fillBlankQuestions: FillBlankQuestion[] = [
-  { emoji: "🐄", sentence: "Кравата дава ____", options: ["месо", "мляко", "яйца", "вода"], correctIndex: 1, translation: "The cow gives milk" },
-  { emoji: "🐖", sentence: "____ живее във ферма", options: ["Прасето", "Рибата", "Птицата", "Котката"], correctIndex: 0, translation: "The pig lives on a farm" },
-  { emoji: "🐇", sentence: "Заекът яде ____", options: ["месо", "риба", "моркови", "сирене"], correctIndex: 2, translation: "The rabbit eats carrots" },
+  { emoji: "🐄", sentence: "Кравата дава ____", options: ["месо", "мляко", "яйца", "вода"], correctIndex: 1, translationKey: "theCowGivesMilk" },
+  { emoji: "🐖", sentence: "____ живее във ферма", options: ["Прасето", "Рибата", "Птицата", "Котката"], correctIndex: 0, translationKey: "thePigLivesOnFarm" },
+  { emoji: "🐇", sentence: "Заекът яде ____", options: ["месо", "риба", "моркови", "сирене"], correctIndex: 2, translationKey: "theRabbitEatsCarrots" },
 ];
 
 const generateMixedQuestions = (): Question[] => {
@@ -62,6 +64,8 @@ const AnimalsLesson = () => {
   const { playCorrect, playIncorrect, playComplete } = useSoundEffects();
   const { canEarnXP, refetch } = useUserProgress();
   const inputRef = useRef<HTMLInputElement>(null);
+  const { uiLanguage } = useLanguageMode();
+  const t = getTranslations(uiLanguage);
   
   const [questions] = useState<Question[]>(() => generateMixedQuestions());
   const [currentStep, setCurrentStep] = useState(0);
@@ -76,7 +80,6 @@ const AnimalsLesson = () => {
   const progress = ((currentStep + 1) / questions.length) * 100;
   const isRevision = !canEarnXP(LESSON_ID);
 
-  // Auto-focus input on step change
   useEffect(() => {
     if (!isComplete && isCorrect === null && currentQuestion?.type === "typeIn") {
       const timer = setTimeout(() => {
@@ -143,8 +146,8 @@ const AnimalsLesson = () => {
       }
       
       toast({
-        title: isRevision ? "Revision Complete!" : "Lesson Complete!",
-        description: isRevision ? `${correctAnswers}/${questions.length} correct!` : `You earned ${xpEarned} XP!`,
+        title: isRevision ? t.revisionComplete : t.lessonComplete,
+        description: isRevision ? `${correctAnswers}/${questions.length} ${t.correctAnswers}!` : `${t.xpEarned} ${xpEarned} XP!`,
       });
       setIsComplete(true);
     }
@@ -177,15 +180,15 @@ const AnimalsLesson = () => {
           <div className="flex items-center gap-4 mb-4">
             <Button variant="outline" size="sm" onClick={() => navigate("/")}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              {t.back}
             </Button>
-            <h1 className="text-2xl font-bold">Animals 🐾</h1>
-            {isRevision && <span className="text-xs bg-muted px-2 py-1 rounded">Revision</span>}
+            <h1 className="text-2xl font-bold">{t.animalsLesson} 🐾</h1>
+            {isRevision && <span className="text-xs bg-muted px-2 py-1 rounded">{t.revision}</span>}
           </div>
           
           <div className="mb-4">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-muted-foreground">{currentStep + 1} of {questions.length}</span>
+              <span className="text-sm text-muted-foreground">{currentStep + 1} / {questions.length}</span>
               <span className="text-sm font-medium">{Math.round(progress)}%</span>
             </div>
             <Progress value={progress} className="h-2" />
@@ -195,7 +198,7 @@ const AnimalsLesson = () => {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-center">
-              {currentQuestion.type === "typeIn" ? "Type the romanized Bulgarian" : "Fill in the blank"}
+              {currentQuestion.type === "typeIn" ? t.typeTransliteration : t.fillInBlank}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -203,7 +206,7 @@ const AnimalsLesson = () => {
               <>
                 <div className="text-center">
                   <div className="text-9xl mb-4">{(currentQuestion.data as TypeInQuestion).emoji}</div>
-                  <h2 className="text-3xl font-bold mb-2">{(currentQuestion.data as TypeInQuestion).english}</h2>
+                  <h2 className="text-3xl font-bold mb-2">{t[(currentQuestion.data as TypeInQuestion).hintKey]}</h2>
                   <p className="text-lg text-muted-foreground">{(currentQuestion.data as TypeInQuestion).bulgarian}</p>
                 </div>
                 
@@ -211,7 +214,7 @@ const AnimalsLesson = () => {
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
                   onKeyDown={handleKeyPress}
-                  placeholder="Type the romanized Bulgarian..."
+                  placeholder={t.typeTransliteration + "..."}
                   className={cn(
                     "text-center text-lg",
                     isCorrect === true && "border-green-500 bg-green-500/10",
@@ -223,7 +226,7 @@ const AnimalsLesson = () => {
                 
                 {isCorrect === false && (
                   <p className="text-sm text-destructive text-center">
-                    The answer is: <span className="font-bold">{(currentQuestion.data as TypeInQuestion).answer}</span>
+                    {t.theAnswerIs} <span className="font-bold">{(currentQuestion.data as TypeInQuestion).answer}</span>
                   </p>
                 )}
               </>
@@ -232,7 +235,7 @@ const AnimalsLesson = () => {
                 <div className="text-center">
                   <div className="text-7xl mb-4">{(currentQuestion.data as FillBlankQuestion).emoji}</div>
                   <p className="text-2xl font-bold mb-2">{(currentQuestion.data as FillBlankQuestion).sentence}</p>
-                  <p className="text-lg text-primary">{(currentQuestion.data as FillBlankQuestion).translation}</p>
+                  <p className="text-lg text-primary">{t[(currentQuestion.data as FillBlankQuestion).translationKey]}</p>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
@@ -263,13 +266,13 @@ const AnimalsLesson = () => {
                   isCorrect ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
                 )}>
                   {isCorrect ? (
-                    <><Check className="w-6 h-6" /><span className="font-bold">Correct! {!isRevision && "+10 XP"}</span></>
+                    <><Check className="w-6 h-6" /><span className="font-bold">{t.correct} {!isRevision && "+10 XP"}</span></>
                   ) : (
-                    <><X className="w-6 h-6" /><span className="font-bold">Incorrect</span></>
+                    <><X className="w-6 h-6" /><span className="font-bold">{t.incorrect}</span></>
                   )}
                 </div>
                 <Button onClick={nextStep} className="w-full">
-                  {currentStep === questions.length - 1 ? "Complete" : "Next"}
+                  {currentStep === questions.length - 1 ? t.complete : t.next}
                 </Button>
               </>
             )}
@@ -277,14 +280,14 @@ const AnimalsLesson = () => {
             {isCorrect === null && currentQuestion.type === "typeIn" && (
               <Button onClick={checkTypeInAnswer} className="w-full" disabled={!userInput.trim()}>
                 <Check className="w-4 h-4 mr-2" />
-                Check Answer
+                {t.check}
               </Button>
             )}
           </CardContent>
         </Card>
 
         <div className="text-center text-sm text-muted-foreground">
-          {isRevision ? "Revision Mode" : `Score: ${score} XP`} | Correct: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}
+          {isRevision ? t.revisionMode : `Score: ${score} XP`} | {t.correct}: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}
         </div>
       </div>
     </div>

@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, ArrowRight, ArrowLeft, Home, RotateCcw } from "lucide-react";
 import { getLessonNavigation, lessonRouteToId } from "@/lib/lessonNavigation";
 import { useUserProgress } from "@/hooks/useUserProgress";
+import { useLanguageMode } from "@/contexts/LanguageModeContext";
+import { getTranslations } from "@/lib/translations";
 
 interface LessonCompleteProps {
   lessonKey: string;
@@ -27,6 +29,8 @@ export const LessonComplete = ({
   const lessonId = lessonRouteToId[lessonKey] || lessonKey;
   const nav = getLessonNavigation(lessonId);
   const { progress } = useUserProgress();
+  const { uiLanguage } = useLanguageMode();
+  const t = getTranslations(uiLanguage);
   
   // Check if lesson was already completed before this session
   const wasAlreadyCompleted = progress[lessonId]?.completed;
@@ -39,19 +43,19 @@ export const LessonComplete = ({
             <Trophy className="w-10 h-10 text-primary" />
           </div>
           <CardTitle className="text-2xl">
-            {isRevision || wasAlreadyCompleted ? "Revision Complete!" : "Lesson Complete!"}
+            {isRevision || wasAlreadyCompleted ? t.revisionComplete : t.lessonComplete}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
             {isRevision || wasAlreadyCompleted ? (
-              <p className="text-lg text-muted-foreground">Great practice session!</p>
+              <p className="text-lg text-muted-foreground">{t.greatPractice}</p>
             ) : (
               <p className="text-3xl font-bold text-primary">+{xpEarned} XP</p>
             )}
             {correctAnswers !== undefined && totalQuestions !== undefined && (
               <p className="text-muted-foreground">
-                {correctAnswers}/{totalQuestions} correct answers
+                {correctAnswers}/{totalQuestions} {t.correctAnswers}
               </p>
             )}
           </div>
@@ -64,7 +68,7 @@ export const LessonComplete = ({
               onClick={() => navigate(location.pathname)}
             >
               <RotateCcw className="w-5 h-5 mr-2" />
-              Revise Again
+              {t.reviseAgain}
             </Button>
             
             {nav.hasNext && nav.nextRoute ? (
@@ -73,7 +77,7 @@ export const LessonComplete = ({
                 className="w-full"
                 onClick={() => navigate(nav.nextRoute!)}
               >
-                Next: {nav.nextTitle}
+                {t.nextLesson} {nav.nextTitle}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             ) : null}
@@ -86,7 +90,7 @@ export const LessonComplete = ({
                 onClick={() => navigate(nav.prevRoute!)}
               >
                 <ArrowLeft className="w-5 h-5 mr-2" />
-                Previous: {nav.prevTitle}
+                {t.previousLesson} {nav.prevTitle}
               </Button>
             ) : null}
             
@@ -97,7 +101,7 @@ export const LessonComplete = ({
               onClick={() => navigate("/")}
             >
               <Home className="w-5 h-5 mr-2" />
-              Back to Lessons
+              {t.backToLessons}
             </Button>
           </div>
         </CardContent>

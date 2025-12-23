@@ -11,6 +11,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { LessonComplete } from "@/components/LessonComplete";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
+import { useLanguageMode } from "@/contexts/LanguageModeContext";
+import { getTranslations } from "@/lib/translations";
 
 interface BaseQuestion {
   bulgarian: string;
@@ -69,6 +71,8 @@ export const NumbersTopicLesson = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { uiLanguage } = useLanguageMode();
+  const t = getTranslations(uiLanguage);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -185,7 +189,7 @@ export const NumbersTopicLesson = () => {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-center">
-              Numbers - {currentQuestion.type === "typeIn" ? "Type the transliteration" : "Choose the correct answer"}
+              {t.numbersLesson} - {currentQuestion.type === "typeIn" ? t.typeTransliteration : t.chooseCorrect}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -196,7 +200,7 @@ export const NumbersTopicLesson = () => {
                   <Volume2 className="w-6 h-6" />
                 </Button>
               </div>
-              {showHint && <p className="text-muted-foreground animate-fade-in">Hint: {currentQuestion.hint}</p>}
+              {showHint && <p className="text-muted-foreground animate-fade-in">{t.showHint}: {currentQuestion.hint}</p>}
             </div>
 
             {currentQuestion.type === "typeIn" ? (
@@ -204,7 +208,7 @@ export const NumbersTopicLesson = () => {
                 <Input
                   ref={inputRef}
                   type="text"
-                  placeholder="Type the transliteration..."
+                  placeholder={t.typeTransliteration + "..."}
                   value={userAnswer}
                   onChange={(e) => setUserAnswer(e.target.value)}
                   disabled={isCorrect !== null}
@@ -249,9 +253,9 @@ export const NumbersTopicLesson = () => {
                 isCorrect ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
               )}>
                 {isCorrect ? (
-                  <><Check className="w-6 h-6" /><span className="font-bold">Correct!</span></>
+                  <><Check className="w-6 h-6" /><span className="font-bold">{t.correct}</span></>
                 ) : (
-                  <><X className="w-6 h-6" /><span className="font-bold">The answer is: {currentQuestion.answer}</span></>
+                  <><X className="w-6 h-6" /><span className="font-bold">{t.theAnswerIs} {currentQuestion.answer}</span></>
                 )}
               </div>
             )}
@@ -260,22 +264,22 @@ export const NumbersTopicLesson = () => {
               {isCorrect === null && currentQuestion.type === "typeIn" ? (
                 <>
                   <Button variant="outline" onClick={() => setShowHint(true)} disabled={showHint} className="flex-1">
-                    Show Hint
+                    {t.showHint}
                   </Button>
                   <Button onClick={() => checkAnswer()} disabled={!userAnswer.trim()} className="flex-1">
-                    Check
+                    {t.check}
                   </Button>
                 </>
               ) : isCorrect !== null ? (
                 <Button onClick={nextQuestion} className="w-full">
-                  {currentStep < questions.length - 1 ? "Next" : "Complete Lesson"}
+                  {currentStep < questions.length - 1 ? t.next : t.completeLesson}
                 </Button>
               ) : null}
             </div>
           </CardContent>
         </Card>
         <div className="text-center text-muted-foreground">
-          <p>Correct: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}</p>
+          <p>{t.correct}: {correctAnswers}/{currentStep + (isCorrect !== null ? 1 : 0)}</p>
         </div>
       </div>
     </div>
