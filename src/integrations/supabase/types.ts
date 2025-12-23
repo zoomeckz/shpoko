@@ -242,6 +242,7 @@ export type Database = {
           id: string
           is_public: boolean
           is_timed: boolean
+          language: string
           time_limit_seconds: number | null
           title: string
           updated_at: string
@@ -254,6 +255,7 @@ export type Database = {
           id?: string
           is_public?: boolean
           is_timed?: boolean
+          language?: string
           time_limit_seconds?: number | null
           title: string
           updated_at?: string
@@ -266,6 +268,7 @@ export type Database = {
           id?: string
           is_public?: boolean
           is_timed?: boolean
+          language?: string
           time_limit_seconds?: number | null
           title?: string
           updated_at?: string

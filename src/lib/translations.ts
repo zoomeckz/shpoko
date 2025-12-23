@@ -1,7 +1,7 @@
 // Translation system for multi-language support
-// English (default), Swedish, Bulgarian, Tunisian Arabic, and Dutch translations
+// English (default), Swedish, Bulgarian, Tunisian Arabic, Dutch, Greek, Russian, Ukrainian, Italian, Polish translations
 
-export type UILanguage = 'english' | 'swedish' | 'bulgarian' | 'tunisian' | 'dutch';
+export type UILanguage = 'english' | 'swedish' | 'bulgarian' | 'tunisian' | 'dutch' | 'greek' | 'russian' | 'ukrainian' | 'italian' | 'polish';
 
 interface Translations {
   // Header
@@ -1501,9 +1501,154 @@ export const getTranslations = (language: UILanguage): Translations => {
       return tunisianTranslations;
     case 'dutch':
       return dutchTranslations;
+    case 'greek':
+      return greekTranslations;
+    case 'russian':
+      return russianTranslations;
+    case 'ukrainian':
+      return ukrainianTranslations;
+    case 'italian':
+      return italianTranslations;
+    case 'polish':
+      return polishTranslations;
     default:
       return englishTranslations;
   }
+};
+
+// Greek translations
+const greekTranslations: Translations = {
+  ...englishTranslations,
+  quizzes: 'Κουίζ',
+  leaderboard: 'Κατάταξη',
+  premium: 'Premium',
+  heroTitle: 'Μάθε Βουλγαρικά με',
+  heroTitleHighlight: 'Shpoko',
+  heroDescription: 'Κατάκτησε τα Βουλγαρικά μέσα από διασκεδαστικά μαθήματα με τον φιλικό σου σύντροφο. Από το Κυριλλικό αλφάβητο στη συνομιλία σε 15 λεπτά την ημέρα!',
+  startLearning: 'Ξεκίνα να Μαθαίνεις',
+  lessons: 'Μαθήματα',
+  minPerDay: '15 Λεπτά/Ημέρα',
+  beginner: 'Αρχάριος',
+  intermediate: 'Μεσαίος',
+  advanced: 'Προχωρημένος',
+  correct: 'Σωστά!',
+  incorrect: 'Λάθος',
+  continue: 'Συνέχεια',
+  back: '← Πίσω',
+  wordOfTheDay: 'Λέξη της Ημέρας',
+  dailyGames: 'Καθημερινά Παιχνίδια',
+  animals: 'Ζώα',
+  colors: 'Χρώματα',
+  numbers: 'Αριθμοί',
+  signIn: 'Σύνδεση',
+};
+
+// Russian translations
+const russianTranslations: Translations = {
+  ...englishTranslations,
+  quizzes: 'Викторины',
+  leaderboard: 'Таблица лидеров',
+  premium: 'Премиум',
+  heroTitle: 'Учи болгарский с',
+  heroTitleHighlight: 'Shpoko',
+  heroDescription: 'Освой болгарский через веселые мини-уроки с дружелюбным компаньоном. От кириллицы до разговора за 15 минут в день!',
+  startLearning: 'Начать учиться',
+  lessons: 'Уроки',
+  minPerDay: '15 мин/день',
+  beginner: 'Начинающий',
+  intermediate: 'Средний',
+  advanced: 'Продвинутый',
+  correct: 'Правильно!',
+  incorrect: 'Неправильно',
+  continue: 'Продолжить',
+  back: '← Назад',
+  wordOfTheDay: 'Слово дня',
+  dailyGames: 'Ежедневные игры',
+  animals: 'Животные',
+  colors: 'Цвета',
+  numbers: 'Числа',
+  signIn: 'Войти',
+};
+
+// Ukrainian translations
+const ukrainianTranslations: Translations = {
+  ...englishTranslations,
+  quizzes: 'Вікторини',
+  leaderboard: 'Таблиця лідерів',
+  premium: 'Преміум',
+  heroTitle: 'Вивчай болгарську з',
+  heroTitleHighlight: 'Shpoko',
+  heroDescription: 'Опануй болгарську через веселі міні-уроки з дружнім компаньйоном. Від кирилиці до розмови за 15 хвилин на день!',
+  startLearning: 'Почати вчитися',
+  lessons: 'Уроки',
+  minPerDay: '15 хв/день',
+  beginner: 'Початківець',
+  intermediate: 'Середній',
+  advanced: 'Просунутий',
+  correct: 'Правильно!',
+  incorrect: 'Неправильно',
+  continue: 'Продовжити',
+  back: '← Назад',
+  wordOfTheDay: 'Слово дня',
+  dailyGames: 'Щоденні ігри',
+  animals: 'Тварини',
+  colors: 'Кольори',
+  numbers: 'Числа',
+  signIn: 'Увійти',
+};
+
+// Italian translations
+const italianTranslations: Translations = {
+  ...englishTranslations,
+  quizzes: 'Quiz',
+  leaderboard: 'Classifica',
+  premium: 'Premium',
+  heroTitle: 'Impara il bulgaro con',
+  heroTitleHighlight: 'Shpoko',
+  heroDescription: 'Padroneggia il bulgaro attraverso lezioni divertenti e brevi con il tuo compagno amichevole. Dal cirillico alla conversazione in soli 15 minuti al giorno!',
+  startLearning: 'Inizia a imparare',
+  lessons: 'Lezioni',
+  minPerDay: '15 min/giorno',
+  beginner: 'Principiante',
+  intermediate: 'Intermedio',
+  advanced: 'Avanzato',
+  correct: 'Corretto!',
+  incorrect: 'Sbagliato',
+  continue: 'Continua',
+  back: '← Indietro',
+  wordOfTheDay: 'Parola del giorno',
+  dailyGames: 'Giochi quotidiani',
+  animals: 'Animali',
+  colors: 'Colori',
+  numbers: 'Numeri',
+  signIn: 'Accedi',
+};
+
+// Polish translations
+const polishTranslations: Translations = {
+  ...englishTranslations,
+  quizzes: 'Quizy',
+  leaderboard: 'Ranking',
+  premium: 'Premium',
+  heroTitle: 'Ucz się bułgarskiego z',
+  heroTitleHighlight: 'Shpoko',
+  heroDescription: 'Opanuj bułgarski poprzez zabawne, krótkie lekcje z przyjaznym towarzyszem. Od cyrylicy do rozmowy w zaledwie 15 minut dziennie!',
+  startLearning: 'Zacznij się uczyć',
+  lessons: 'Lekcje',
+  minPerDay: '15 min/dzień',
+  beginner: 'Początkujący',
+  intermediate: 'Średniozaawansowany',
+  advanced: 'Zaawansowany',
+  correct: 'Poprawnie!',
+  incorrect: 'Niepoprawnie',
+  continue: 'Kontynuuj',
+  back: '← Wstecz',
+  wordOfTheDay: 'Słowo dnia',
+  dailyGames: 'Codzienne gry',
+  animals: 'Zwierzęta',
+  colors: 'Kolory',
+  numbers: 'Liczby',
+  signIn: 'Zaloguj się',
 };
 
 export const useTranslations = () => {

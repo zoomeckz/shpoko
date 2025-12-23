@@ -20,6 +20,19 @@ const CATEGORIES = [
   { value: "culture", label: "Culture" },
 ];
 
+const LANGUAGES = [
+  { value: "english", label: "English", flag: "🇬🇧" },
+  { value: "swedish", label: "Svenska", flag: "🇸🇪" },
+  { value: "dutch", label: "Nederlands", flag: "🇳🇱" },
+  { value: "tunisian", label: "تونسي", flag: "🇹🇳" },
+  { value: "bulgarian", label: "Български", flag: "🇧🇬" },
+  { value: "greek", label: "Ελληνικά", flag: "🇬🇷" },
+  { value: "russian", label: "Русский", flag: "🇷🇺" },
+  { value: "ukrainian", label: "Українська", flag: "🇺🇦" },
+  { value: "italian", label: "Italiano", flag: "🇮🇹" },
+  { value: "polish", label: "Polski", flag: "🇵🇱" },
+];
+
 interface Question {
   id?: string;
   question_text: string;
@@ -39,6 +52,7 @@ export const QuizCreator = ({ onBack, editQuizId }: QuizCreatorProps) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("general");
+  const [language, setLanguage] = useState("english");
   const [isPublic, setIsPublic] = useState(false);
   const [isTimed, setIsTimed] = useState(false);
   const [timeLimit, setTimeLimit] = useState(60);
@@ -65,6 +79,7 @@ export const QuizCreator = ({ onBack, editQuizId }: QuizCreatorProps) => {
       setTitle(quiz.title);
       setDescription(quiz.description || "");
       setCategory((quiz as any).category || "general");
+      setLanguage((quiz as any).language || "english");
       setIsPublic(quiz.is_public);
       setIsTimed(quiz.is_timed);
       setTimeLimit(quiz.time_limit_seconds || 60);
@@ -154,6 +169,7 @@ export const QuizCreator = ({ onBack, editQuizId }: QuizCreatorProps) => {
             title: title.trim(),
             description: description.trim() || null,
             category,
+            language,
             is_public: isPublic,
             is_timed: isTimed,
             time_limit_seconds: isTimed ? timeLimit : null,
@@ -190,6 +206,7 @@ export const QuizCreator = ({ onBack, editQuizId }: QuizCreatorProps) => {
             title: title.trim(),
             description: description.trim() || null,
             category,
+            language,
             is_public: isPublic,
             is_timed: isTimed,
             time_limit_seconds: isTimed ? timeLimit : null,
@@ -283,6 +300,25 @@ export const QuizCreator = ({ onBack, editQuizId }: QuizCreatorProps) => {
                 {CATEGORIES.map((cat) => (
                   <SelectItem key={cat.value} value={cat.value}>
                     {cat.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="language">Quiz Language</Label>
+            <p className="text-sm text-muted-foreground mb-2">
+              Which language are the quiz prompts/questions written in?
+            </p>
+            <Select value={language} onValueChange={setLanguage}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.value} value={lang.value}>
+                    {lang.flag} {lang.label}
                   </SelectItem>
                 ))}
               </SelectContent>

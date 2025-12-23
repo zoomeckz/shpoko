@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-export type LanguageMode = 'bulgarian' | 'spanish' | 'swedish' | 'tunisian' | 'dutch';
+export type LanguageMode = 'bulgarian' | 'spanish' | 'swedish' | 'tunisian' | 'dutch' | 'greek' | 'russian' | 'ukrainian' | 'italian' | 'polish';
 
 interface LanguageModeContextType {
   languageMode: LanguageMode;
   setLanguageMode: (mode: LanguageMode) => void;
   // UI language (what the interface shows)
-  uiLanguage: 'english' | 'bulgarian' | 'swedish' | 'tunisian' | 'dutch';
+  uiLanguage: 'english' | 'bulgarian' | 'swedish' | 'tunisian' | 'dutch' | 'greek' | 'russian' | 'ukrainian' | 'italian' | 'polish';
   // Target language (what user is learning)
   targetLanguage: 'bulgarian' | 'spanish';
 }
@@ -29,10 +29,20 @@ export const LanguageModeProvider: React.FC<{ children: ReactNode }> = ({ childr
   // When learning Bulgarian (Swedish UI): UI is Swedish, target is Bulgarian
   // When learning Bulgarian (Tunisian UI): UI is Tunisian, target is Bulgarian
   // When learning Bulgarian (Dutch UI): UI is Dutch, target is Bulgarian
+  // When learning Bulgarian (Greek UI): UI is Greek, target is Bulgarian
+  // When learning Bulgarian (Russian UI): UI is Russian, target is Bulgarian
+  // When learning Bulgarian (Ukrainian UI): UI is Ukrainian, target is Bulgarian
+  // When learning Bulgarian (Italian UI): UI is Italian, target is Bulgarian
+  // When learning Bulgarian (Polish UI): UI is Polish, target is Bulgarian
   const uiLanguage = languageMode === 'bulgarian' ? 'english' : 
                      languageMode === 'swedish' ? 'swedish' : 
                      languageMode === 'tunisian' ? 'tunisian' : 
-                     languageMode === 'dutch' ? 'dutch' : 'bulgarian';
+                     languageMode === 'dutch' ? 'dutch' : 
+                     languageMode === 'greek' ? 'greek' :
+                     languageMode === 'russian' ? 'russian' :
+                     languageMode === 'ukrainian' ? 'ukrainian' :
+                     languageMode === 'italian' ? 'italian' :
+                     languageMode === 'polish' ? 'polish' : 'bulgarian';
   const targetLanguage = languageMode === 'spanish' ? 'spanish' : 'bulgarian';
 
   return (
