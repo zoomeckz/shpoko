@@ -15,6 +15,11 @@ interface Story {
   titleBG: string;
   titleTN: string;
   titleNL: string;
+  titleEL: string;
+  titleRU: string;
+  titleUK: string;
+  titleIT: string;
+  titlePL: string;
   level: "beginner" | "intermediate" | "advanced";
   xpReward: number;
   previewEN: string;
@@ -22,6 +27,11 @@ interface Story {
   previewBG: string;
   previewTN: string;
   previewNL: string;
+  previewEL: string;
+  previewRU: string;
+  previewUK: string;
+  previewIT: string;
+  previewPL: string;
 }
 
 const stories: Story[] = [
@@ -32,6 +42,11 @@ const stories: Story[] = [
     titleBG: "Добро утро",
     titleTN: "صباح الخير",
     titleNL: "Goedemorgen",
+    titleEL: "Καλημέρα",
+    titleRU: "Доброе утро",
+    titleUK: "Добрий ранок",
+    titleIT: "Buongiorno",
+    titlePL: "Dzień dobry",
     level: "beginner",
     xpReward: 15,
     previewEN: "A simple story about morning routines...",
@@ -39,6 +54,11 @@ const stories: Story[] = [
     previewBG: "Проста история за сутрешни рутини...",
     previewTN: "قصة بسيطة على روتين الصباح...",
     previewNL: "Een eenvoudig verhaal over ochtendroutines...",
+    previewEL: "Μια απλή ιστορία για πρωινές ρουτίνες...",
+    previewRU: "Простая история об утренних привычках...",
+    previewUK: "Проста історія про ранкові звички...",
+    previewIT: "Una semplice storia sulle routine mattutine...",
+    previewPL: "Prosta historia o porannych zwyczajach...",
   },
   {
     id: "market",
@@ -47,6 +67,11 @@ const stories: Story[] = [
     titleBG: "На пазара",
     titleTN: "في السوق",
     titleNL: "Op de markt",
+    titleEL: "Στην αγορά",
+    titleRU: "На рынке",
+    titleUK: "На ринку",
+    titleIT: "Al mercato",
+    titlePL: "Na targu",
     level: "beginner",
     xpReward: 15,
     previewEN: "Shopping for fresh apples...",
@@ -54,6 +79,11 @@ const stories: Story[] = [
     previewBG: "Пазаруване на пресни ябълки...",
     previewTN: "نشري تفاح فريش...",
     previewNL: "Verse appels kopen...",
+    previewEL: "Αγοράζοντας φρέσκα μήλα...",
+    previewRU: "Покупаем свежие яблоки...",
+    previewUK: "Купуємо свіжі яблука...",
+    previewIT: "Comprare mele fresche...",
+    previewPL: "Kupowanie świeżych jabłek...",
   },
   {
     id: "family",
@@ -62,6 +92,11 @@ const stories: Story[] = [
     titleBG: "Моето семейство",
     titleTN: "عايلتي",
     titleNL: "Mijn familie",
+    titleEL: "Η οικογένειά μου",
+    titleRU: "Моя семья",
+    titleUK: "Моя родина",
+    titleIT: "La mia famiglia",
+    titlePL: "Moja rodzina",
     level: "beginner",
     xpReward: 15,
     previewEN: "Learn about family members...",
@@ -69,6 +104,11 @@ const stories: Story[] = [
     previewBG: "Научете за членовете на семейството...",
     previewTN: "تعلّم على أفراد العايلة...",
     previewNL: "Leer over familieleden...",
+    previewEL: "Μάθε για τα μέλη της οικογένειας...",
+    previewRU: "Узнайте о членах семьи...",
+    previewUK: "Дізнайтесь про членів родини...",
+    previewIT: "Impara sui membri della famiglia...",
+    previewPL: "Poznaj członków rodziny...",
   },
   {
     id: "weather",
@@ -77,6 +117,11 @@ const stories: Story[] = [
     titleBG: "Времето",
     titleTN: "الطقس",
     titleNL: "Het weer",
+    titleEL: "Ο καιρός",
+    titleRU: "Погода",
+    titleUK: "Погода",
+    titleIT: "Il meteo",
+    titlePL: "Pogoda",
     level: "beginner",
     xpReward: 15,
     previewEN: "A sunny day outside...",
@@ -84,15 +129,25 @@ const stories: Story[] = [
     previewBG: "Слънчев ден навън...",
     previewTN: "نهار شمس برّا...",
     previewNL: "Een zonnige dag buiten...",
+    previewEL: "Μια ηλιόλουστη μέρα έξω...",
+    previewRU: "Солнечный день на улице...",
+    previewUK: "Сонячний день надворі...",
+    previewIT: "Una giornata di sole fuori...",
+    previewPL: "Słoneczny dzień na zewnątrz...",
   },
 ];
 
-const levelLabels = {
+const levelLabels: Record<string, { beginner: string; intermediate: string; advanced: string }> = {
   english: { beginner: "beginner", intermediate: "intermediate", advanced: "advanced" },
   swedish: { beginner: "nybörjare", intermediate: "medel", advanced: "avancerad" },
   bulgarian: { beginner: "начинаещ", intermediate: "средно", advanced: "напреднал" },
   tunisian: { beginner: "مبتدئ", intermediate: "متوسط", advanced: "متقدم" },
   dutch: { beginner: "beginner", intermediate: "gemiddeld", advanced: "gevorderd" },
+  greek: { beginner: "αρχάριος", intermediate: "μεσαίος", advanced: "προχωρημένος" },
+  russian: { beginner: "начинающий", intermediate: "средний", advanced: "продвинутый" },
+  ukrainian: { beginner: "початківець", intermediate: "середній", advanced: "просунутий" },
+  italian: { beginner: "principiante", intermediate: "intermedio", advanced: "avanzato" },
+  polish: { beginner: "początkujący", intermediate: "średni", advanced: "zaawansowany" },
 };
 
 const levelColors = {
@@ -111,6 +166,11 @@ export const ShortStories = () => {
     if (uiLanguage === 'bulgarian') return story.titleBG;
     if (uiLanguage === 'tunisian') return story.titleTN;
     if (uiLanguage === 'dutch') return story.titleNL;
+    if (uiLanguage === 'greek') return story.titleEL;
+    if (uiLanguage === 'russian') return story.titleRU;
+    if (uiLanguage === 'ukrainian') return story.titleUK;
+    if (uiLanguage === 'italian') return story.titleIT;
+    if (uiLanguage === 'polish') return story.titlePL;
     return story.titleEN;
   };
 
@@ -119,6 +179,11 @@ export const ShortStories = () => {
     if (uiLanguage === 'bulgarian') return story.previewBG;
     if (uiLanguage === 'tunisian') return story.previewTN;
     if (uiLanguage === 'dutch') return story.previewNL;
+    if (uiLanguage === 'greek') return story.previewEL;
+    if (uiLanguage === 'russian') return story.previewRU;
+    if (uiLanguage === 'ukrainian') return story.previewUK;
+    if (uiLanguage === 'italian') return story.previewIT;
+    if (uiLanguage === 'polish') return story.previewPL;
     return story.previewEN;
   };
 
