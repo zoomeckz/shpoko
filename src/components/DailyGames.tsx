@@ -235,16 +235,75 @@ const NUMBERS_ES = [
   { emoji: "2️⃣0️⃣", english: "Двадесет", bulgarian: "veinte" },
 ];
 
+// Bulgarian lessons data (with Dutch prompts)
+const ANIMALS_NL = [
+  { emoji: "🐕", english: "Hond", bulgarian: "kuche" },
+  { emoji: "🐈", english: "Kat", bulgarian: "kotka" },
+  { emoji: "🐦", english: "Vogel", bulgarian: "ptitsa" },
+  { emoji: "🐟", english: "Vis", bulgarian: "riba" },
+  { emoji: "🐎", english: "Paard", bulgarian: "kon" },
+  { emoji: "🐄", english: "Koe", bulgarian: "krava" },
+  { emoji: "🐖", english: "Varken", bulgarian: "prase" },
+  { emoji: "🐑", english: "Schaap", bulgarian: "ovtsa" },
+  { emoji: "🐐", english: "Geit", bulgarian: "koza" },
+  { emoji: "🐓", english: "Haan", bulgarian: "petel" },
+  { emoji: "🦆", english: "Eend", bulgarian: "patitsa" },
+  { emoji: "🐇", english: "Konijn", bulgarian: "zaek" },
+  { emoji: "🐻", english: "Beer", bulgarian: "mechka" },
+  { emoji: "🦊", english: "Vos", bulgarian: "lisitsa" },
+  { emoji: "🐺", english: "Wolf", bulgarian: "valk" },
+  { emoji: "🦁", english: "Leeuw", bulgarian: "lav" },
+  { emoji: "🐯", english: "Tijger", bulgarian: "tigar" },
+  { emoji: "🐘", english: "Olifant", bulgarian: "slon" },
+  { emoji: "🦒", english: "Giraffe", bulgarian: "zhiraf" },
+  { emoji: "🐒", english: "Aap", bulgarian: "maimuna" },
+];
+
+const COLORS_NL = [
+  { emoji: "🔴", english: "Rood", bulgarian: "cherveno" },
+  { emoji: "🟠", english: "Oranje", bulgarian: "oranzhevo" },
+  { emoji: "🟡", english: "Geel", bulgarian: "zhalto" },
+  { emoji: "🟢", english: "Groen", bulgarian: "zeleno" },
+  { emoji: "🔵", english: "Blauw", bulgarian: "sinyo" },
+  { emoji: "🟣", english: "Paars", bulgarian: "lilavo" },
+  { emoji: "🟤", english: "Bruin", bulgarian: "kafyavo" },
+  { emoji: "⚫", english: "Zwart", bulgarian: "cherno" },
+  { emoji: "⚪", english: "Wit", bulgarian: "byalo" },
+  { emoji: "🩷", english: "Roze", bulgarian: "rozovo" },
+  { emoji: "🩵", english: "Lichtblauw", bulgarian: "svetlosinyo" },
+  { emoji: "🩶", english: "Grijs", bulgarian: "sivo" },
+];
+
+const NUMBERS_NL = [
+  { emoji: "1️⃣", english: "Een", bulgarian: "edno" },
+  { emoji: "2️⃣", english: "Twee", bulgarian: "dve" },
+  { emoji: "3️⃣", english: "Drie", bulgarian: "tri" },
+  { emoji: "4️⃣", english: "Vier", bulgarian: "chetiri" },
+  { emoji: "5️⃣", english: "Vijf", bulgarian: "pet" },
+  { emoji: "6️⃣", english: "Zes", bulgarian: "shest" },
+  { emoji: "7️⃣", english: "Zeven", bulgarian: "sedem" },
+  { emoji: "8️⃣", english: "Acht", bulgarian: "osem" },
+  { emoji: "9️⃣", english: "Negen", bulgarian: "devet" },
+  { emoji: "🔟", english: "Tien", bulgarian: "deset" },
+  { emoji: "1️⃣1️⃣", english: "Elf", bulgarian: "edinadeset" },
+  { emoji: "1️⃣2️⃣", english: "Twaalf", bulgarian: "dvanadeset" },
+  { emoji: "1️⃣3️⃣", english: "Dertien", bulgarian: "trinadeset" },
+  { emoji: "1️⃣4️⃣", english: "Veertien", bulgarian: "chetirina­deset" },
+  { emoji: "1️⃣5️⃣", english: "Vijftien", bulgarian: "petnadeset" },
+  { emoji: "2️⃣0️⃣", english: "Twintig", bulgarian: "dvadeset" },
+];
+
 export const DailyGames = () => {
   const { languageMode, uiLanguage } = useLanguageMode();
   const t = getTranslations(uiLanguage);
   const isSpanish = languageMode === "spanish";
   const isSwedish = languageMode === "swedish";
   const isTunisian = languageMode === "tunisian";
+  const isDutch = languageMode === "dutch";
 
-  const animals = isSpanish ? ANIMALS_ES : isSwedish ? ANIMALS_SV : isTunisian ? ANIMALS_TN : ANIMALS_EN;
-  const colors = isSpanish ? COLORS_ES : isSwedish ? COLORS_SV : isTunisian ? COLORS_TN : COLORS_EN;
-  const numbers = isSpanish ? NUMBERS_ES : isSwedish ? NUMBERS_SV : isTunisian ? NUMBERS_TN : NUMBERS_EN;
+  const animals = isSpanish ? ANIMALS_ES : isSwedish ? ANIMALS_SV : isTunisian ? ANIMALS_TN : isDutch ? ANIMALS_NL : ANIMALS_EN;
+  const colors = isSpanish ? COLORS_ES : isSwedish ? COLORS_SV : isTunisian ? COLORS_TN : isDutch ? COLORS_NL : COLORS_EN;
+  const numbers = isSpanish ? NUMBERS_ES : isSwedish ? NUMBERS_SV : isTunisian ? NUMBERS_TN : isDutch ? NUMBERS_NL : NUMBERS_EN;
 
   return (
     <>

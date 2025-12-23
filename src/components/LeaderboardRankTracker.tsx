@@ -50,9 +50,9 @@ export const LeaderboardRankTracker = () => {
 
   const getRankDisplay = () => {
     if (!userRank) return t.notRanked;
-    if (userRank === 1) return uiLanguage === 'swedish' ? "🥇 1:a plats" : uiLanguage === 'bulgarian' ? "🥇 1-во място" : uiLanguage === 'tunisian' ? "🥇 المرتبة الأولى" : "🥇 1st Place";
-    if (userRank === 2) return uiLanguage === 'swedish' ? "🥈 2:a plats" : uiLanguage === 'bulgarian' ? "🥈 2-ро място" : uiLanguage === 'tunisian' ? "🥈 المرتبة الثانية" : "🥈 2nd Place";
-    if (userRank === 3) return uiLanguage === 'swedish' ? "🥉 3:e plats" : uiLanguage === 'bulgarian' ? "🥉 3-то място" : uiLanguage === 'tunisian' ? "🥉 المرتبة الثالثة" : "🥉 3rd Place";
+    if (userRank === 1) return uiLanguage === 'swedish' ? "🥇 1:a plats" : uiLanguage === 'bulgarian' ? "🥇 1-во място" : uiLanguage === 'tunisian' ? "🥇 المرتبة الأولى" : uiLanguage === 'dutch' ? "🥇 1e plaats" : "🥇 1st Place";
+    if (userRank === 2) return uiLanguage === 'swedish' ? "🥈 2:a plats" : uiLanguage === 'bulgarian' ? "🥈 2-ро място" : uiLanguage === 'tunisian' ? "🥈 المرتبة الثانية" : uiLanguage === 'dutch' ? "🥈 2e plaats" : "🥈 2nd Place";
+    if (userRank === 3) return uiLanguage === 'swedish' ? "🥉 3:e plats" : uiLanguage === 'bulgarian' ? "🥉 3-то място" : uiLanguage === 'tunisian' ? "🥉 المرتبة الثالثة" : uiLanguage === 'dutch' ? "🥉 3e plaats" : "🥉 3rd Place";
     return `#${userRank}`;
   };
 

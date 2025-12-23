@@ -14,12 +14,14 @@ interface Story {
   titleSV: string;
   titleBG: string;
   titleTN: string;
+  titleNL: string;
   level: "beginner" | "intermediate" | "advanced";
   xpReward: number;
   previewEN: string;
   previewSV: string;
   previewBG: string;
   previewTN: string;
+  previewNL: string;
 }
 
 const stories: Story[] = [
@@ -29,12 +31,14 @@ const stories: Story[] = [
     titleSV: "God morgon",
     titleBG: "Добро утро",
     titleTN: "صباح الخير",
+    titleNL: "Goedemorgen",
     level: "beginner",
     xpReward: 15,
     previewEN: "A simple story about morning routines...",
     previewSV: "En enkel berättelse om morgonrutiner...",
     previewBG: "Проста история за сутрешни рутини...",
     previewTN: "قصة بسيطة على روتين الصباح...",
+    previewNL: "Een eenvoudig verhaal over ochtendroutines...",
   },
   {
     id: "market",
@@ -42,12 +46,14 @@ const stories: Story[] = [
     titleSV: "På marknaden",
     titleBG: "На пазара",
     titleTN: "في السوق",
+    titleNL: "Op de markt",
     level: "beginner",
     xpReward: 15,
     previewEN: "Shopping for fresh apples...",
     previewSV: "Handla färska äpplen...",
     previewBG: "Пазаруване на пресни ябълки...",
     previewTN: "نشري تفاح فريش...",
+    previewNL: "Verse appels kopen...",
   },
   {
     id: "family",
@@ -55,12 +61,14 @@ const stories: Story[] = [
     titleSV: "Min familj",
     titleBG: "Моето семейство",
     titleTN: "عايلتي",
+    titleNL: "Mijn familie",
     level: "beginner",
     xpReward: 15,
     previewEN: "Learn about family members...",
     previewSV: "Lär dig om familjemedlemmar...",
     previewBG: "Научете за членовете на семейството...",
     previewTN: "تعلّم على أفراد العايلة...",
+    previewNL: "Leer over familieleden...",
   },
   {
     id: "weather",
@@ -68,12 +76,14 @@ const stories: Story[] = [
     titleSV: "Vädret",
     titleBG: "Времето",
     titleTN: "الطقس",
+    titleNL: "Het weer",
     level: "beginner",
     xpReward: 15,
     previewEN: "A sunny day outside...",
     previewSV: "En solig dag utomhus...",
     previewBG: "Слънчев ден навън...",
     previewTN: "نهار شمس برّا...",
+    previewNL: "Een zonnige dag buiten...",
   },
 ];
 
@@ -82,6 +92,7 @@ const levelLabels = {
   swedish: { beginner: "nybörjare", intermediate: "medel", advanced: "avancerad" },
   bulgarian: { beginner: "начинаещ", intermediate: "средно", advanced: "напреднал" },
   tunisian: { beginner: "مبتدئ", intermediate: "متوسط", advanced: "متقدم" },
+  dutch: { beginner: "beginner", intermediate: "gemiddeld", advanced: "gevorderd" },
 };
 
 const levelColors = {
@@ -99,6 +110,7 @@ export const ShortStories = () => {
     if (uiLanguage === 'swedish') return story.titleSV;
     if (uiLanguage === 'bulgarian') return story.titleBG;
     if (uiLanguage === 'tunisian') return story.titleTN;
+    if (uiLanguage === 'dutch') return story.titleNL;
     return story.titleEN;
   };
 
@@ -106,6 +118,7 @@ export const ShortStories = () => {
     if (uiLanguage === 'swedish') return story.previewSV;
     if (uiLanguage === 'bulgarian') return story.previewBG;
     if (uiLanguage === 'tunisian') return story.previewTN;
+    if (uiLanguage === 'dutch') return story.previewNL;
     return story.previewEN;
   };
 

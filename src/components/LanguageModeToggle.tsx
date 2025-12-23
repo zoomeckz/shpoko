@@ -23,6 +23,12 @@ const languageOptions: { mode: LanguageMode; label: string; flags: string; descr
     description: 'Lär dig bulgariska (Svenskt gränssnitt)'
   },
   { 
+    mode: 'dutch', 
+    label: 'Nederlands → Bulgaars',
+    flags: '🇳🇱 → 🇧🇬',
+    description: 'Leer Bulgaars (Nederlandse interface)'
+  },
+  { 
     mode: 'tunisian', 
     label: 'تونسي → بلغاري',
     flags: '🇹🇳 → 🇧🇬',

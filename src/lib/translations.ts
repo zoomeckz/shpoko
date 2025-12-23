@@ -1,7 +1,7 @@
 // Translation system for multi-language support
-// English (default), Swedish, Bulgarian, and Tunisian Arabic translations
+// English (default), Swedish, Bulgarian, Tunisian Arabic, and Dutch translations
 
-export type UILanguage = 'english' | 'swedish' | 'bulgarian' | 'tunisian';
+export type UILanguage = 'english' | 'swedish' | 'bulgarian' | 'tunisian' | 'dutch';
 
 interface Translations {
   // Header
@@ -1243,6 +1243,254 @@ const tunisianTranslations: Translations = {
   winterIsCold: 'الشتاء بارد',
 };
 
+const dutchTranslations: Translations = {
+  // Header
+  quizzes: 'Quizzen',
+  leaderboard: 'Ranglijst',
+  premium: 'Premium',
+  
+  // Hero Section
+  heroTitle: 'Leer Bulgaars met',
+  heroTitleHighlight: 'Shpoko',
+  heroDescription: 'Leer Bulgaars door leuke, korte lessen met je vriendelijke maatje. Van Cyrillisch naar gesprekken in slechts 15 minuten per dag!',
+  startLearning: 'Begin met leren',
+  lessons: 'Lessen',
+  minPerDay: '15 min/dag',
+  meetShpoko: 'Ontmoet Shpoko!',
+  shpokoDescription: 'Je Bulgaarse leermaatje. Ik begeleid je door elke les!',
+  shpokoGreeting: '💬 "Здравей! Klaar om te beginnen?"',
+  shpokoGreetingTranslation: '(Hallo! Klaar om te beginnen?)',
+  
+  // Lesson Selector
+  chooseYourLevel: 'Kies je niveau',
+  beginner: 'Beginner',
+  intermediate: 'Gemiddeld',
+  advanced: 'Gevorderd',
+  lessonsCount: 'lessen',
+  completed: 'voltooid',
+  unlocked: 'ontgrendeld',
+  back: '← Terug',
+  lessonsLabel: 'Lessen',
+  assessment: 'Beoordeling',
+  testYourKnowledge: 'Test je kennis van alle lessen!',
+  completeMoreLessons: 'meer lessen om te ontgrendelen',
+  takeTest: 'Doe de test',
+  streak: 'Streak',
+  revise: 'Herhalen',
+  everyStreakUnlocks: 'Elke 5 streak-dagen ontgrendelt 1 premium les!',
+  daysToNext: 'dagen tot volgende',
+  noLessonsAvailable: 'Nog geen lessen beschikbaar in deze categorie.',
+  
+  // Daily Games
+  dailyGames: 'Dagelijkse spelletjes',
+  dailyChallenge: 'Dagelijkse uitdaging',
+  animals: 'Dieren',
+  colors: 'Kleuren',
+  numbers: 'Nummers',
+  playNow: 'Speel nu!',
+  accuracy: 'Nauwkeurigheid',
+  speed: 'Snelheid',
+  upToPoints: 'Tot 100 punten',
+  yourHighScore: 'Jouw hoogste score:',
+  startGame: 'Start spel (60s)',
+  gameLocked: 'Spel vergrendeld',
+  comeBackIn: 'Kom terug over',
+  gameOver: 'Spel voorbij!',
+  finalScore: 'Eindscore:',
+  answered: 'Beantwoord',
+  newHighScore: 'Nieuw record!',
+  xpEarned: 'XP verdiend:',
+  close: 'Sluiten',
+  skip: 'Overslaan',
+  submit: 'Versturen',
+  points: 'punten',
+  skipped: 'Overgeslagen',
+  correctAnswer: 'Juist:',
+  typeBulgarianName: 'Typ de Bulgaarse naam...',
+  
+  // General
+  xp: 'XP',
+  level: 'Nv.',
+  signIn: 'Inloggen',
+  dayStreak: 'dagen streak',
+  
+  // Lessons categories
+  basics: 'Basis',
+  vocabulary: 'Woordenschat',
+  grammar: 'Grammatica',
+  phrases: 'Zinnen',
+  culture: 'Cultuur',
+  
+  // Category navigation
+  daily: 'Dagelijks',
+  games: 'Spelletjes',
+  stories: 'Verhalen',
+  dailyActivities: 'Dagelijkse activiteiten',
+  learnBulgarian: 'Leer Bulgaars',
+  funChallenges: 'Leuke uitdagingen',
+  readAndLearn: 'Lees & leer',
+  
+  // Common lesson UI
+  correct: 'Goed!',
+  incorrect: 'Fout',
+  continue: 'Doorgaan',
+  tryAgain: 'Probeer opnieuw',
+  finish: 'Voltooien',
+  progress: 'Voortgang',
+  
+  // Word of the Day
+  wordOfTheDay: 'Woord van de dag',
+  pronunciation: 'Uitspraak',
+  meaning: 'Betekenis',
+  examples: 'Voorbeelden',
+  
+  // Short Stories
+  shortStories: 'Korte verhalen',
+  readStoriesDescription: 'Lees verhalen & beantwoord vragen om XP te verdienen!',
+  viewAllStories: 'Bekijk alle verhalen',
+  
+  // Hall of Fame
+  hallOfFame: 'Hall of Fame',
+  noChampionsYet: 'Nog geen kampioenen! Wees de eerste die de top bereikt aan het einde van de maand.',
+  
+  // Leaderboard
+  leaderboardRank: 'Ranglijst positie',
+  outOfLearners: 'van {count} leerlingen',
+  topLearners: 'Top leerlingen',
+  noLearnersYet: 'Nog geen leerlingen. Wees de eerste!',
+  you: 'Jij',
+  notRanked: 'Niet gerangschikt',
+  loading: 'Laden...',
+  
+  // Auth
+  welcomeBack: 'Welkom terug!',
+  joinShpoko: 'Word lid van Shpoko',
+  enterCredentials: 'Voer je gegevens in om door te gaan met leren',
+  createAccountDescription: 'Maak een account aan om je Bulgaarse leerreis te beginnen',
+  username: 'Gebruikersnaam',
+  chooseUsername: 'Kies een gebruikersnaam',
+  email: 'E-mail',
+  enterEmail: 'Voer je e-mail in',
+  password: 'Wachtwoord',
+  enterPassword: 'Voer je wachtwoord in',
+  confirmPassword: 'Bevestig wachtwoord',
+  confirmYourPassword: 'Bevestig je wachtwoord',
+  logIn: 'Inloggen',
+  createAccount: 'Account aanmaken',
+  newToShpoko: 'Nieuw bij Shpoko?',
+  alreadyHaveAccount: 'Heb je al een account?',
+  loginFailed: 'Inloggen mislukt',
+  invalidCredentials: 'Ongeldige e-mail of wachtwoord. Probeer opnieuw.',
+  signUpFailed: 'Registratie mislukt',
+  welcomeToShpoko: 'Welkom bij Shpoko!',
+  accountCreated: 'Je account is aangemaakt. Begin met leren!',
+  emailAlreadyRegistered: 'E-mail al geregistreerd',
+  emailInUse: 'Deze e-mail is al in gebruik. Log in of gebruik een andere e-mail.',
+  
+  // Games
+  contexto: 'Contexto',
+  guessTheWord: 'Raad het woord',
+  rapidFire: 'Snelvuur',
+  sevenSecRounds: '7s rondes',
+  conjugation: 'Vervoeging',
+  verbForms: 'Werkwoordvormen',
+  clozeCombat: 'Cloze gevecht',
+  findWrongWord: 'Vind het foute woord',
+  fixMyBulgarian: 'Verbeter mijn Bulgaars',
+  proofread: 'Proeflezen',
+  listeningFill: 'Luister & vul in',
+  audioBlanks: 'Audio lege plekken',
+  dialogueBattle: 'Dialooggevecht',
+  realConversations: 'Echte gesprekken',
+  
+  // Lesson UI
+  lessonComplete: 'Les voltooid!',
+  revisionComplete: 'Herhaling voltooid!',
+  greatPractice: 'Geweldige oefening!',
+  correctAnswers: 'goede antwoorden',
+  reviseAgain: 'Opnieuw herhalen',
+  nextLesson: 'Volgende:',
+  previousLesson: 'Vorige:',
+  backToLessons: 'Terug naar lessen',
+  typeTransliteration: 'Typ de transliteratie',
+  fillInBlank: 'Vul de lege plek in',
+  chooseCorrect: 'Kies het juiste antwoord',
+  showHint: 'Toon hint',
+  check: 'Controleren',
+  next: 'Volgende',
+  complete: 'Voltooien',
+  completeLesson: 'Les voltooien',
+  theAnswerIs: 'Het antwoord is:',
+  revision: 'Herhaling',
+  revisionMode: 'Herhalingsmodus',
+  
+  // Lesson titles
+  colorsLesson: 'Kleuren',
+  animalsLesson: 'Dieren',
+  numbersLesson: 'Nummers',
+  familyLesson: 'Familie',
+  weatherLesson: 'Weer',
+  foodDrinksLesson: 'Eten & Drinken',
+  verbsLesson: 'Werkwoorden',
+  adjectivesLesson: 'Bijvoeglijke naamwoorden',
+  pronounsLesson: 'Voornaamwoorden',
+  directionsLesson: 'Richtingen',
+  weekdaysLesson: 'Weekdagen',
+  jobsLesson: 'Beroepen',
+  shapesLesson: 'Vormen',
+  survivalPhrasesLesson: 'Overlevingszinnen',
+  
+  // Lesson hints (Dutch translations)
+  hintRed: 'Rood',
+  hintBlue: 'Blauw',
+  hintGreen: 'Groen',
+  hintYellow: 'Geel',
+  hintOrange: 'Oranje',
+  hintDog: 'Hond',
+  hintCat: 'Kat',
+  hintBird: 'Vogel',
+  hintFish: 'Vis',
+  hintHorse: 'Paard',
+  hintMother: 'Moeder',
+  hintFather: 'Vader',
+  hintSister: 'Zus',
+  hintBrother: 'Broer',
+  hintGrandmother: 'Oma',
+  hintSun: 'Zon',
+  hintRain: 'Regen',
+  hintSnow: 'Sneeuw',
+  hintWind: 'Wind',
+  hintCold: 'Koud',
+  hintBread: 'Brood',
+  hintWater: 'Water',
+  hintCoffee: 'Koffie',
+  hintTea: 'Thee',
+  hintMilk: 'Melk',
+  hintMeat: 'Vlees',
+  hintEgg: 'Ei',
+  hintCheese: 'Kaas',
+  hintFruit: 'Fruit',
+  hintVegetable: 'Groente',
+  hintBeer: 'Bier',
+  hintWine: 'Wijn',
+  hintJuice: 'Sap',
+  hintSoup: 'Soep',
+  
+  // Fill blank translations
+  theSkyIsBlue: 'De lucht is blauw',
+  theGrassIsGreen: 'Het gras is groen',
+  theSunIsYellow: 'De zon is geel',
+  theCowGivesMilk: 'De koe geeft melk',
+  thePigLivesOnFarm: 'Het varken woont op een boerderij',
+  theRabbitEatsCarrots: 'Het konijn eet wortels',
+  myMotherIsKind: 'Mijn moeder is erg aardig',
+  myGrandfatherIs70: 'Mijn opa is 70 jaar oud',
+  iHaveOneSister: 'Ik heb één zus',
+  todayIsVeryHot: 'Vandaag is het erg warm',
+  itIsRaining: 'Het regent buiten',
+  winterIsCold: 'De winter is koud',
+};
+
 export const getTranslations = (language: UILanguage): Translations => {
   switch (language) {
     case 'swedish':
@@ -1251,6 +1499,8 @@ export const getTranslations = (language: UILanguage): Translations => {
       return bulgarianTranslations;
     case 'tunisian':
       return tunisianTranslations;
+    case 'dutch':
+      return dutchTranslations;
     default:
       return englishTranslations;
   }

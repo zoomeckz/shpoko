@@ -191,6 +191,65 @@ const bulgarianWordsTN: DailyWord[] = [
   },
 ];
 
+// Bulgarian words (for learning Bulgarian - Dutch UI)
+const bulgarianWordsNL: DailyWord[] = [
+  {
+    word: "Харесвам",
+    pronunciation: "Kharesvam",
+    meaning: "Leuk vinden",
+    examples: [
+      { bulgarian: "Харесва ми.", pronunciation: "Kharesva mi.", translation: "Ik vind het leuk." },
+      { bulgarian: "Харесва ли ти?", pronunciation: "Kharesva li ti?", translation: "Vind je het leuk?" },
+      { bulgarian: "Тя ме харесва.", pronunciation: "Tya me kharesva.", translation: "Ze vindt mij leuk." },
+      { bulgarian: "Харесвам тази книга.", pronunciation: "Kharesvam tazi kniga.", translation: "Ik vind dit boek leuk." },
+    ],
+  },
+  {
+    word: "Искам",
+    pronunciation: "Iskam",
+    meaning: "Willen",
+    examples: [
+      { bulgarian: "Искам вода.", pronunciation: "Iskam voda.", translation: "Ik wil water." },
+      { bulgarian: "Какво искаш?", pronunciation: "Kakvo iskash?", translation: "Wat wil je?" },
+      { bulgarian: "Той иска да яде.", pronunciation: "Toy iska da yade.", translation: "Hij wil eten." },
+      { bulgarian: "Искам да отида.", pronunciation: "Iskam da otida.", translation: "Ik wil gaan." },
+    ],
+  },
+  {
+    word: "Мога",
+    pronunciation: "Moga",
+    meaning: "Kunnen",
+    examples: [
+      { bulgarian: "Мога да помогна.", pronunciation: "Moga da pomogna.", translation: "Ik kan helpen." },
+      { bulgarian: "Можеш ли?", pronunciation: "Mozhesh li?", translation: "Kun je?" },
+      { bulgarian: "Не мога.", pronunciation: "Ne moga.", translation: "Ik kan niet." },
+      { bulgarian: "Мога да говоря.", pronunciation: "Moga da govorya.", translation: "Ik kan spreken." },
+    ],
+  },
+  {
+    word: "Обичам",
+    pronunciation: "Obicham",
+    meaning: "Houden van",
+    examples: [
+      { bulgarian: "Обичам те.", pronunciation: "Obicham te.", translation: "Ik hou van jou." },
+      { bulgarian: "Обичам храна.", pronunciation: "Obicham hrana.", translation: "Ik hou van eten." },
+      { bulgarian: "Тя ме обича.", pronunciation: "Tya me obicha.", translation: "Zij houdt van mij." },
+      { bulgarian: "Обичам да чета.", pronunciation: "Obicham da cheta.", translation: "Ik hou van lezen." },
+    ],
+  },
+  {
+    word: "Имам",
+    pronunciation: "Imam",
+    meaning: "Hebben",
+    examples: [
+      { bulgarian: "Имам време.", pronunciation: "Imam vreme.", translation: "Ik heb tijd." },
+      { bulgarian: "Имаш ли?", pronunciation: "Imash li?", translation: "Heb je?" },
+      { bulgarian: "Нямам.", pronunciation: "Nyamam.", translation: "Ik heb niet." },
+      { bulgarian: "Имам идея.", pronunciation: "Imam ideya.", translation: "Ik heb een idee." },
+    ],
+  },
+];
+
 // Spanish words (for learning Spanish - Bulgarian UI)
 interface SpanishDailyWord {
   word: string;
@@ -304,8 +363,8 @@ export const WordOfTheDay = () => {
     );
   }
 
-  // Bulgarian mode (English, Swedish or Tunisian UI)
-  const words = uiLanguage === 'swedish' ? bulgarianWordsSV : uiLanguage === 'tunisian' ? bulgarianWordsTN : bulgarianWordsEN;
+  // Bulgarian mode (English, Swedish, Dutch or Tunisian UI)
+  const words = uiLanguage === 'swedish' ? bulgarianWordsSV : uiLanguage === 'tunisian' ? bulgarianWordsTN : uiLanguage === 'dutch' ? bulgarianWordsNL : bulgarianWordsEN;
   const word = getWordOfTheDay(words);
   
   return (
