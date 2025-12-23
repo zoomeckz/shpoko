@@ -1,7 +1,7 @@
 // Translation system for multi-language support
-// English (default), Swedish, and Bulgarian translations
+// English (default), Swedish, Bulgarian, and Tunisian Arabic translations
 
-export type UILanguage = 'english' | 'swedish' | 'bulgarian';
+export type UILanguage = 'english' | 'swedish' | 'bulgarian' | 'tunisian';
 
 interface Translations {
   // Header
@@ -647,12 +647,175 @@ const bulgarianTranslations: Translations = {
   realConversations: 'Реални разговори',
 };
 
+const tunisianTranslations: Translations = {
+  // Header
+  quizzes: 'اختبارات',
+  leaderboard: 'لوحة المتصدرين',
+  premium: 'بريميوم',
+  
+  // Hero Section
+  heroTitle: 'تعلّم البلغاري مع',
+  heroTitleHighlight: 'شبوكو',
+  heroDescription: 'تعلّم البلغاري من خلال دروس قصيرة وممتعة مع صاحبك. من الكيريلية للمحادثة في 15 دقيقة في اليوم!',
+  startLearning: 'ابدأ التعلّم',
+  lessons: 'دروس',
+  minPerDay: '15 دقيقة/يوم',
+  meetShpoko: 'تعرّف على شبوكو!',
+  shpokoDescription: 'صاحبك في تعلّم البلغاري. باش نعاونك في كل درس!',
+  shpokoGreeting: '💬 "Здравей! مستعد تبدأ؟"',
+  shpokoGreetingTranslation: '(أهلا! مستعد تبدأ؟)',
+  
+  // Lesson Selector
+  chooseYourLevel: 'اختار مستواك',
+  beginner: 'مبتدئ',
+  intermediate: 'متوسط',
+  advanced: 'متقدم',
+  lessonsCount: 'دروس',
+  completed: 'مكملين',
+  unlocked: 'مفتوح',
+  back: '← رجوع',
+  lessonsLabel: 'الدروس',
+  assessment: 'تقييم',
+  testYourKnowledge: 'جرّب معلوماتك من كل الدروس!',
+  completeMoreLessons: 'دروس إضافية للفتح',
+  takeTest: 'دير الاختبار',
+  streak: 'سلسلة',
+  revise: 'راجع',
+  everyStreakUnlocks: 'كل 5 أيام سلسلة يفتحلك درس بريميوم!',
+  daysToNext: 'يوم للجاي',
+  noLessonsAvailable: 'ما فماش دروس في هالفئة توا.',
+  
+  // Daily Games
+  dailyGames: 'ألعاب يومية',
+  dailyChallenge: 'تحدي اليوم',
+  animals: 'حيوانات',
+  colors: 'ألوان',
+  numbers: 'أرقام',
+  playNow: 'العب توا!',
+  accuracy: 'الدقة',
+  speed: 'السرعة',
+  upToPoints: 'حتى 100 نقطة',
+  yourHighScore: 'أعلى نتيجة:',
+  startGame: 'ابدأ اللعب (60ث)',
+  gameLocked: 'اللعبة مقفولة',
+  comeBackIn: 'ارجع بعد',
+  gameOver: 'انتهت اللعبة!',
+  finalScore: 'النتيجة النهائية:',
+  answered: 'أجوبة',
+  newHighScore: 'رقم قياسي جديد!',
+  xpEarned: 'XP ربحتهم:',
+  close: 'أغلق',
+  skip: 'تجاوز',
+  submit: 'أرسل',
+  points: 'نقاط',
+  skipped: 'متجاوز',
+  correctAnswer: 'الصحيح:',
+  typeBulgarianName: 'اكتب الاسم بالبلغاري...',
+  
+  // General
+  xp: 'XP',
+  level: 'مستوى',
+  signIn: 'سجّل دخول',
+  dayStreak: 'يوم سلسلة',
+  
+  // Lessons categories
+  basics: 'الأساسيات',
+  vocabulary: 'المفردات',
+  grammar: 'القواعد',
+  phrases: 'عبارات',
+  culture: 'الثقافة',
+  
+  // Category navigation
+  daily: 'يومي',
+  games: 'ألعاب',
+  stories: 'قصص',
+  dailyActivities: 'نشاطات يومية',
+  learnBulgarian: 'تعلّم البلغاري',
+  funChallenges: 'تحديات ممتعة',
+  readAndLearn: 'اقرأ وتعلّم',
+  
+  // Common lesson UI
+  correct: 'صحيح!',
+  incorrect: 'خطأ',
+  continue: 'واصل',
+  tryAgain: 'حاول مرة أخرى',
+  finish: 'خلّص',
+  progress: 'التقدم',
+  
+  // Word of the Day
+  wordOfTheDay: 'كلمة اليوم',
+  pronunciation: 'النطق',
+  meaning: 'المعنى',
+  examples: 'أمثلة',
+  
+  // Short Stories
+  shortStories: 'قصص قصيرة',
+  readStoriesDescription: 'اقرأ قصص وجاوب على أسئلة باش تربح XP!',
+  viewAllStories: 'شوف كل القصص',
+  
+  // Hall of Fame
+  hallOfFame: 'قاعة المشاهير',
+  noChampionsYet: 'ما فماش أبطال توا! كون أول واحد يوصل للقمة في آخر الشهر.',
+  
+  // Leaderboard
+  leaderboardRank: 'مرتبة في اللوحة',
+  outOfLearners: 'من {count} متعلّم',
+  topLearners: 'أفضل المتعلّمين',
+  noLearnersYet: 'ما فماش متعلّمين توا. كون الأول!',
+  you: 'أنت',
+  notRanked: 'ما عندكش ترتيب',
+  loading: 'جاري التحميل...',
+  
+  // Auth
+  welcomeBack: 'مرحبا بيك مرة أخرى!',
+  joinShpoko: 'انضم لشبوكو',
+  enterCredentials: 'دخّل بياناتك باش تواصل التعلّم',
+  createAccountDescription: 'اخلق حساب باش تبدأ رحلتك في تعلّم البلغاري',
+  username: 'اسم المستخدم',
+  chooseUsername: 'اختار اسم مستخدم',
+  email: 'الإيميل',
+  enterEmail: 'دخّل إيميلك',
+  password: 'كلمة السر',
+  enterPassword: 'دخّل كلمة السر',
+  confirmPassword: 'أكّد كلمة السر',
+  confirmYourPassword: 'أكّد كلمة السر متاعك',
+  logIn: 'ادخل',
+  createAccount: 'اخلق حساب',
+  newToShpoko: 'جديد في شبوكو؟',
+  alreadyHaveAccount: 'عندك حساب؟',
+  loginFailed: 'فشل الدخول',
+  invalidCredentials: 'إيميل أو كلمة سر غالطة. حاول مرة أخرى.',
+  signUpFailed: 'فشل التسجيل',
+  welcomeToShpoko: 'مرحبا بيك في شبوكو!',
+  accountCreated: 'حسابك تخلق. ابدأ التعلّم!',
+  emailAlreadyRegistered: 'الإيميل مسجّل مسبقا',
+  emailInUse: 'هالإيميل مستعمل. سجّل دخول أو استعمل إيميل آخر.',
+  
+  // Games
+  contexto: 'كونتكستو',
+  guessTheWord: 'خمّن الكلمة',
+  rapidFire: 'نار سريعة',
+  sevenSecRounds: 'جولات 7ث',
+  conjugation: 'تصريف',
+  verbForms: 'أشكال الفعل',
+  clozeCombat: 'معركة الفراغات',
+  findWrongWord: 'لقى الكلمة الغالطة',
+  fixMyBulgarian: 'صحّح بلغاريتي',
+  proofread: 'راجع',
+  listeningFill: 'اسمع واملأ',
+  audioBlanks: 'فراغات صوتية',
+  dialogueBattle: 'معركة الحوار',
+  realConversations: 'محادثات حقيقية',
+};
+
 export const getTranslations = (language: UILanguage): Translations => {
   switch (language) {
     case 'swedish':
       return swedishTranslations;
     case 'bulgarian':
       return bulgarianTranslations;
+    case 'tunisian':
+      return tunisianTranslations;
     default:
       return englishTranslations;
   }
