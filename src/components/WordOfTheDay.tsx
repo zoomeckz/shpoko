@@ -132,6 +132,65 @@ const bulgarianWordsSV: DailyWord[] = [
   },
 ];
 
+// Bulgarian words (for learning Bulgarian - Tunisian Arabic UI)
+const bulgarianWordsTN: DailyWord[] = [
+  {
+    word: "Харесвам",
+    pronunciation: "Kharesvam",
+    meaning: "نحب / يعجبني",
+    examples: [
+      { bulgarian: "Харесва ми.", pronunciation: "Kharesva mi.", translation: "يعجبني." },
+      { bulgarian: "Харесва ли ти?", pronunciation: "Kharesva li ti?", translation: "يعجبك؟" },
+      { bulgarian: "Тя ме харесва.", pronunciation: "Tya me kharesva.", translation: "هي تحبني." },
+      { bulgarian: "Харесвам тази книга.", pronunciation: "Kharesvam tazi kniga.", translation: "نحب الكتاب هذا." },
+    ],
+  },
+  {
+    word: "Искам",
+    pronunciation: "Iskam",
+    meaning: "نحب / نريد",
+    examples: [
+      { bulgarian: "Искам вода.", pronunciation: "Iskam voda.", translation: "نحب ماء." },
+      { bulgarian: "Какво искаш?", pronunciation: "Kakvo iskash?", translation: "شنوّة تحب؟" },
+      { bulgarian: "Той иска да яде.", pronunciation: "Toy iska da yade.", translation: "هو يحب ياكل." },
+      { bulgarian: "Искам да отида.", pronunciation: "Iskam da otida.", translation: "نحب نمشي." },
+    ],
+  },
+  {
+    word: "Мога",
+    pronunciation: "Moga",
+    meaning: "نجّم / نقدر",
+    examples: [
+      { bulgarian: "Мога да помогна.", pronunciation: "Moga da pomogna.", translation: "نجّم نعاونك." },
+      { bulgarian: "Можеш ли?", pronunciation: "Mozhesh li?", translation: "تنجّم؟" },
+      { bulgarian: "Не мога.", pronunciation: "Ne moga.", translation: "ما نجّمش." },
+      { bulgarian: "Мога да говоря.", pronunciation: "Moga da govorya.", translation: "نجّم نحكي." },
+    ],
+  },
+  {
+    word: "Обичам",
+    pronunciation: "Obicham",
+    meaning: "نحب (حب قوي)",
+    examples: [
+      { bulgarian: "Обичам те.", pronunciation: "Obicham te.", translation: "نحبك." },
+      { bulgarian: "Обичам храна.", pronunciation: "Obicham hrana.", translation: "نحب الماكلة." },
+      { bulgarian: "Тя ме обича.", pronunciation: "Tya me obicha.", translation: "هي تحبني." },
+      { bulgarian: "Обичам да чета.", pronunciation: "Obicham da cheta.", translation: "نحب نقرا." },
+    ],
+  },
+  {
+    word: "Имам",
+    pronunciation: "Imam",
+    meaning: "عندي",
+    examples: [
+      { bulgarian: "Имам време.", pronunciation: "Imam vreme.", translation: "عندي وقت." },
+      { bulgarian: "Имаш ли?", pronunciation: "Imash li?", translation: "عندك؟" },
+      { bulgarian: "Нямам.", pronunciation: "Nyamam.", translation: "ما عنديش." },
+      { bulgarian: "Имам идея.", pronunciation: "Imam ideya.", translation: "عندي فكرة." },
+    ],
+  },
+];
+
 // Spanish words (for learning Spanish - Bulgarian UI)
 interface SpanishDailyWord {
   word: string;
@@ -245,8 +304,8 @@ export const WordOfTheDay = () => {
     );
   }
 
-  // Bulgarian mode (English or Swedish UI)
-  const words = uiLanguage === 'swedish' ? bulgarianWordsSV : bulgarianWordsEN;
+  // Bulgarian mode (English, Swedish or Tunisian UI)
+  const words = uiLanguage === 'swedish' ? bulgarianWordsSV : uiLanguage === 'tunisian' ? bulgarianWordsTN : bulgarianWordsEN;
   const word = getWordOfTheDay(words);
   
   return (

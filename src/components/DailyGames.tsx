@@ -119,6 +119,64 @@ const NUMBERS_SV = [
   { emoji: "2️⃣0️⃣", english: "Tjugo", bulgarian: "dvadeset" },
 ];
 
+// Bulgarian lessons data (with Tunisian Arabic prompts)
+const ANIMALS_TN = [
+  { emoji: "🐕", english: "كلب", bulgarian: "kuche" },
+  { emoji: "🐈", english: "قطوس", bulgarian: "kotka" },
+  { emoji: "🐦", english: "عصفور", bulgarian: "ptitsa" },
+  { emoji: "🐟", english: "حوت", bulgarian: "riba" },
+  { emoji: "🐎", english: "عود", bulgarian: "kon" },
+  { emoji: "🐄", english: "بقرة", bulgarian: "krava" },
+  { emoji: "🐖", english: "حلوف", bulgarian: "prase" },
+  { emoji: "🐑", english: "نعجة", bulgarian: "ovtsa" },
+  { emoji: "🐐", english: "معزة", bulgarian: "koza" },
+  { emoji: "🐓", english: "سردوك", bulgarian: "petel" },
+  { emoji: "🦆", english: "بطة", bulgarian: "patitsa" },
+  { emoji: "🐇", english: "أرنب", bulgarian: "zaek" },
+  { emoji: "🐻", english: "دب", bulgarian: "mechka" },
+  { emoji: "🦊", english: "ثعلب", bulgarian: "lisitsa" },
+  { emoji: "🐺", english: "ذيب", bulgarian: "valk" },
+  { emoji: "🦁", english: "سبع", bulgarian: "lav" },
+  { emoji: "🐯", english: "نمر", bulgarian: "tigar" },
+  { emoji: "🐘", english: "فيل", bulgarian: "slon" },
+  { emoji: "🦒", english: "زرافة", bulgarian: "zhiraf" },
+  { emoji: "🐒", english: "قرد", bulgarian: "maimuna" },
+];
+
+const COLORS_TN = [
+  { emoji: "🔴", english: "أحمر", bulgarian: "cherveno" },
+  { emoji: "🟠", english: "برتقالي", bulgarian: "oranzhevo" },
+  { emoji: "🟡", english: "أصفر", bulgarian: "zhalto" },
+  { emoji: "🟢", english: "أخضر", bulgarian: "zeleno" },
+  { emoji: "🔵", english: "أزرق", bulgarian: "sinyo" },
+  { emoji: "🟣", english: "بنفسجي", bulgarian: "lilavo" },
+  { emoji: "🟤", english: "قهوي", bulgarian: "kafyavo" },
+  { emoji: "⚫", english: "أكحل", bulgarian: "cherno" },
+  { emoji: "⚪", english: "أبيض", bulgarian: "byalo" },
+  { emoji: "🩷", english: "وردي", bulgarian: "rozovo" },
+  { emoji: "🩵", english: "أزرق فاتح", bulgarian: "svetlosinyo" },
+  { emoji: "🩶", english: "رمادي", bulgarian: "sivo" },
+];
+
+const NUMBERS_TN = [
+  { emoji: "1️⃣", english: "واحد", bulgarian: "edno" },
+  { emoji: "2️⃣", english: "زوز", bulgarian: "dve" },
+  { emoji: "3️⃣", english: "ثلاثة", bulgarian: "tri" },
+  { emoji: "4️⃣", english: "أربعة", bulgarian: "chetiri" },
+  { emoji: "5️⃣", english: "خمسة", bulgarian: "pet" },
+  { emoji: "6️⃣", english: "ستة", bulgarian: "shest" },
+  { emoji: "7️⃣", english: "سبعة", bulgarian: "sedem" },
+  { emoji: "8️⃣", english: "ثمنية", bulgarian: "osem" },
+  { emoji: "9️⃣", english: "تسعة", bulgarian: "devet" },
+  { emoji: "🔟", english: "عشرة", bulgarian: "deset" },
+  { emoji: "1️⃣1️⃣", english: "حداش", bulgarian: "edinadeset" },
+  { emoji: "1️⃣2️⃣", english: "اثناش", bulgarian: "dvanadeset" },
+  { emoji: "1️⃣3️⃣", english: "ثلطاش", bulgarian: "trinadeset" },
+  { emoji: "1️⃣4️⃣", english: "أربعطاش", bulgarian: "chetirina­deset" },
+  { emoji: "1️⃣5️⃣", english: "خمسطاش", bulgarian: "petnadeset" },
+  { emoji: "2️⃣0️⃣", english: "عشرين", bulgarian: "dvadeset" },
+];
+
 // Spanish lessons data (with Bulgarian prompts)
 const ANIMALS_ES = [
   { emoji: "🐕", english: "Куче", bulgarian: "perro" },
@@ -182,10 +240,11 @@ export const DailyGames = () => {
   const t = getTranslations(uiLanguage);
   const isSpanish = languageMode === "spanish";
   const isSwedish = languageMode === "swedish";
+  const isTunisian = languageMode === "tunisian";
 
-  const animals = isSpanish ? ANIMALS_ES : isSwedish ? ANIMALS_SV : ANIMALS_EN;
-  const colors = isSpanish ? COLORS_ES : isSwedish ? COLORS_SV : COLORS_EN;
-  const numbers = isSpanish ? NUMBERS_ES : isSwedish ? NUMBERS_SV : NUMBERS_EN;
+  const animals = isSpanish ? ANIMALS_ES : isSwedish ? ANIMALS_SV : isTunisian ? ANIMALS_TN : ANIMALS_EN;
+  const colors = isSpanish ? COLORS_ES : isSwedish ? COLORS_SV : isTunisian ? COLORS_TN : COLORS_EN;
+  const numbers = isSpanish ? NUMBERS_ES : isSwedish ? NUMBERS_SV : isTunisian ? NUMBERS_TN : NUMBERS_EN;
 
   return (
     <>

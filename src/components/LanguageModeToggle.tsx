@@ -23,6 +23,12 @@ const languageOptions: { mode: LanguageMode; label: string; flags: string; descr
     description: 'Lär dig bulgariska (Svenskt gränssnitt)'
   },
   { 
+    mode: 'tunisian', 
+    label: 'تونسي → بلغاري',
+    flags: '🇹🇳 → 🇧🇬',
+    description: 'تعلّم البلغاري (واجهة تونسية)'
+  },
+  { 
     mode: 'spanish', 
     label: 'Български → Испански',
     flags: '🇧🇬 → 🇪🇸',
