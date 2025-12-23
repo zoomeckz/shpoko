@@ -29,6 +29,36 @@ const languageOptions: { mode: LanguageMode; label: string; flags: string; descr
     description: 'Leer Bulgaars (Nederlandse interface)'
   },
   { 
+    mode: 'greek', 
+    label: 'Ελληνικά → Βουλγαρικά',
+    flags: '🇬🇷 → 🇧🇬',
+    description: 'Μάθε Βουλγαρικά (Ελληνική διεπαφή)'
+  },
+  { 
+    mode: 'russian', 
+    label: 'Русский → Болгарский',
+    flags: '🇷🇺 → 🇧🇬',
+    description: 'Учи болгарский (Русский интерфейс)'
+  },
+  { 
+    mode: 'ukrainian', 
+    label: 'Українська → Болгарська',
+    flags: '🇺🇦 → 🇧🇬',
+    description: 'Вивчай болгарську (Український інтерфейс)'
+  },
+  { 
+    mode: 'italian', 
+    label: 'Italiano → Bulgaro',
+    flags: '🇮🇹 → 🇧🇬',
+    description: 'Impara il bulgaro (Interfaccia italiana)'
+  },
+  { 
+    mode: 'polish', 
+    label: 'Polski → Bułgarski',
+    flags: '🇵🇱 → 🇧🇬',
+    description: 'Ucz się bułgarskiego (Polski interfejs)'
+  },
+  { 
     mode: 'tunisian', 
     label: 'تونسي → بلغاري',
     flags: '🇹🇳 → 🇧🇬',

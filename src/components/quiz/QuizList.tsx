@@ -19,6 +19,20 @@ const CATEGORIES = [
   { value: "culture", label: "Culture" },
 ];
 
+const LANGUAGES = [
+  { value: "all", label: "All Languages", flag: "🌍" },
+  { value: "english", label: "English", flag: "🇬🇧" },
+  { value: "swedish", label: "Svenska", flag: "🇸🇪" },
+  { value: "dutch", label: "Nederlands", flag: "🇳🇱" },
+  { value: "tunisian", label: "تونسي", flag: "🇹🇳" },
+  { value: "bulgarian", label: "Български", flag: "🇧🇬" },
+  { value: "greek", label: "Ελληνικά", flag: "🇬🇷" },
+  { value: "russian", label: "Русский", flag: "🇷🇺" },
+  { value: "ukrainian", label: "Українська", flag: "🇺🇦" },
+  { value: "italian", label: "Italiano", flag: "🇮🇹" },
+  { value: "polish", label: "Polski", flag: "🇵🇱" },
+];
+
 interface Quiz {
   id: string;
   title: string;
@@ -29,6 +43,7 @@ interface Quiz {
   created_at: string;
   creator_id: string;
   category?: string;
+  language?: string;
   avg_rating?: number;
   rating_count?: number;
 }
@@ -56,6 +71,7 @@ export const QuizList = ({ onCreateNew, onPlayQuiz, onViewFeedback, onEditQuiz }
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [languageFilter, setLanguageFilter] = useState("all");
 
   useEffect(() => {
     if (user) {
@@ -215,22 +231,31 @@ export const QuizList = ({ onCreateNew, onPlayQuiz, onViewFeedback, onEditQuiz }
     }
   };
 
-  const filteredPublicQuizzes = categoryFilter === "all" 
-    ? publicQuizzes 
-    : publicQuizzes.filter(q => (q as any).category === categoryFilter);
+  const filteredPublicQuizzes = publicQuizzes.filter(q => {
+    const matchesCategory = categoryFilter === "all" || (q as any).category === categoryFilter;
+    const matchesLanguage = languageFilter === "all" || (q as any).language === languageFilter;
+    return matchesCategory && matchesLanguage;
+  });
 
   const QuizCard = ({ quiz, isOwner }: { quiz: Quiz; isOwner: boolean }) => (
     <Card className="hover:shadow-lg transition-shadow">
       <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-2">
-          <div>
-            <h3 className="font-bold text-lg">{quiz.title}</h3>
-            {(quiz as any).category && (quiz as any).category !== "general" && (
-              <Badge variant="outline" className="text-xs mt-1 capitalize">
-                {(quiz as any).category}
-              </Badge>
-            )}
-          </div>
+          <div className="flex items-start justify-between mb-2">
+            <div>
+              <h3 className="font-bold text-lg">{quiz.title}</h3>
+              <div className="flex gap-1 mt-1 flex-wrap">
+                {(quiz as any).category && (quiz as any).category !== "general" && (
+                  <Badge variant="outline" className="text-xs capitalize">
+                    {(quiz as any).category}
+                  </Badge>
+                )}
+                {(quiz as any).language && (quiz as any).language !== "english" && (
+                  <Badge variant="secondary" className="text-xs">
+                    {LANGUAGES.find(l => l.value === (quiz as any).language)?.flag || "🌍"} {(quiz as any).language}
+                  </Badge>
+                )}
+              </div>
+            </div>
           <div className="flex gap-1">
             {quiz.is_public ? (
               <Badge variant="secondary" className="text-xs">
@@ -339,18 +364,33 @@ export const QuizList = ({ onCreateNew, onPlayQuiz, onViewFeedback, onEditQuiz }
         </TabsContent>
         
         <TabsContent value="public" className="space-y-3 mt-4">
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Filter by category" />
-            </SelectTrigger>
-            <SelectContent>
-              {CATEGORIES.map((cat) => (
-                <SelectItem key={cat.value} value={cat.value}>
-                  {cat.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex gap-2 flex-wrap">
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter by category" />
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORIES.map((cat) => (
+                  <SelectItem key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={languageFilter} onValueChange={setLanguageFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Filter by language" />
+              </SelectTrigger>
+              <SelectContent>
+                {LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.value} value={lang.value}>
+                    {lang.flag} {lang.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {filteredPublicQuizzes.length === 0 ? (
             <Card>
