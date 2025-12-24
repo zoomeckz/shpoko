@@ -50,9 +50,25 @@ export const LeaderboardRankTracker = () => {
 
   const getRankDisplay = () => {
     if (!userRank) return t.notRanked;
-    if (userRank === 1) return uiLanguage === 'swedish' ? "🥇 1:a plats" : uiLanguage === 'bulgarian' ? "🥇 1-во място" : uiLanguage === 'tunisian' ? "🥇 المرتبة الأولى" : uiLanguage === 'dutch' ? "🥇 1e plaats" : "🥇 1st Place";
-    if (userRank === 2) return uiLanguage === 'swedish' ? "🥈 2:a plats" : uiLanguage === 'bulgarian' ? "🥈 2-ро място" : uiLanguage === 'tunisian' ? "🥈 المرتبة الثانية" : uiLanguage === 'dutch' ? "🥈 2e plaats" : "🥈 2nd Place";
-    if (userRank === 3) return uiLanguage === 'swedish' ? "🥉 3:e plats" : uiLanguage === 'bulgarian' ? "🥉 3-то място" : uiLanguage === 'tunisian' ? "🥉 المرتبة الثالثة" : uiLanguage === 'dutch' ? "🥉 3e plaats" : "🥉 3rd Place";
+    
+    const rankTexts: Record<string, { first: string; second: string; third: string }> = {
+      english: { first: "🥇 1st Place", second: "🥈 2nd Place", third: "🥉 3rd Place" },
+      swedish: { first: "🥇 1:a plats", second: "🥈 2:a plats", third: "🥉 3:e plats" },
+      bulgarian: { first: "🥇 1-во място", second: "🥈 2-ро място", third: "🥉 3-то място" },
+      tunisian: { first: "🥇 المرتبة الأولى", second: "🥈 المرتبة الثانية", third: "🥉 المرتبة الثالثة" },
+      dutch: { first: "🥇 1e plaats", second: "🥈 2e plaats", third: "🥉 3e plaats" },
+      greek: { first: "🥇 1η θέση", second: "🥈 2η θέση", third: "🥉 3η θέση" },
+      russian: { first: "🥇 1-е место", second: "🥈 2-е место", third: "🥉 3-е место" },
+      ukrainian: { first: "🥇 1-е місце", second: "🥈 2-е місце", third: "🥉 3-є місце" },
+      italian: { first: "🥇 1° posto", second: "🥈 2° posto", third: "🥉 3° posto" },
+      polish: { first: "🥇 1. miejsce", second: "🥈 2. miejsce", third: "🥉 3. miejsce" },
+    };
+    
+    const texts = rankTexts[uiLanguage] || rankTexts.english;
+    
+    if (userRank === 1) return texts.first;
+    if (userRank === 2) return texts.second;
+    if (userRank === 3) return texts.third;
     return `#${userRank}`;
   };
 
