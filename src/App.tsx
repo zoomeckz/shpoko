@@ -67,7 +67,11 @@ import SpanishFamilyLesson from "./pages/spanish/SpanishFamilyLesson";
 import SpanishFoodLesson from "./pages/spanish/SpanishFoodLesson";
 // Quiz
 import QuizPage from "./pages/QuizPage";
-
+// Adventure & Flashcards
+import Adventure from "./pages/Adventure";
+import DungeonGame from "./pages/DungeonGame";
+import Flashcards from "./pages/Flashcards";
+import FlashcardStudy from "./pages/FlashcardStudy";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -142,6 +146,12 @@ const App = () => (
               <Route path="/spanish/food" element={<SpanishFoodLesson />} />
               {/* Quiz */}
               <Route path="/quiz" element={<QuizPage />} />
+              {/* Adventure Mode */}
+              <Route path="/adventure" element={<Adventure />} />
+              <Route path="/adventure/dungeon/:dungeonId" element={<DungeonGame />} />
+              {/* Flashcards */}
+              <Route path="/flashcards" element={<Flashcards />} />
+              <Route path="/flashcards/:deckId" element={<FlashcardStudy />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </LanguageModeProvider>

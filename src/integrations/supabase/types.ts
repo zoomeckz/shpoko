@@ -14,6 +14,172 @@ export type Database = {
   }
   public: {
     Tables: {
+      adventure_nodes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_dungeon: boolean
+          lesson_id: string
+          node_number: number
+          title: string
+          week_number: number
+          xp_reward: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_dungeon?: boolean
+          lesson_id: string
+          node_number: number
+          title: string
+          week_number?: number
+          xp_reward?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_dungeon?: boolean
+          lesson_id?: string
+          node_number?: number
+          title?: string
+          week_number?: number
+          xp_reward?: number
+        }
+        Relationships: []
+      }
+      adventure_progress: {
+        Row: {
+          attempts: number
+          best_score: number
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          id: string
+          node_id: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          best_score?: number
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          node_id: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          best_score?: number
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          node_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "adventure_progress_node_id_fkey"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "adventure_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audio_cache: {
+        Row: {
+          audio_base64: string
+          created_at: string
+          id: string
+          language: string
+          text_content: string
+          text_hash: string
+          voice: string
+        }
+        Insert: {
+          audio_base64: string
+          created_at?: string
+          id?: string
+          language?: string
+          text_content: string
+          text_hash: string
+          voice?: string
+        }
+        Update: {
+          audio_base64?: string
+          created_at?: string
+          id?: string
+          language?: string
+          text_content?: string
+          text_hash?: string
+          voice?: string
+        }
+        Relationships: []
+      }
+      dungeon_runs: {
+        Row: {
+          completed: boolean
+          created_at: string
+          current_room: number
+          dungeon_node_id: string
+          failed: boolean
+          free_skips: number
+          id: string
+          lives_remaining: number
+          max_lives: number
+          powerups_collected: string[] | null
+          total_rooms: number
+          updated_at: string
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          current_room?: number
+          dungeon_node_id: string
+          failed?: boolean
+          free_skips?: number
+          id?: string
+          lives_remaining?: number
+          max_lives?: number
+          powerups_collected?: string[] | null
+          total_rooms?: number
+          updated_at?: string
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          current_room?: number
+          dungeon_node_id?: string
+          failed?: boolean
+          free_skips?: number
+          id?: string
+          lives_remaining?: number
+          max_lives?: number
+          powerups_collected?: string[] | null
+          total_rooms?: number
+          updated_at?: string
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dungeon_runs_dungeon_node_id_fkey"
+            columns: ["dungeon_node_id"]
+            isOneToOne: false
+            referencedRelation: "adventure_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flashcard_decks: {
         Row: {
           created_at: string
