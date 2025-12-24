@@ -1,23 +1,39 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import Phaser from "phaser";
 
-// Scenes are imported HERE (this is the real entry point)
 import { BootScene } from "../scenes/BootScene";
 import { WorldMapScene } from "../scenes/WorldMapScene";
 
-export function useWorldMapGame() {
-  // Lovable expects this ref
+type UseWorldMapGameArgs = {
+  nodes: any[];
+  isNodeUnlocked: (id: string) => boolean;
+  isNodeCompleted: (id: string) => boolean;
+  currentNodeIndex: number;
+  onNodeSelect: (id: string) => void;
+  onEnterLevel: (id: string) => void;
+};
+
+export function useWorldMapGame({
+  nodes,
+  isNodeUnlocked,
+  isNodeCompleted,
+  currentNodeIndex,
+  onNodeSelect,
+  onEnterLevel,
+}: UseWorldMapGameArgs) {
+  // 🔥 REQUIRED BY LOVABLE
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    // Prevent multiple Phaser instances
-    if ((window as any).__PHASER_GAME__) return;
-    if (!containerRef.current) return;
+  let game: Phaser.Game | null = null;
+
+  /* --------------------------------------------------
+     Called by Lovable when the game should start
+     -------------------------------------------------- */
+  function initGame() {
+    if (game || !containerRef.current) return;
 
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
-
-      // IMPORTANT: use the ref, not a hardcoded id
       parent: containerRef.current,
 
       backgroundColor: "#000000",
@@ -36,19 +52,33 @@ export function useWorldMapGame() {
         },
       },
 
-      // REGISTER SCENES HERE (Lovable-style)
       scene: [BootScene, WorldMapScene],
     };
 
-    const game = new Phaser.Game(config);
-    (window as any).__PHASER_GAME__ = game;
+    game = new Phaser.Game(config);
 
-    return () => {
-      game.destroy(true);
-      (window as any).__PHASER_GAME__ = null;
-    };
-  }, []);
+    // Expose callbacks to scenes via registry
+    game.registry.set("nodes", nodes);
+    game.registry.set("isNodeUnlocked", isNodeUnlocked);
+    game.registry.set("isNodeCompleted", isNodeCompleted);
+    game.registry.set("currentNodeIndex", currentNodeIndex);
+    game.registry.set("onNodeSelect", onNodeSelect);
+    game.registry.set("onEnterLevel", onEnterLevel);
+  }
 
-  // 🔥 THIS FIXES THE ERROR 🔥
-  return { containerRef };
+  /* --------------------------------------------------
+     Called by Lovable on unmount / route change
+     -------------------------------------------------- */
+  function destroyGame() {
+    if (!game) return;
+    game.destroy(true);
+    game = null;
+  }
+
+  // 🔥 THIS MATCHES WHAT YOUR CODE EXPECTS 🔥
+  return {
+    containerRef,
+    initGame,
+    destroyGame,
+  };
 }
