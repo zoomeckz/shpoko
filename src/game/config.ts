@@ -2,11 +2,13 @@ import Phaser from "phaser";
 
 /* ======================================================
    REQUIRED BY LOVABLE
-   DO NOT IMPORT SCENES HERE
+   DO NOT import scenes here
    ====================================================== */
 export function createGameConfig(): Phaser.Types.Core.GameConfig {
   return {
     type: Phaser.AUTO,
+
+    // Lovable mounts Phaser into this container
     parent: "game",
 
     width: 960,
@@ -28,13 +30,13 @@ export function createGameConfig(): Phaser.Types.Core.GameConfig {
       },
     },
 
-    // IMPORTANT: scenes are added dynamically
+    // Scenes are added manually in BootScene
     scene: [],
   };
 }
 
 /* ======================================================
-   GAME CONSTANTS (SAFE)
+   GAME CONSTANTS
    ====================================================== */
 export const GAME_CONFIG = {
   MAP_WIDTH: 1920,
