@@ -2,8 +2,7 @@ import Phaser from "phaser";
 
 /* ======================================================
    WORLD MAP SCENE
-   - No new files
-   - All logic self-contained
+   Named + default export (Lovable requirement)
    ====================================================== */
 
 type WorldNode = {
@@ -14,7 +13,7 @@ type WorldNode = {
   unlocked: boolean;
 };
 
-export default class WorldMapScene extends Phaser.Scene {
+export class WorldMapScene extends Phaser.Scene {
   private nodes: WorldNode[] = [];
   private selectedNode?: WorldNode;
 
@@ -33,7 +32,7 @@ export default class WorldMapScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    // ----- DEFINE NODES (WORLD STRUCTURE) -----
+    // ----- DEFINE NODES -----
     this.nodes = [
       { id: "school", name: "School", x: 200, y: 300, unlocked: true },
       { id: "city", name: "City", x: 420, y: 260, unlocked: false },
@@ -42,7 +41,7 @@ export default class WorldMapScene extends Phaser.Scene {
       { id: "space", name: "Space", x: 1080, y: 200, unlocked: false },
     ];
 
-    // ----- DRAW CONNECTIONS -----
+    // ----- CONNECTION LINES -----
     for (let i = 0; i < this.nodes.length - 1; i++) {
       const a = this.nodes[i];
       const b = this.nodes[i + 1];
@@ -58,10 +57,7 @@ export default class WorldMapScene extends Phaser.Scene {
 
       if (node.unlocked) {
         circle.setInteractive({ useHandCursor: true });
-
-        circle.on("pointerdown", () => {
-          this.selectNode(node);
-        });
+        circle.on("pointerdown", () => this.selectNode(node));
       }
 
       this.add
@@ -83,12 +79,11 @@ export default class WorldMapScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setAlpha(0.5);
 
-    // Disabled until a node is selected
     playBtn.disableInteractive();
 
     // ----- INSTRUCTIONS -----
     this.add
-      .text(width / 2, height - 40, "Select a world node to continue", {
+      .text(width / 2, height - 40, "Select a world to continue", {
         fontSize: "14px",
         color: "#aaaaaa",
       })
@@ -102,13 +97,14 @@ export default class WorldMapScene extends Phaser.Scene {
 
       playBtn.off("pointerdown");
       playBtn.on("pointerdown", () => {
-        // TEMP: go straight into stage
-        // Later this becomes: Lesson → Stage
         this.scene.start("StageScene", { world: node.id });
       });
     };
   }
 
-  // overwritten dynamically above to avoid extra bindings
+  // Overwritten in create()
   private selectNode(_node: WorldNode) {}
 }
+
+// Default export ALSO required
+export default WorldMapScene;
