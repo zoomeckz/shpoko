@@ -293,17 +293,326 @@ const NUMBERS_NL = [
   { emoji: "2️⃣0️⃣", english: "Twintig", bulgarian: "dvadeset" },
 ];
 
+// Bulgarian lessons data (with Greek prompts)
+const ANIMALS_EL = [
+  { emoji: "🐕", english: "Σκύλος", bulgarian: "kuche" },
+  { emoji: "🐈", english: "Γάτα", bulgarian: "kotka" },
+  { emoji: "🐦", english: "Πουλί", bulgarian: "ptitsa" },
+  { emoji: "🐟", english: "Ψάρι", bulgarian: "riba" },
+  { emoji: "🐎", english: "Άλογο", bulgarian: "kon" },
+  { emoji: "🐄", english: "Αγελάδα", bulgarian: "krava" },
+  { emoji: "🐖", english: "Γουρούνι", bulgarian: "prase" },
+  { emoji: "🐑", english: "Πρόβατο", bulgarian: "ovtsa" },
+  { emoji: "🐐", english: "Κατσίκα", bulgarian: "koza" },
+  { emoji: "🐓", english: "Κόκορας", bulgarian: "petel" },
+  { emoji: "🦆", english: "Πάπια", bulgarian: "patitsa" },
+  { emoji: "🐇", english: "Κουνέλι", bulgarian: "zaek" },
+  { emoji: "🐻", english: "Αρκούδα", bulgarian: "mechka" },
+  { emoji: "🦊", english: "Αλεπού", bulgarian: "lisitsa" },
+  { emoji: "🐺", english: "Λύκος", bulgarian: "valk" },
+  { emoji: "🦁", english: "Λιοντάρι", bulgarian: "lav" },
+  { emoji: "🐯", english: "Τίγρη", bulgarian: "tigar" },
+  { emoji: "🐘", english: "Ελέφαντας", bulgarian: "slon" },
+  { emoji: "🦒", english: "Καμηλοπάρδαλη", bulgarian: "zhiraf" },
+  { emoji: "🐒", english: "Μαϊμού", bulgarian: "maimuna" },
+];
+
+const COLORS_EL = [
+  { emoji: "🔴", english: "Κόκκινο", bulgarian: "cherveno" },
+  { emoji: "🟠", english: "Πορτοκαλί", bulgarian: "oranzhevo" },
+  { emoji: "🟡", english: "Κίτρινο", bulgarian: "zhalto" },
+  { emoji: "🟢", english: "Πράσινο", bulgarian: "zeleno" },
+  { emoji: "🔵", english: "Μπλε", bulgarian: "sinyo" },
+  { emoji: "🟣", english: "Μωβ", bulgarian: "lilavo" },
+  { emoji: "🟤", english: "Καφέ", bulgarian: "kafyavo" },
+  { emoji: "⚫", english: "Μαύρο", bulgarian: "cherno" },
+  { emoji: "⚪", english: "Άσπρο", bulgarian: "byalo" },
+  { emoji: "🩷", english: "Ροζ", bulgarian: "rozovo" },
+  { emoji: "🩵", english: "Γαλάζιο", bulgarian: "svetlosinyo" },
+  { emoji: "🩶", english: "Γκρι", bulgarian: "sivo" },
+];
+
+const NUMBERS_EL = [
+  { emoji: "1️⃣", english: "Ένα", bulgarian: "edno" },
+  { emoji: "2️⃣", english: "Δύο", bulgarian: "dve" },
+  { emoji: "3️⃣", english: "Τρία", bulgarian: "tri" },
+  { emoji: "4️⃣", english: "Τέσσερα", bulgarian: "chetiri" },
+  { emoji: "5️⃣", english: "Πέντε", bulgarian: "pet" },
+  { emoji: "6️⃣", english: "Έξι", bulgarian: "shest" },
+  { emoji: "7️⃣", english: "Επτά", bulgarian: "sedem" },
+  { emoji: "8️⃣", english: "Οκτώ", bulgarian: "osem" },
+  { emoji: "9️⃣", english: "Εννιά", bulgarian: "devet" },
+  { emoji: "🔟", english: "Δέκα", bulgarian: "deset" },
+  { emoji: "1️⃣1️⃣", english: "Έντεκα", bulgarian: "edinadeset" },
+  { emoji: "1️⃣2️⃣", english: "Δώδεκα", bulgarian: "dvanadeset" },
+  { emoji: "1️⃣3️⃣", english: "Δεκατρία", bulgarian: "trinadeset" },
+  { emoji: "1️⃣4️⃣", english: "Δεκατέσσερα", bulgarian: "chetirina­deset" },
+  { emoji: "1️⃣5️⃣", english: "Δεκαπέντε", bulgarian: "petnadeset" },
+  { emoji: "2️⃣0️⃣", english: "Είκοσι", bulgarian: "dvadeset" },
+];
+
+// Bulgarian lessons data (with Russian prompts)
+const ANIMALS_RU = [
+  { emoji: "🐕", english: "Собака", bulgarian: "kuche" },
+  { emoji: "🐈", english: "Кошка", bulgarian: "kotka" },
+  { emoji: "🐦", english: "Птица", bulgarian: "ptitsa" },
+  { emoji: "🐟", english: "Рыба", bulgarian: "riba" },
+  { emoji: "🐎", english: "Лошадь", bulgarian: "kon" },
+  { emoji: "🐄", english: "Корова", bulgarian: "krava" },
+  { emoji: "🐖", english: "Свинья", bulgarian: "prase" },
+  { emoji: "🐑", english: "Овца", bulgarian: "ovtsa" },
+  { emoji: "🐐", english: "Коза", bulgarian: "koza" },
+  { emoji: "🐓", english: "Петух", bulgarian: "petel" },
+  { emoji: "🦆", english: "Утка", bulgarian: "patitsa" },
+  { emoji: "🐇", english: "Кролик", bulgarian: "zaek" },
+  { emoji: "🐻", english: "Медведь", bulgarian: "mechka" },
+  { emoji: "🦊", english: "Лиса", bulgarian: "lisitsa" },
+  { emoji: "🐺", english: "Волк", bulgarian: "valk" },
+  { emoji: "🦁", english: "Лев", bulgarian: "lav" },
+  { emoji: "🐯", english: "Тигр", bulgarian: "tigar" },
+  { emoji: "🐘", english: "Слон", bulgarian: "slon" },
+  { emoji: "🦒", english: "Жираф", bulgarian: "zhiraf" },
+  { emoji: "🐒", english: "Обезьяна", bulgarian: "maimuna" },
+];
+
+const COLORS_RU = [
+  { emoji: "🔴", english: "Красный", bulgarian: "cherveno" },
+  { emoji: "🟠", english: "Оранжевый", bulgarian: "oranzhevo" },
+  { emoji: "🟡", english: "Жёлтый", bulgarian: "zhalto" },
+  { emoji: "🟢", english: "Зелёный", bulgarian: "zeleno" },
+  { emoji: "🔵", english: "Синий", bulgarian: "sinyo" },
+  { emoji: "🟣", english: "Фиолетовый", bulgarian: "lilavo" },
+  { emoji: "🟤", english: "Коричневый", bulgarian: "kafyavo" },
+  { emoji: "⚫", english: "Чёрный", bulgarian: "cherno" },
+  { emoji: "⚪", english: "Белый", bulgarian: "byalo" },
+  { emoji: "🩷", english: "Розовый", bulgarian: "rozovo" },
+  { emoji: "🩵", english: "Голубой", bulgarian: "svetlosinyo" },
+  { emoji: "🩶", english: "Серый", bulgarian: "sivo" },
+];
+
+const NUMBERS_RU = [
+  { emoji: "1️⃣", english: "Один", bulgarian: "edno" },
+  { emoji: "2️⃣", english: "Два", bulgarian: "dve" },
+  { emoji: "3️⃣", english: "Три", bulgarian: "tri" },
+  { emoji: "4️⃣", english: "Четыре", bulgarian: "chetiri" },
+  { emoji: "5️⃣", english: "Пять", bulgarian: "pet" },
+  { emoji: "6️⃣", english: "Шесть", bulgarian: "shest" },
+  { emoji: "7️⃣", english: "Семь", bulgarian: "sedem" },
+  { emoji: "8️⃣", english: "Восемь", bulgarian: "osem" },
+  { emoji: "9️⃣", english: "Девять", bulgarian: "devet" },
+  { emoji: "🔟", english: "Десять", bulgarian: "deset" },
+  { emoji: "1️⃣1️⃣", english: "Одиннадцать", bulgarian: "edinadeset" },
+  { emoji: "1️⃣2️⃣", english: "Двенадцать", bulgarian: "dvanadeset" },
+  { emoji: "1️⃣3️⃣", english: "Тринадцать", bulgarian: "trinadeset" },
+  { emoji: "1️⃣4️⃣", english: "Четырнадцать", bulgarian: "chetirina­deset" },
+  { emoji: "1️⃣5️⃣", english: "Пятнадцать", bulgarian: "petnadeset" },
+  { emoji: "2️⃣0️⃣", english: "Двадцать", bulgarian: "dvadeset" },
+];
+
+// Bulgarian lessons data (with Ukrainian prompts)
+const ANIMALS_UK = [
+  { emoji: "🐕", english: "Собака", bulgarian: "kuche" },
+  { emoji: "🐈", english: "Кіт", bulgarian: "kotka" },
+  { emoji: "🐦", english: "Птах", bulgarian: "ptitsa" },
+  { emoji: "🐟", english: "Риба", bulgarian: "riba" },
+  { emoji: "🐎", english: "Кінь", bulgarian: "kon" },
+  { emoji: "🐄", english: "Корова", bulgarian: "krava" },
+  { emoji: "🐖", english: "Свиня", bulgarian: "prase" },
+  { emoji: "🐑", english: "Вівця", bulgarian: "ovtsa" },
+  { emoji: "🐐", english: "Коза", bulgarian: "koza" },
+  { emoji: "🐓", english: "Півень", bulgarian: "petel" },
+  { emoji: "🦆", english: "Качка", bulgarian: "patitsa" },
+  { emoji: "🐇", english: "Кролик", bulgarian: "zaek" },
+  { emoji: "🐻", english: "Ведмідь", bulgarian: "mechka" },
+  { emoji: "🦊", english: "Лисиця", bulgarian: "lisitsa" },
+  { emoji: "🐺", english: "Вовк", bulgarian: "valk" },
+  { emoji: "🦁", english: "Лев", bulgarian: "lav" },
+  { emoji: "🐯", english: "Тигр", bulgarian: "tigar" },
+  { emoji: "🐘", english: "Слон", bulgarian: "slon" },
+  { emoji: "🦒", english: "Жираф", bulgarian: "zhiraf" },
+  { emoji: "🐒", english: "Мавпа", bulgarian: "maimuna" },
+];
+
+const COLORS_UK = [
+  { emoji: "🔴", english: "Червоний", bulgarian: "cherveno" },
+  { emoji: "🟠", english: "Помаранчевий", bulgarian: "oranzhevo" },
+  { emoji: "🟡", english: "Жовтий", bulgarian: "zhalto" },
+  { emoji: "🟢", english: "Зелений", bulgarian: "zeleno" },
+  { emoji: "🔵", english: "Синій", bulgarian: "sinyo" },
+  { emoji: "🟣", english: "Фіолетовий", bulgarian: "lilavo" },
+  { emoji: "🟤", english: "Коричневий", bulgarian: "kafyavo" },
+  { emoji: "⚫", english: "Чорний", bulgarian: "cherno" },
+  { emoji: "⚪", english: "Білий", bulgarian: "byalo" },
+  { emoji: "🩷", english: "Рожевий", bulgarian: "rozovo" },
+  { emoji: "🩵", english: "Блакитний", bulgarian: "svetlosinyo" },
+  { emoji: "🩶", english: "Сірий", bulgarian: "sivo" },
+];
+
+const NUMBERS_UK = [
+  { emoji: "1️⃣", english: "Один", bulgarian: "edno" },
+  { emoji: "2️⃣", english: "Два", bulgarian: "dve" },
+  { emoji: "3️⃣", english: "Три", bulgarian: "tri" },
+  { emoji: "4️⃣", english: "Чотири", bulgarian: "chetiri" },
+  { emoji: "5️⃣", english: "П'ять", bulgarian: "pet" },
+  { emoji: "6️⃣", english: "Шість", bulgarian: "shest" },
+  { emoji: "7️⃣", english: "Сім", bulgarian: "sedem" },
+  { emoji: "8️⃣", english: "Вісім", bulgarian: "osem" },
+  { emoji: "9️⃣", english: "Дев'ять", bulgarian: "devet" },
+  { emoji: "🔟", english: "Десять", bulgarian: "deset" },
+  { emoji: "1️⃣1️⃣", english: "Одинадцять", bulgarian: "edinadeset" },
+  { emoji: "1️⃣2️⃣", english: "Дванадцять", bulgarian: "dvanadeset" },
+  { emoji: "1️⃣3️⃣", english: "Тринадцять", bulgarian: "trinadeset" },
+  { emoji: "1️⃣4️⃣", english: "Чотирнадцять", bulgarian: "chetirina­deset" },
+  { emoji: "1️⃣5️⃣", english: "П'ятнадцять", bulgarian: "petnadeset" },
+  { emoji: "2️⃣0️⃣", english: "Двадцять", bulgarian: "dvadeset" },
+];
+
+// Bulgarian lessons data (with Italian prompts)
+const ANIMALS_IT = [
+  { emoji: "🐕", english: "Cane", bulgarian: "kuche" },
+  { emoji: "🐈", english: "Gatto", bulgarian: "kotka" },
+  { emoji: "🐦", english: "Uccello", bulgarian: "ptitsa" },
+  { emoji: "🐟", english: "Pesce", bulgarian: "riba" },
+  { emoji: "🐎", english: "Cavallo", bulgarian: "kon" },
+  { emoji: "🐄", english: "Mucca", bulgarian: "krava" },
+  { emoji: "🐖", english: "Maiale", bulgarian: "prase" },
+  { emoji: "🐑", english: "Pecora", bulgarian: "ovtsa" },
+  { emoji: "🐐", english: "Capra", bulgarian: "koza" },
+  { emoji: "🐓", english: "Gallo", bulgarian: "petel" },
+  { emoji: "🦆", english: "Anatra", bulgarian: "patitsa" },
+  { emoji: "🐇", english: "Coniglio", bulgarian: "zaek" },
+  { emoji: "🐻", english: "Orso", bulgarian: "mechka" },
+  { emoji: "🦊", english: "Volpe", bulgarian: "lisitsa" },
+  { emoji: "🐺", english: "Lupo", bulgarian: "valk" },
+  { emoji: "🦁", english: "Leone", bulgarian: "lav" },
+  { emoji: "🐯", english: "Tigre", bulgarian: "tigar" },
+  { emoji: "🐘", english: "Elefante", bulgarian: "slon" },
+  { emoji: "🦒", english: "Giraffa", bulgarian: "zhiraf" },
+  { emoji: "🐒", english: "Scimmia", bulgarian: "maimuna" },
+];
+
+const COLORS_IT = [
+  { emoji: "🔴", english: "Rosso", bulgarian: "cherveno" },
+  { emoji: "🟠", english: "Arancione", bulgarian: "oranzhevo" },
+  { emoji: "🟡", english: "Giallo", bulgarian: "zhalto" },
+  { emoji: "🟢", english: "Verde", bulgarian: "zeleno" },
+  { emoji: "🔵", english: "Blu", bulgarian: "sinyo" },
+  { emoji: "🟣", english: "Viola", bulgarian: "lilavo" },
+  { emoji: "🟤", english: "Marrone", bulgarian: "kafyavo" },
+  { emoji: "⚫", english: "Nero", bulgarian: "cherno" },
+  { emoji: "⚪", english: "Bianco", bulgarian: "byalo" },
+  { emoji: "🩷", english: "Rosa", bulgarian: "rozovo" },
+  { emoji: "🩵", english: "Azzurro", bulgarian: "svetlosinyo" },
+  { emoji: "🩶", english: "Grigio", bulgarian: "sivo" },
+];
+
+const NUMBERS_IT = [
+  { emoji: "1️⃣", english: "Uno", bulgarian: "edno" },
+  { emoji: "2️⃣", english: "Due", bulgarian: "dve" },
+  { emoji: "3️⃣", english: "Tre", bulgarian: "tri" },
+  { emoji: "4️⃣", english: "Quattro", bulgarian: "chetiri" },
+  { emoji: "5️⃣", english: "Cinque", bulgarian: "pet" },
+  { emoji: "6️⃣", english: "Sei", bulgarian: "shest" },
+  { emoji: "7️⃣", english: "Sette", bulgarian: "sedem" },
+  { emoji: "8️⃣", english: "Otto", bulgarian: "osem" },
+  { emoji: "9️⃣", english: "Nove", bulgarian: "devet" },
+  { emoji: "🔟", english: "Dieci", bulgarian: "deset" },
+  { emoji: "1️⃣1️⃣", english: "Undici", bulgarian: "edinadeset" },
+  { emoji: "1️⃣2️⃣", english: "Dodici", bulgarian: "dvanadeset" },
+  { emoji: "1️⃣3️⃣", english: "Tredici", bulgarian: "trinadeset" },
+  { emoji: "1️⃣4️⃣", english: "Quattordici", bulgarian: "chetirina­deset" },
+  { emoji: "1️⃣5️⃣", english: "Quindici", bulgarian: "petnadeset" },
+  { emoji: "2️⃣0️⃣", english: "Venti", bulgarian: "dvadeset" },
+];
+
+// Bulgarian lessons data (with Polish prompts)
+const ANIMALS_PL = [
+  { emoji: "🐕", english: "Pies", bulgarian: "kuche" },
+  { emoji: "🐈", english: "Kot", bulgarian: "kotka" },
+  { emoji: "🐦", english: "Ptak", bulgarian: "ptitsa" },
+  { emoji: "🐟", english: "Ryba", bulgarian: "riba" },
+  { emoji: "🐎", english: "Koń", bulgarian: "kon" },
+  { emoji: "🐄", english: "Krowa", bulgarian: "krava" },
+  { emoji: "🐖", english: "Świnia", bulgarian: "prase" },
+  { emoji: "🐑", english: "Owca", bulgarian: "ovtsa" },
+  { emoji: "🐐", english: "Koza", bulgarian: "koza" },
+  { emoji: "🐓", english: "Kogut", bulgarian: "petel" },
+  { emoji: "🦆", english: "Kaczka", bulgarian: "patitsa" },
+  { emoji: "🐇", english: "Królik", bulgarian: "zaek" },
+  { emoji: "🐻", english: "Niedźwiedź", bulgarian: "mechka" },
+  { emoji: "🦊", english: "Lis", bulgarian: "lisitsa" },
+  { emoji: "🐺", english: "Wilk", bulgarian: "valk" },
+  { emoji: "🦁", english: "Lew", bulgarian: "lav" },
+  { emoji: "🐯", english: "Tygrys", bulgarian: "tigar" },
+  { emoji: "🐘", english: "Słoń", bulgarian: "slon" },
+  { emoji: "🦒", english: "Żyrafa", bulgarian: "zhiraf" },
+  { emoji: "🐒", english: "Małpa", bulgarian: "maimuna" },
+];
+
+const COLORS_PL = [
+  { emoji: "🔴", english: "Czerwony", bulgarian: "cherveno" },
+  { emoji: "🟠", english: "Pomarańczowy", bulgarian: "oranzhevo" },
+  { emoji: "🟡", english: "Żółty", bulgarian: "zhalto" },
+  { emoji: "🟢", english: "Zielony", bulgarian: "zeleno" },
+  { emoji: "🔵", english: "Niebieski", bulgarian: "sinyo" },
+  { emoji: "🟣", english: "Fioletowy", bulgarian: "lilavo" },
+  { emoji: "🟤", english: "Brązowy", bulgarian: "kafyavo" },
+  { emoji: "⚫", english: "Czarny", bulgarian: "cherno" },
+  { emoji: "⚪", english: "Biały", bulgarian: "byalo" },
+  { emoji: "🩷", english: "Różowy", bulgarian: "rozovo" },
+  { emoji: "🩵", english: "Jasnoniebieski", bulgarian: "svetlosinyo" },
+  { emoji: "🩶", english: "Szary", bulgarian: "sivo" },
+];
+
+const NUMBERS_PL = [
+  { emoji: "1️⃣", english: "Jeden", bulgarian: "edno" },
+  { emoji: "2️⃣", english: "Dwa", bulgarian: "dve" },
+  { emoji: "3️⃣", english: "Trzy", bulgarian: "tri" },
+  { emoji: "4️⃣", english: "Cztery", bulgarian: "chetiri" },
+  { emoji: "5️⃣", english: "Pięć", bulgarian: "pet" },
+  { emoji: "6️⃣", english: "Sześć", bulgarian: "shest" },
+  { emoji: "7️⃣", english: "Siedem", bulgarian: "sedem" },
+  { emoji: "8️⃣", english: "Osiem", bulgarian: "osem" },
+  { emoji: "9️⃣", english: "Dziewięć", bulgarian: "devet" },
+  { emoji: "🔟", english: "Dziesięć", bulgarian: "deset" },
+  { emoji: "1️⃣1️⃣", english: "Jedenaście", bulgarian: "edinadeset" },
+  { emoji: "1️⃣2️⃣", english: "Dwanaście", bulgarian: "dvanadeset" },
+  { emoji: "1️⃣3️⃣", english: "Trzynaście", bulgarian: "trinadeset" },
+  { emoji: "1️⃣4️⃣", english: "Czternaście", bulgarian: "chetirina­deset" },
+  { emoji: "1️⃣5️⃣", english: "Piętnaście", bulgarian: "petnadeset" },
+  { emoji: "2️⃣0️⃣", english: "Dwadzieścia", bulgarian: "dvadeset" },
+];
+
 export const DailyGames = () => {
   const { languageMode, uiLanguage } = useLanguageMode();
   const t = getTranslations(uiLanguage);
-  const isSpanish = languageMode === "spanish";
-  const isSwedish = languageMode === "swedish";
-  const isTunisian = languageMode === "tunisian";
-  const isDutch = languageMode === "dutch";
 
-  const animals = isSpanish ? ANIMALS_ES : isSwedish ? ANIMALS_SV : isTunisian ? ANIMALS_TN : isDutch ? ANIMALS_NL : ANIMALS_EN;
-  const colors = isSpanish ? COLORS_ES : isSwedish ? COLORS_SV : isTunisian ? COLORS_TN : isDutch ? COLORS_NL : COLORS_EN;
-  const numbers = isSpanish ? NUMBERS_ES : isSwedish ? NUMBERS_SV : isTunisian ? NUMBERS_TN : isDutch ? NUMBERS_NL : NUMBERS_EN;
+  const getDataForLanguage = () => {
+    switch (languageMode) {
+      case "spanish":
+        return { animals: ANIMALS_ES, colors: COLORS_ES, numbers: NUMBERS_ES };
+      case "swedish":
+        return { animals: ANIMALS_SV, colors: COLORS_SV, numbers: NUMBERS_SV };
+      case "tunisian":
+        return { animals: ANIMALS_TN, colors: COLORS_TN, numbers: NUMBERS_TN };
+      case "dutch":
+        return { animals: ANIMALS_NL, colors: COLORS_NL, numbers: NUMBERS_NL };
+      case "greek":
+        return { animals: ANIMALS_EL, colors: COLORS_EL, numbers: NUMBERS_EL };
+      case "russian":
+        return { animals: ANIMALS_RU, colors: COLORS_RU, numbers: NUMBERS_RU };
+      case "ukrainian":
+        return { animals: ANIMALS_UK, colors: COLORS_UK, numbers: NUMBERS_UK };
+      case "italian":
+        return { animals: ANIMALS_IT, colors: COLORS_IT, numbers: NUMBERS_IT };
+      case "polish":
+        return { animals: ANIMALS_PL, colors: COLORS_PL, numbers: NUMBERS_PL };
+      default:
+        return { animals: ANIMALS_EN, colors: COLORS_EN, numbers: NUMBERS_EN };
+    }
+  };
+
+  const { animals, colors, numbers } = getDataForLanguage();
 
   return (
     <>
