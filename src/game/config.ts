@@ -1,60 +1,52 @@
-import Phaser from "phaser";
+import Phaser from 'phaser';
 
-/* ======================================================
-   REQUIRED BY LOVABLE
-   DO NOT import scenes here
-   ====================================================== */
-export function createGameConfig(): Phaser.Types.Core.GameConfig {
+// Game constants
+export const GAME_WIDTH = 1280;
+export const GAME_HEIGHT = 720;
+export const MAP_WIDTH = 2400;
+export const MAP_HEIGHT = 1000;
+
+// Node layout constants
+export const NODE_RADIUS = 28;
+export const NODE_SPACING_X = 180;
+export const NODE_SPACING_Y = 120;
+export const PATH_LINE_WIDTH = 6;
+
+// Character constants
+export const SHPOKO_SPEED = 200;
+export const SHPOKO_SCALE = 1.2;
+
+// Animation durations
+export const WALK_DURATION = 400;
+export const BOUNCE_AMPLITUDE = 8;
+export const PULSE_SCALE = 1.15;
+
+// Colors
+export const COLORS = {
+  nodeUnlocked: 0x4ade80,
+  nodeCompleted: 0x3b82f6,
+  nodeLocked: 0x6b7280,
+  nodeDungeon: 0xa855f7,
+  pathLine: 0x78716c,
+  pathLineLocked: 0x44403c,
+  highlight: 0xfbbf24,
+  text: 0xffffff,
+  textShadow: 0x1f2937,
+};
+
+// Create Phaser game configuration
+export function createPhaserConfig(parent: HTMLElement): Phaser.Types.Core.GameConfig {
   return {
     type: Phaser.AUTO,
-
-    // Lovable mounts Phaser into this container
-    parent: "game",
-
-    width: 960,
-    height: 540,
-
-    backgroundColor: "#000000",
+    parent,
+    width: GAME_WIDTH,
+    height: GAME_HEIGHT,
+    backgroundColor: '#1b1f2a',
     pixelArt: true,
-
     scale: {
-      mode: Phaser.Scale.RESIZE,
+      mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },
-
-    physics: {
-      default: "arcade",
-      arcade: {
-        gravity: { y: 1600 },
-        debug: false,
-      },
-    },
-
-    // Scenes are added manually in BootScene
-    scene: [],
+    scene: [], // Scenes added dynamically
   };
 }
-
-/* ======================================================
-   GAME CONSTANTS
-   ====================================================== */
-export const GAME_CONFIG = {
-  MAP_WIDTH: 1920,
-  MAP_HEIGHT: 1080,
-
-  INTERNAL_WIDTH: 960,
-  INTERNAL_HEIGHT: 540,
-
-  CAMERA_ZOOM: 1,
-
-  TITLE_SIZE: 48,
-  NODE_SCALE: 0.8,
-
-  PLAYER_SPEED_WALK: 160,
-  PLAYER_SPEED_RUN: 230,
-  PLAYER_JUMP_VELOCITY: -420,
-  GRAVITY_Y: 1600,
-
-  STOMP_BOUNCE: -260,
-  WORD_POP_FADE_MS: 1200,
-};
