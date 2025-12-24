@@ -1,36 +1,50 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Star, Volume2, VolumeX, Play, Skull, MapPin, Zap } from "lucide-react";
+import { ArrowLeft, Star, Volume2, VolumeX, Play, Skull, Zap } from "lucide-react";
 import { useAdventure, AdventureNode } from "@/hooks/useAdventure";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorldMapSounds } from "@/hooks/useWorldMapSounds";
 import { WorldMapNode } from "@/components/adventure/WorldMapNode";
-import { WorldMapPath } from "@/components/adventure/WorldMapPath";
 import { ShpokoMascot } from "@/components/ShpokoMascot";
 import { cn } from "@/lib/utils";
+import adventureMapBg from "@/assets/adventure-map-bg.jpg";
 
-// Generate node positions in a winding path pattern
+// Generate node positions in a winding Mario-style path
 const generateNodePositions = (count: number): Array<{ x: number; y: number }> => {
   const positions: Array<{ x: number; y: number }> = [];
   
+  // Create a winding path pattern similar to Super Mario World
+  const patterns = [
+    { x: 15, y: 85 },   // Start bottom left
+    { x: 30, y: 75 },
+    { x: 45, y: 70 },
+    { x: 60, y: 75 },
+    { x: 75, y: 68 },
+    { x: 85, y: 60 },
+    { x: 75, y: 50 },
+    { x: 60, y: 45 },
+    { x: 45, y: 50 },
+    { x: 30, y: 42 },
+    { x: 20, y: 32 },   // Dungeon at position 11
+    { x: 35, y: 25 },
+    { x: 50, y: 20 },
+    { x: 65, y: 25 },
+    { x: 80, y: 18 },
+  ];
+  
   for (let i = 0; i < count; i++) {
-    // Create a winding path from bottom to top
-    const progress = i / Math.max(count - 1, 1);
-    const yBase = 85 - progress * 70; // From 85% to 15%
-    
-    // Sine wave for x position, wider amplitude
-    const xBase = 50 + Math.sin(i * 0.8) * 25;
-    
-    // Add some variation
-    const xOffset = (i % 3 - 1) * 8;
-    const yOffset = Math.sin(i * 1.5) * 5;
-    
-    positions.push({
-      x: Math.max(15, Math.min(85, xBase + xOffset)),
-      y: Math.max(12, Math.min(88, yBase + yOffset)),
-    });
+    if (i < patterns.length) {
+      positions.push(patterns[i]);
+    } else {
+      // Generate additional positions
+      const progress = (i - patterns.length) / 10;
+      positions.push({
+        x: 15 + (i % 4) * 20 + Math.sin(i) * 10,
+        y: 15 - progress * 5,
+      });
+    }
   }
   
   return positions;
@@ -41,11 +55,13 @@ const Adventure = () => {
   const { user, profile } = useAuth();
   const { nodes, progress, loading, isNodeUnlocked, isNodeCompleted, getCurrentWeek } = useAdventure();
   const sounds = useWorldMapSounds();
+  const mapRef = useRef<HTMLDivElement>(null);
   
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [shpokoPosition, setShpokoPosition] = useState<{ x: number; y: number } | null>(null);
+  const [shpokoPosition, setShpokoPosition] = useState<{ x: number; y: number }>({ x: 15, y: 85 });
   const [isMoving, setIsMoving] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [showIntro, setShowIntro] = useState(true);
   
   // Generate positions for all nodes
   const nodePositions = useMemo(() => {
@@ -57,40 +73,47 @@ const Adventure = () => {
     const idx = nodes.findIndex(node => 
       isNodeUnlocked(node) && !isNodeCompleted(node.id)
     );
-    return idx >= 0 ? idx : nodes.length - 1;
+    return idx >= 0 ? idx : Math.max(0, nodes.length - 1);
   }, [nodes, isNodeUnlocked, isNodeCompleted]);
 
-  const currentNode = nodes[currentNodeIndex];
-
-  // Initialize Shpoko position
+  // Initialize Shpoko position to current node
   useEffect(() => {
-    if (nodePositions.length > 0 && currentNodeIndex >= 0) {
+    if (nodePositions.length > 0 && currentNodeIndex >= 0 && nodePositions[currentNodeIndex]) {
       setShpokoPosition(nodePositions[currentNodeIndex]);
     }
   }, [nodePositions, currentNodeIndex]);
 
   // Start ambient sounds
   useEffect(() => {
-    if (soundEnabled) {
+    if (soundEnabled && !showIntro) {
       sounds.startAmbient();
     }
     return () => sounds.stopAmbient();
-  }, [soundEnabled, sounds]);
+  }, [soundEnabled, showIntro, sounds]);
 
-  // Generate path segments
-  const pathSegments = useMemo(() => {
-    return nodes.slice(0, -1).map((node, index) => {
-      const nextNode = nodes[index + 1];
-      return {
-        from: nodePositions[index],
-        to: nodePositions[index + 1],
-        isCompleted: isNodeCompleted(node.id),
-        isDungeonPath: nextNode?.is_dungeon || false,
-      };
-    });
-  }, [nodes, nodePositions, isNodeCompleted]);
+  // Hide intro after delay
+  useEffect(() => {
+    const timer = setTimeout(() => setShowIntro(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
-  // Handle node click
+  // Animated path drawing
+  const pathD = useMemo(() => {
+    if (nodePositions.length < 2) return "";
+    
+    let path = `M ${nodePositions[0].x} ${nodePositions[0].y}`;
+    for (let i = 1; i < nodePositions.length; i++) {
+      const prev = nodePositions[i - 1];
+      const curr = nodePositions[i];
+      const midX = (prev.x + curr.x) / 2;
+      const midY = (prev.y + curr.y) / 2;
+      const offsetX = (i % 2 === 0 ? 1 : -1) * 5;
+      path += ` Q ${midX + offsetX} ${midY} ${curr.x} ${curr.y}`;
+    }
+    return path;
+  }, [nodePositions]);
+
+  // Handle node click with smooth animation
   const handleNodeClick = useCallback((node: AdventureNode, index: number) => {
     const unlocked = isNodeUnlocked(node);
     
@@ -102,26 +125,28 @@ const Adventure = () => {
     if (soundEnabled) sounds.playSelect();
     setSelectedNodeId(node.id);
 
-    // Animate Shpoko moving to node
-    if (nodePositions[index] && shpokoPosition) {
+    // Animate Shpoko moving along the path
+    if (nodePositions[index]) {
       setIsMoving(true);
       
       // Play step sounds during movement
-      const stepCount = 5;
-      for (let i = 0; i < stepCount; i++) {
+      const distance = Math.abs(index - currentNodeIndex);
+      const steps = Math.min(distance * 2, 8);
+      for (let i = 0; i < steps; i++) {
         setTimeout(() => {
           if (soundEnabled) sounds.playStep();
-        }, i * 100);
+        }, i * 80);
       }
 
-      // Move Shpoko
+      // Smooth movement
+      setShpokoPosition(nodePositions[index]);
+      
       setTimeout(() => {
-        setShpokoPosition(nodePositions[index]);
         setIsMoving(false);
         if (soundEnabled) sounds.playArrival();
-      }, 400);
+      }, 500);
     }
-  }, [isNodeUnlocked, soundEnabled, sounds, nodePositions, shpokoPosition]);
+  }, [isNodeUnlocked, soundEnabled, sounds, nodePositions, currentNodeIndex]);
 
   // Handle entering a level
   const handleEnterLevel = useCallback(() => {
@@ -132,9 +157,7 @@ const Adventure = () => {
 
     if (node.is_dungeon) {
       if (soundEnabled) sounds.playDungeonEntrance();
-      setTimeout(() => {
-        navigate(`/adventure/dungeon/${node.id}`);
-      }, 500);
+      setTimeout(() => navigate(`/adventure/dungeon/${node.id}`), 600);
     } else {
       if (soundEnabled) sounds.playEnterLevel();
       
@@ -163,191 +186,274 @@ const Adventure = () => {
       
       const route = lessonRoutes[node.lesson_id];
       if (route) {
-        setTimeout(() => {
-          navigate(`${route}?adventure=${node.id}`);
-        }, 300);
+        setTimeout(() => navigate(`${route}?adventure=${node.id}`), 300);
       }
     }
   }, [selectedNodeId, nodes, soundEnabled, sounds, navigate]);
 
   const selectedNode = nodes.find(n => n.id === selectedNodeId);
 
+  // Intro screen
+  if (showIntro) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+        <div className="text-center animate-fade-in">
+          <div className="relative inline-block">
+            <div className="absolute inset-0 bg-primary/30 rounded-full blur-3xl animate-pulse" />
+            <ShpokoMascot size="lg" />
+          </div>
+          <h1 className="text-4xl font-bold text-white mt-6 animate-bounce">Adventure Mode</h1>
+          <p className="text-xl text-white/70 mt-2">Week {getCurrentWeek()}</p>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-primary/10 via-background to-purple-900/20 flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <ShpokoMascot size="lg" />
-          <p className="mt-4 text-lg animate-pulse">Loading adventure...</p>
+          <p className="mt-4 text-lg text-white animate-pulse">Loading adventure...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/5 via-background to-purple-900/10 overflow-hidden">
-      {/* Decorative background elements */}
+    <div className="fixed inset-0 overflow-hidden">
+      {/* Full-screen background */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${adventureMapBg})` }}
+      />
+      
+      {/* Animated clouds overlay */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-10 left-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute top-1/4 right-10 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 left-20 w-40 h-40 bg-green-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-10 right-1/4 w-36 h-36 bg-yellow-500/5 rounded-full blur-3xl" />
-        
-        {/* Stars decoration */}
-        {[...Array(20)].map((_, i) => (
+        {[...Array(6)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-1 h-1 bg-primary/30 rounded-full animate-pulse"
+            className="absolute bg-white/30 rounded-full blur-xl"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 2}s`,
+              width: `${100 + i * 40}px`,
+              height: `${60 + i * 20}px`,
+              top: `${5 + i * 8}%`,
+              left: `${-20 + (i * 30)}%`,
+              animation: `float-cloud ${20 + i * 5}s linear infinite`,
+              animationDelay: `${i * 3}s`,
             }}
           />
         ))}
       </div>
 
       {/* Header */}
-      <div className="relative z-10 p-4">
+      <div className="absolute top-0 left-0 right-0 z-20 p-4">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="text-xl font-bold flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-primary" />
-                Adventure Mode
-              </h1>
-              <p className="text-sm text-muted-foreground">Week {getCurrentWeek()}</p>
-            </div>
-          </div>
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            onClick={() => navigate("/")}
+            className="bg-white/90 hover:bg-white shadow-lg"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Home
+          </Button>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <Button
-              variant="ghost"
+              variant="secondary"
               size="icon"
               onClick={() => setSoundEnabled(!soundEnabled)}
+              className="bg-white/90 hover:bg-white shadow-lg"
             >
-              {soundEnabled ? (
-                <Volume2 className="w-5 h-5" />
-              ) : (
-                <VolumeX className="w-5 h-5" />
-              )}
+              {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </Button>
-            <div className="flex items-center gap-2 bg-card/80 backdrop-blur-sm px-3 py-1.5 rounded-full border">
-              <Star className="w-5 h-5 text-yellow-500" />
-              <span className="font-bold">{profile?.xp || 0} XP</span>
+            <div className="flex items-center gap-2 bg-yellow-400 text-yellow-900 px-4 py-2 rounded-full shadow-lg font-bold">
+              <Star className="w-5 h-5" />
+              <span>{profile?.xp || 0}</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Week indicator */}
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20">
+        <div className="bg-red-600 text-white px-6 py-2 rounded-full shadow-xl font-bold text-lg border-4 border-white">
+          🗺️ World {getCurrentWeek()}
         </div>
       </div>
 
       {/* Sign in prompt */}
       {!user && (
-        <div className="relative z-10 px-4 mb-4">
-          <Card className="max-w-md mx-auto p-4 bg-primary/10 border-primary/20 text-center">
-            <p className="text-sm mb-2">Sign in to save your adventure progress!</p>
-            <Button size="sm" onClick={() => navigate("/auth")}>Sign In</Button>
+        <div className="absolute top-32 left-1/2 -translate-x-1/2 z-20">
+          <Card className="bg-white/95 backdrop-blur-sm px-6 py-3 shadow-xl">
+            <p className="text-sm font-medium">Sign in to save progress!</p>
+            <Button size="sm" className="w-full mt-2" onClick={() => navigate("/auth")}>
+              Sign In
+            </Button>
           </Card>
         </div>
       )}
 
-      {/* World Map Container */}
-      <div className="relative z-10 mx-auto max-w-4xl px-4 pb-32">
-        <div 
-          className="relative w-full rounded-2xl border bg-card/30 backdrop-blur-sm overflow-hidden"
-          style={{ height: "70vh", minHeight: "500px" }}
+      {/* Map container */}
+      <div 
+        ref={mapRef}
+        className="absolute inset-0 pt-24"
+        style={{ touchAction: "pan-x pan-y" }}
+      >
+        {/* Path SVG */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="pathGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#8B4513" />
+              <stop offset="100%" stopColor="#A0522D" />
+            </linearGradient>
+            <filter id="pathShadow">
+              <feDropShadow dx="2" dy="2" stdDeviation="2" floodColor="#000" floodOpacity="0.3"/>
+            </filter>
+          </defs>
+          
+          {/* Main path */}
+          <path
+            d={pathD}
+            fill="none"
+            stroke="url(#pathGradient)"
+            strokeWidth="12"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            filter="url(#pathShadow)"
+            className="opacity-80"
+            style={{
+              strokeDasharray: "1000",
+              strokeDashoffset: "0",
+            }}
+          />
+          
+          {/* Path dots decoration */}
+          <path
+            d={pathD}
+            fill="none"
+            stroke="#F5DEB3"
+            strokeWidth="4"
+            strokeLinecap="round"
+            strokeDasharray="2 15"
+            className="opacity-60"
+          />
+        </svg>
+
+        {/* Animated Shpoko character */}
+        <div
+          className={cn(
+            "absolute z-20 pointer-events-none transition-all ease-out",
+            isMoving ? "duration-500" : "duration-200"
+          )}
+          style={{
+            left: `${shpokoPosition.x}%`,
+            top: `${shpokoPosition.y}%`,
+            transform: "translate(-50%, -100%)",
+          }}
         >
-          {/* Map paths */}
-          {pathSegments.length > 0 && (
-            <WorldMapPath segments={pathSegments} />
-          )}
-
-          {/* Map nodes */}
-          {nodes.map((node, index) => (
-            <WorldMapNode
-              key={node.id}
-              node={node}
-              index={index}
-              isUnlocked={isNodeUnlocked(node)}
-              isCompleted={isNodeCompleted(node.id)}
-              isSelected={selectedNodeId === node.id}
-              isShpokoHere={false}
-              position={nodePositions[index]}
-              onClick={() => handleNodeClick(node, index)}
-            />
-          ))}
-
-          {/* Animated Shpoko */}
-          {shpokoPosition && (
-            <div
-              className={cn(
-                "absolute transform -translate-x-1/2 transition-all duration-400 ease-out z-20",
-                isMoving && "animate-bounce"
-              )}
-              style={{
-                left: `${shpokoPosition.x}%`,
-                top: `${shpokoPosition.y - 8}%`,
-              }}
-            >
-              <ShpokoMascot size="md" />
-            </div>
-          )}
-
-          {/* Coming soon indicator at top */}
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 text-center">
-            <p className="text-xs text-muted-foreground bg-background/80 px-3 py-1 rounded-full">
-              🌟 More adventures unlock weekly
-            </p>
+          <div className={cn(
+            "relative",
+            isMoving && "animate-bounce"
+          )}>
+            {/* Shadow under Shpoko */}
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-12 h-3 bg-black/30 rounded-full blur-sm" />
+            <ShpokoMascot size="md" />
           </div>
         </div>
+
+        {/* Map nodes */}
+        {nodes.map((node, index) => (
+          <WorldMapNode
+            key={node.id}
+            node={node}
+            index={index}
+            isUnlocked={isNodeUnlocked(node)}
+            isCompleted={isNodeCompleted(node.id)}
+            isSelected={selectedNodeId === node.id}
+            position={nodePositions[index] || { x: 50, y: 50 }}
+            onClick={() => handleNodeClick(node, index)}
+          />
+        ))}
       </div>
 
-      {/* Selected node action panel */}
+      {/* Level info panel */}
       {selectedNode && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 p-4 bg-gradient-to-t from-background via-background to-transparent">
+        <div className="absolute bottom-0 left-0 right-0 z-30 p-4 bg-gradient-to-t from-black/80 to-transparent pt-20">
           <Card className={cn(
-            "max-w-md mx-auto p-4 border-2 transition-all",
+            "max-w-lg mx-auto border-4 shadow-2xl overflow-hidden",
             selectedNode.is_dungeon 
-              ? "border-purple-500/50 bg-gradient-to-br from-purple-500/10 to-red-500/10"
-              : "border-primary/50"
+              ? "border-purple-500 bg-gradient-to-br from-purple-900 to-purple-950"
+              : "border-yellow-400 bg-gradient-to-br from-amber-50 to-orange-50"
           )}>
-            <div className="flex items-center gap-4">
-              <div className={cn(
-                "p-3 rounded-xl",
-                selectedNode.is_dungeon ? "bg-purple-500/20" : "bg-primary/20"
-              )}>
-                {selectedNode.is_dungeon ? (
-                  <Skull className="w-8 h-8 text-purple-400" />
-                ) : (
-                  <Zap className="w-8 h-8 text-primary" />
-                )}
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-lg">{selectedNode.title}</h3>
-                <p className="text-sm text-muted-foreground">{selectedNode.description}</p>
-                <div className="flex items-center gap-1 text-yellow-500 text-sm mt-1">
-                  <Star className="w-4 h-4" />
-                  <span>+{selectedNode.xp_reward} XP</span>
-                  {selectedNode.is_dungeon && (
-                    <span className="text-purple-400 ml-2">⚔️ Dungeon Challenge</span>
+            <div className="p-4">
+              <div className="flex items-center gap-4">
+                {/* Level icon */}
+                <div className={cn(
+                  "w-16 h-16 rounded-xl flex items-center justify-center shadow-lg",
+                  selectedNode.is_dungeon 
+                    ? "bg-purple-600" 
+                    : "bg-gradient-to-br from-yellow-400 to-orange-400"
+                )}>
+                  {selectedNode.is_dungeon ? (
+                    <Skull className="w-10 h-10 text-white" />
+                  ) : (
+                    <span className="text-3xl font-bold text-white">{selectedNode.node_number}</span>
                   )}
                 </div>
+                
+                {/* Level info */}
+                <div className="flex-1">
+                  <h3 className={cn(
+                    "font-bold text-xl",
+                    selectedNode.is_dungeon ? "text-white" : "text-gray-900"
+                  )}>
+                    {selectedNode.title}
+                  </h3>
+                  <p className={cn(
+                    "text-sm",
+                    selectedNode.is_dungeon ? "text-purple-200" : "text-gray-600"
+                  )}>
+                    {selectedNode.description}
+                  </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="flex items-center gap-1 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-sm font-bold">
+                      <Star className="w-4 h-4" />
+                      +{selectedNode.xp_reward}
+                    </div>
+                    {selectedNode.is_dungeon && (
+                      <span className="text-purple-300 text-sm">⚔️ Boss Battle!</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Play button */}
+                <Button 
+                  size="lg"
+                  onClick={handleEnterLevel}
+                  className={cn(
+                    "h-16 w-16 rounded-full shadow-xl",
+                    selectedNode.is_dungeon 
+                      ? "bg-purple-500 hover:bg-purple-400" 
+                      : "bg-green-500 hover:bg-green-400"
+                  )}
+                >
+                  <Play className="w-8 h-8 fill-white text-white" />
+                </Button>
               </div>
-              <Button 
-                size="lg"
-                onClick={handleEnterLevel}
-                className={cn(
-                  selectedNode.is_dungeon && "bg-purple-600 hover:bg-purple-700"
-                )}
-              >
-                <Play className="w-5 h-5 mr-1" />
-                {selectedNode.is_dungeon ? "Enter" : "Play"}
-              </Button>
             </div>
           </Card>
         </div>
       )}
+
+      {/* Cloud animation keyframes */}
+      <style>{`
+        @keyframes float-cloud {
+          0% { transform: translateX(-100px); }
+          100% { transform: translateX(calc(100vw + 200px)); }
+        }
+      `}</style>
     </div>
   );
 };

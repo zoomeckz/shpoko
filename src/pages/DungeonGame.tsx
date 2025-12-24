@@ -10,6 +10,7 @@ import { useWorldMapSounds } from "@/hooks/useWorldMapSounds";
 import { ShpokoMascot } from "@/components/ShpokoMascot";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import dungeonBg from "@/assets/dungeon-entrance.jpg";
 
 // Dungeon room types
 type RoomType = "challenge" | "powerup" | "boss";
@@ -197,21 +198,29 @@ const DungeonGame = () => {
 
   if (!dungeonNode) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-950/50 via-background to-background flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <Skull className="w-16 h-16 mx-auto text-purple-400 animate-pulse" />
-          <p className="mt-4">Loading dungeon...</p>
+          <p className="mt-4 text-white">Loading dungeon...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-950/50 via-background to-background p-4">
-      {/* Decorative elements */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-20 left-10 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-60 h-60 bg-red-500/10 rounded-full blur-3xl" />
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Full-screen dungeon background */}
+      <div 
+        className="fixed inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${dungeonBg})` }}
+      />
+      <div className="fixed inset-0 bg-black/60" />
+      
+      {/* Animated torch flicker */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-orange-500/5 to-transparent animate-pulse" 
+          style={{ animationDuration: "2s" }} 
+        />
       </div>
 
       <div className="relative z-10 max-w-2xl mx-auto">
