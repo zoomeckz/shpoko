@@ -74,6 +74,7 @@ const AnimalsLesson = () => {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [score, setScore] = useState(0);
   const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [earnedXP, setEarnedXP] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
 
   const currentQuestion = questions[currentStep];
@@ -145,6 +146,7 @@ const AnimalsLesson = () => {
         refetch();
       }
       
+      setEarnedXP(xpEarned);
       toast({
         title: isRevision ? t.revisionComplete : t.lessonComplete,
         description: isRevision ? `${correctAnswers}/${questions.length} ${t.correctAnswers}!` : `${t.xpEarned} ${xpEarned} XP!`,
@@ -170,7 +172,7 @@ const AnimalsLesson = () => {
   };
 
   if (isComplete) {
-    return <LessonComplete lessonKey={LESSON_ID} score={score} xpEarned={isRevision ? 0 : score} isRevision={isRevision} correctAnswers={correctAnswers} totalQuestions={questions.length} />;
+    return <LessonComplete lessonKey={LESSON_ID} score={score} xpEarned={earnedXP} isRevision={isRevision} correctAnswers={correctAnswers} totalQuestions={questions.length} />;
   }
 
   return (
