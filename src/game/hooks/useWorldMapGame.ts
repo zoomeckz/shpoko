@@ -1,22 +1,24 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Phaser from "phaser";
 
-// Import scenes directly here (hooks ARE allowed to import)
+// Scenes are imported HERE (this is the real entry point)
 import { BootScene } from "../scenes/BootScene";
 import { WorldMapScene } from "../scenes/WorldMapScene";
 
 export function useWorldMapGame() {
+  // Lovable expects this ref
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     // Prevent multiple Phaser instances
-    if ((window as any).__PHASER_GAME__) {
-      return;
-    }
+    if ((window as any).__PHASER_GAME__) return;
+    if (!containerRef.current) return;
 
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
 
-      // Lovable provides this container
-      parent: "game",
+      // IMPORTANT: use the ref, not a hardcoded id
+      parent: containerRef.current,
 
       backgroundColor: "#000000",
       pixelArt: true,
@@ -34,7 +36,7 @@ export function useWorldMapGame() {
         },
       },
 
-      // 🔥 THIS IS THE CRITICAL PART 🔥
+      // REGISTER SCENES HERE (Lovable-style)
       scene: [BootScene, WorldMapScene],
     };
 
@@ -46,4 +48,7 @@ export function useWorldMapGame() {
       (window as any).__PHASER_GAME__ = null;
     };
   }, []);
+
+  // 🔥 THIS FIXES THE ERROR 🔥
+  return { containerRef };
 }
