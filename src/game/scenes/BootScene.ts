@@ -1,51 +1,54 @@
 import Phaser from "phaser";
 
 /* ======================================================
-   BOOT SCENE
-   - Registers scenes
-   - Starts the first scene
+   REQUIRED BY LOVABLE
+   This MUST exist and MUST be named exactly this
    ====================================================== */
+export function createGameConfig() {
+  return {
+    type: Phaser.AUTO,
+    width: 960,
+    height: 540,
+    backgroundColor: "#0b0f14",
+    pixelArt: true,
+    physics: {
+      default: "arcade",
+      arcade: {
+        gravity: { y: 1600 },
+        debug: false,
+      },
+    },
+    scene: [BootScene, StageScene],
+  };
+}
 
-// Named + default export (fixes your error)
+/* ======================================================
+   BOOT SCENE
+   ====================================================== */
 export class BootScene extends Phaser.Scene {
   constructor() {
     super("BootScene");
   }
 
   preload() {
-    // Minimal placeholders so Phaser doesn't crash
-    // Replace later with real assets
+    // Placeholder assets (must exist)
     this.load.image("shpoko_placeholder", "assets/shpoko.png");
     this.load.image("enemy_placeholder", "assets/enemy.png");
     this.load.image("trashcan_placeholder", "assets/trashcan.png");
   }
 
   create() {
-    // Start flow here
+    // Start game here
     this.scene.start("StageScene");
-    // Later you can change this to:
-    // this.scene.start("WorldMapScene");
   }
 }
 
 export default BootScene;
 
 /* ======================================================
-   EVERYTHING BELOW IS BUNDLED
-   (Lovable workaround: no new files)
+   EVERYTHING BELOW IS GAME LOGIC
+   (Lovable workaround: no new files allowed)
    ====================================================== */
-
-// ---------- GLOBAL STATE ----------
-type WordEntry = { bg: string; ro: string };
-
-const PlayerProfile = {
-  characterVariant: "male" as "male" | "female",
-  lastLessonWords: [
-    { bg: "куче", ro: "kuche" },
-    { bg: "котка", ro: "kotka" },
-    { bg: "гора", ro: "gora" },
-  ] as WordEntry[],
-};
 
 // ---------- INPUT MANAGER ----------
 class InputManager {
@@ -79,10 +82,13 @@ class WordPopSystem {
   }
 
   spawn(x: number, y: number) {
-    const pool = PlayerProfile.lastLessonWords;
-    if (!pool.length) return;
+    const words = [
+      { bg: "куче", ro: "kuche" },
+      { bg: "котка", ro: "kotka" },
+      { bg: "гора", ro: "gora" },
+    ];
 
-    const w = Phaser.Utils.Array.GetRandom(pool);
+    const w = Phaser.Utils.Array.GetRandom(words);
 
     const txt = this.scene.add
       .text(x, y, `${w.bg} (${w.ro})`, {
@@ -163,12 +169,6 @@ class StageScene extends Phaser.Scene {
   }
 
   create() {
-    // Back button → Map (hard rule)
-    this.add
-      .text(20, 20, "Back to Map", { color: "#ffffff" })
-      .setInteractive()
-      .on("pointerdown", () => this.scene.start("WorldMapScene"));
-
     this.inputMgr = new InputManager(this);
     this.wordPop = new WordPopSystem(this);
 
@@ -203,7 +203,7 @@ class StageScene extends Phaser.Scene {
         y: goal.y - 800,
         duration: 1400,
         ease: "Sine.easeIn",
-        onComplete: () => this.scene.start("WorldMapScene"),
+        onComplete: () => this.scene.start("BootScene"),
       });
     });
   }
