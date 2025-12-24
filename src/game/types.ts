@@ -29,6 +29,71 @@ export interface GameData {
   callbacks: GameCallbacks;
 }
 
+// Player state for platformer
+export interface PlayerState {
+  isGrounded: boolean;
+  isJumping: boolean;
+  isFalling: boolean;
+  isRunning: boolean;
+  facingRight: boolean;
+  coyoteTimeLeft: number;
+  jumpBuffered: boolean;
+  canDoubleJump: boolean;
+  isHurt: boolean;
+  isStomping: boolean;
+}
+
+// Enemy types
+export type EnemyType = 'coyote' | 'bobcat' | 'cougar' | 'bear' | 'wolf' | 'fox';
+
+// Enemy state
+export interface EnemyState {
+  type: EnemyType;
+  health: number;
+  isAlert: boolean;
+  isDefeated: boolean;
+  patrolDirection: number;
+  wordToRelease: BulgarianWord;
+}
+
+// Bulgarian vocabulary word
+export interface BulgarianWord {
+  cyrillic: string;
+  romanized: string;
+  english: string;
+}
+
+// Level data for platformer
+export interface LevelData {
+  nodeId: string;
+  lessonId: string;
+  worldZone: WorldZone;
+  words: BulgarianWord[];
+}
+
+// VFX types
+export type VFXType = 
+  | 'dust_puff' 
+  | 'stomp_burst' 
+  | 'word_popup' 
+  | 'unlock_spark' 
+  | 'rocket_smoke';
+
+// Audio event types
+export type AudioEvent = 
+  | 'footstep_walk'
+  | 'footstep_run'
+  | 'jump_start'
+  | 'jump_land'
+  | 'stomp'
+  | 'enemy_defeat'
+  | 'word_popup'
+  | 'node_unlock'
+  | 'button_click'
+  | 'rocket_launch'
+  | 'hurt'
+  | 'victory';
+
 // World zone colors and themes
 export const WORLD_ZONES: Record<WorldZone, {
   name: string;
