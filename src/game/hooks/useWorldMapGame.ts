@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useCallback } from "react";
 import Phaser from "phaser";
 
 import { BootScene } from "../scenes/BootScene";
@@ -21,16 +21,16 @@ export function useWorldMapGame({
   onNodeSelect,
   onEnterLevel,
 }: UseWorldMapGameArgs) {
-  // 🔥 REQUIRED BY LOVABLE
+  // MUST be declared unconditionally
   const containerRef = useRef<HTMLDivElement | null>(null);
-
-  let game: Phaser.Game | null = null;
+  const gameRef = useRef<Phaser.Game | null>(null);
 
   /* --------------------------------------------------
-     Called by Lovable when the game should start
+     Initialize Phaser (called by Lovable)
      -------------------------------------------------- */
-  function initGame() {
-    if (game || !containerRef.current) return;
+  const initGame = useCallback(() => {
+    if (gameRef.current) return;
+    if (!containerRef.current) return;
 
     const config: Phaser.Types.Core.GameConfig = {
       type: Phaser.AUTO,
@@ -55,27 +55,28 @@ export function useWorldMapGame({
       scene: [BootScene, WorldMapScene],
     };
 
-    game = new Phaser.Game(config);
+    const game = new Phaser.Game(config);
+    gameRef.current = game;
 
-    // Expose callbacks to scenes via registry
+    // Pass data to scenes via registry
     game.registry.set("nodes", nodes);
     game.registry.set("isNodeUnlocked", isNodeUnlocked);
     game.registry.set("isNodeCompleted", isNodeCompleted);
     game.registry.set("currentNodeIndex", currentNodeIndex);
     game.registry.set("onNodeSelect", onNodeSelect);
     game.registry.set("onEnterLevel", onEnterLevel);
-  }
+  }, [nodes, isNodeUnlocked, isNodeCompleted, currentNodeIndex, onNodeSelect, onEnterLevel]);
 
   /* --------------------------------------------------
-     Called by Lovable on unmount / route change
+     Destroy Phaser (called by Lovable)
      -------------------------------------------------- */
-  function destroyGame() {
-    if (!game) return;
-    game.destroy(true);
-    game = null;
-  }
+  const destroyGame = useCallback(() => {
+    if (!gameRef.current) return;
+    gameRef.current.destroy(true);
+    gameRef.current = null;
+  }, []);
 
-  // 🔥 THIS MATCHES WHAT YOUR CODE EXPECTS 🔥
+  // RETURN SHAPE MUST NEVER CHANGE
   return {
     containerRef,
     initGame,
