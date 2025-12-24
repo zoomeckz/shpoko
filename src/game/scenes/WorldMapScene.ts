@@ -2,56 +2,73 @@ import Phaser from "phaser";
 
 /* ======================================================
    WORLD MAP SCENE
+   Draws ONLY after resize event (Lovable-safe)
    ====================================================== */
 
-type WorldNode = {
-  id: string;
-  name: string;
-  x: number;
-  y: number;
-  unlocked: boolean;
-};
-
 export class WorldMapScene extends Phaser.Scene {
-  private nodes: WorldNode[] = [];
+  private drawn = false;
 
   constructor() {
     super("WorldMapScene");
   }
 
   create() {
-    const width = this.scale.width;
-    const height = this.scale.height;
+    // Force background immediately (camera-level)
+    this.cameras.main.setBackgroundColor(0x1b1f2a);
 
-    // ----- HARD BACKGROUND (proves rendering) -----
-    this.add.rectangle(0, 0, width, height, 0x1b1f2a).setOrigin(0, 0);
+    // Draw once AFTER Lovable finishes resizing
+    this.scale.on("resize", () => {
+      if (this.drawn) return;
+      this.drawn = true;
+      this.drawWorld();
+    });
 
-    // ----- TITLE -----
-    this.add
-      .text(width / 2, 60, "WORLD MAP", {
-        fontSize: "32px",
-        color: "#ffffff",
-      })
-      .setOrigin(0.5);
+    // Fallback: draw after a tiny delay in case resize already happened
+    this.time.delayedCall(50, () => {
+      if (!this.drawn) {
+        this.drawn = true;
+        this.drawWorld();
+      }
+    });
+  }
 
-    // ----- DEFINE NODES -----
-    this.nodes = [
-      { id: "school", name: "School", x: width * 0.2, y: height * 0.55, unlocked: true },
-      { id: "city", name: "City", x: width * 0.4, y: height * 0.45, unlocked: false },
-      { id: "sewer", name: "Sewer", x: width * 0.6, y: height * 0.6, unlocked: false },
-      { id: "forest", name: "Forest", x: width * 0.8, y: height * 0.45, unlocked: false },
+  private drawWorld() {
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+
+    /* --------------------------------------------------
+       HARD PROOF TEXT (top-left, absolute)
+       -------------------------------------------------- */
+    this.add.text(20, 20, "WORLD MAP ACTIVE", {
+      fontSize: "20px",
+      color: "#ffffff",
+    });
+
+    /* --------------------------------------------------
+       NODES (FIXED COORDINATES – NOT RELATIVE)
+       -------------------------------------------------- */
+    const nodes = [
+      { id: "school", name: "School", x: 200, y: 300, unlocked: true },
+      { id: "city", name: "City", x: 400, y: 260, unlocked: false },
+      { id: "sewer", name: "Sewer", x: 600, y: 340, unlocked: false },
+      { id: "forest", name: "Forest", x: 800, y: 260, unlocked: false },
+      { id: "space", name: "Space", x: 1000, y: 200, unlocked: false },
     ];
 
-    // ----- CONNECTION LINES -----
-    for (let i = 0; i < this.nodes.length - 1; i++) {
-      const a = this.nodes[i];
-      const b = this.nodes[i + 1];
+    /* --------------------------------------------------
+       CONNECTION LINES
+       -------------------------------------------------- */
+    for (let i = 0; i < nodes.length - 1; i++) {
+      const a = nodes[i];
+      const b = nodes[i + 1];
 
       this.add.line(0, 0, a.x, a.y, b.x, b.y, 0x888888).setOrigin(0, 0).setLineWidth(4);
     }
 
-    // ----- DRAW NODES -----
-    this.nodes.forEach((node) => {
+    /* --------------------------------------------------
+       DRAW NODES
+       -------------------------------------------------- */
+    nodes.forEach((node) => {
       const circle = this.add
         .circle(node.x, node.y, 28, node.unlocked ? 0x4caf50 : 0x555555)
         .setStrokeStyle(3, 0xffffff);
@@ -66,15 +83,16 @@ export class WorldMapScene extends Phaser.Scene {
       if (node.unlocked) {
         circle.setInteractive({ useHandCursor: true });
         circle.on("pointerdown", () => {
-          // TEMP: jump straight into gameplay later
-          console.log("Selected world:", node.id);
+          console.log("Selected:", node.id);
         });
       }
     });
 
-    // ----- DEBUG MARKER (absolute proof scene is active) -----
+    /* --------------------------------------------------
+       BOTTOM-RIGHT DEBUG (absolute)
+       -------------------------------------------------- */
     this.add
-      .text(width - 10, height - 10, "MAP ACTIVE", {
+      .text(width - 10, height - 10, "MAP RENDERED", {
         fontSize: "12px",
         color: "#00ff00",
       })
