@@ -1,67 +1,49 @@
-import { useRef, useEffect, useCallback } from 'react';
-import Phaser from 'phaser';
-import { createGameConfig } from '../config';
-import { BootScene } from '../scenes/BootScene';
-import { WorldMapScene } from '../scenes/WorldMapScene';
-import { AdventureNode } from '@/hooks/useAdventure';
+import { useEffect } from "react";
+import Phaser from "phaser";
 
-interface UseWorldMapGameProps {
-  nodes: AdventureNode[];
-  isNodeUnlocked: (node: AdventureNode) => boolean;
-  isNodeCompleted: (id: string) => boolean;
-  currentNodeIndex: number;
-  onNodeSelect: (node: AdventureNode) => void;
-  onEnterLevel: (node: AdventureNode) => void;
-}
+// Import scenes directly here (hooks ARE allowed to import)
+import { BootScene } from "../scenes/BootScene";
+import { WorldMapScene } from "../scenes/WorldMapScene";
 
-export const useWorldMapGame = ({
-  nodes,
-  isNodeUnlocked,
-  isNodeCompleted,
-  currentNodeIndex,
-  onNodeSelect,
-  onEnterLevel,
-}: UseWorldMapGameProps) => {
-  const gameRef = useRef<Phaser.Game | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const initGame = useCallback(() => {
-    if (!containerRef.current || gameRef.current) return;
-
-    // Create custom WorldMapScene with data
-    class ConfiguredWorldMapScene extends WorldMapScene {
-      init() {
-        super.init({
-          nodes,
-          isNodeUnlocked,
-          isNodeCompleted,
-          currentNodeIndex,
-          onNodeSelect,
-          onEnterLevel,
-        });
-      }
-    }
-
-    const config = createGameConfig('phaser-container', [BootScene, ConfiguredWorldMapScene]);
-    gameRef.current = new Phaser.Game(config);
-  }, [nodes, isNodeUnlocked, isNodeCompleted, currentNodeIndex, onNodeSelect, onEnterLevel]);
-
-  const destroyGame = useCallback(() => {
-    if (gameRef.current) {
-      gameRef.current.destroy(true);
-      gameRef.current = null;
-    }
-  }, []);
-
+export function useWorldMapGame() {
   useEffect(() => {
-    return () => {
-      destroyGame();
-    };
-  }, [destroyGame]);
+    // Prevent multiple Phaser instances
+    if ((window as any).__PHASER_GAME__) {
+      return;
+    }
 
-  return {
-    containerRef,
-    initGame,
-    destroyGame,
-  };
-};
+    const config: Phaser.Types.Core.GameConfig = {
+      type: Phaser.AUTO,
+
+      // Lovable provides this container
+      parent: "game",
+
+      backgroundColor: "#000000",
+      pixelArt: true,
+
+      scale: {
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+      },
+
+      physics: {
+        default: "arcade",
+        arcade: {
+          gravity: { y: 1600 },
+          debug: false,
+        },
+      },
+
+      // 🔥 THIS IS THE CRITICAL PART 🔥
+      scene: [BootScene, WorldMapScene],
+    };
+
+    const game = new Phaser.Game(config);
+    (window as any).__PHASER_GAME__ = game;
+
+    return () => {
+      game.destroy(true);
+      (window as any).__PHASER_GAME__ = null;
+    };
+  }, []);
+}
