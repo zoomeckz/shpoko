@@ -1,17 +1,12 @@
 import Phaser from "phaser";
 
-// IMPORT SCENES SO PHASER KNOWS THEY EXIST
-import BootScene from "../scenes/BootScene";
-import WorldMapScene from "../scenes/WorldMapScene";
-
 /* ======================================================
    REQUIRED BY LOVABLE
-   THIS IS WHERE SCENES MUST BE REGISTERED
+   DO NOT IMPORT SCENES HERE
    ====================================================== */
 export function createGameConfig(): Phaser.Types.Core.GameConfig {
   return {
     type: Phaser.AUTO,
-
     parent: "game",
 
     width: 960,
@@ -33,13 +28,13 @@ export function createGameConfig(): Phaser.Types.Core.GameConfig {
       },
     },
 
-    // 🔥 THIS IS THE MISSING PIECE 🔥
-    scene: [BootScene, WorldMapScene],
+    // IMPORTANT: scenes are added dynamically
+    scene: [],
   };
 }
 
 /* ======================================================
-   GAME CONSTANTS
+   GAME CONSTANTS (SAFE)
    ====================================================== */
 export const GAME_CONFIG = {
   MAP_WIDTH: 1920,
