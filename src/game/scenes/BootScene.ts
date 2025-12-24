@@ -1,18 +1,53 @@
-/* ================================
-   TEMP GAME LOGIC BUNDLE
-   (Placed here because Lovable
-   does not allow new files)
-   ================================ */
+import Phaser from "phaser";
 
-// ----- GLOBAL STATE -----
+/* ======================================================
+   BOOT SCENE
+   - Registers scenes
+   - Starts the first scene
+   ====================================================== */
+
+// Named + default export (fixes your error)
+export class BootScene extends Phaser.Scene {
+  constructor() {
+    super("BootScene");
+  }
+
+  preload() {
+    // Minimal placeholders so Phaser doesn't crash
+    // Replace later with real assets
+    this.load.image("shpoko_placeholder", "assets/shpoko.png");
+    this.load.image("enemy_placeholder", "assets/enemy.png");
+    this.load.image("trashcan_placeholder", "assets/trashcan.png");
+  }
+
+  create() {
+    // Start flow here
+    this.scene.start("StageScene");
+    // Later you can change this to:
+    // this.scene.start("WorldMapScene");
+  }
+}
+
+export default BootScene;
+
+/* ======================================================
+   EVERYTHING BELOW IS BUNDLED
+   (Lovable workaround: no new files)
+   ====================================================== */
+
+// ---------- GLOBAL STATE ----------
 type WordEntry = { bg: string; ro: string };
 
 const PlayerProfile = {
   characterVariant: "male" as "male" | "female",
-  lastLessonWords: [] as WordEntry[],
+  lastLessonWords: [
+    { bg: "куче", ro: "kuche" },
+    { bg: "котка", ro: "kotka" },
+    { bg: "гора", ro: "gora" },
+  ] as WordEntry[],
 };
 
-// ----- INPUT MANAGER -----
+// ---------- INPUT MANAGER ----------
 class InputManager {
   state = { left: false, right: false, jump: false, sprint: false };
   keys: any;
@@ -35,20 +70,24 @@ class InputManager {
   }
 }
 
-// ----- WORD POP SYSTEM -----
+// ---------- WORD POP SYSTEM ----------
 class WordPopSystem {
   scene: Phaser.Scene;
+
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
   }
 
   spawn(x: number, y: number) {
-    if (!PlayerProfile.lastLessonWords.length) return;
-    const w = Phaser.Utils.Array.GetRandom(PlayerProfile.lastLessonWords);
+    const pool = PlayerProfile.lastLessonWords;
+    if (!pool.length) return;
+
+    const w = Phaser.Utils.Array.GetRandom(pool);
+
     const txt = this.scene.add
       .text(x, y, `${w.bg} (${w.ro})`, {
         fontSize: "18px",
-        color: "#fff",
+        color: "#ffffff",
         backgroundColor: "rgba(0,0,0,0.4)",
         padding: { x: 6, y: 3 },
       })
@@ -64,15 +103,17 @@ class WordPopSystem {
   }
 }
 
-// ----- PLAYER -----
+// ---------- PLAYER ----------
 class Player extends Phaser.Physics.Arcade.Sprite {
   input: InputManager;
 
   constructor(scene: Phaser.Scene, x: number, y: number, input: InputManager) {
     super(scene, x, y, "shpoko_placeholder");
     this.input = input;
+
     scene.add.existing(this);
     scene.physics.add.existing(this);
+
     this.setCollideWorldBounds(true);
     this.body.setGravityY(1600);
   }
@@ -91,23 +132,27 @@ class Player extends Phaser.Physics.Arcade.Sprite {
   }
 }
 
-// ----- ENEMY -----
+// ---------- ENEMY ----------
 class Enemy extends Phaser.Physics.Arcade.Sprite {
   alive = true;
+
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, "enemy_placeholder");
+
     scene.add.existing(this);
     scene.physics.add.existing(this);
+
     this.body.setAllowGravity(false);
     this.body.setImmovable(true);
   }
+
   die() {
     this.alive = false;
     this.disableBody(true, true);
   }
 }
 
-// ----- STAGE SCENE -----
+// ---------- STAGE SCENE ----------
 class StageScene extends Phaser.Scene {
   inputMgr!: InputManager;
   player!: Player;
@@ -118,9 +163,9 @@ class StageScene extends Phaser.Scene {
   }
 
   create() {
-    // Back → Map (hard rule)
+    // Back button → Map (hard rule)
     this.add
-      .text(20, 20, "Back", { color: "#fff" })
+      .text(20, 20, "Back to Map", { color: "#ffffff" })
       .setInteractive()
       .on("pointerdown", () => this.scene.start("WorldMapScene"));
 
@@ -139,6 +184,7 @@ class StageScene extends Phaser.Scene {
     const enemy = new Enemy(this, 500, 480);
     this.physics.add.collider(enemy, ground);
 
+    // Stomp logic
     this.physics.add.overlap(this.player, enemy, () => {
       const body = this.player.body as Phaser.Physics.Arcade.Body;
       if (body.velocity.y > 0 && enemy.alive) {
@@ -146,6 +192,19 @@ class StageScene extends Phaser.Scene {
         body.setVelocityY(-260);
         this.wordPop.spawn(enemy.x, enemy.y);
       }
+    });
+
+    // Goal (trashcan)
+    const goal = this.physics.add.sprite(900, 480, "trashcan_placeholder").setImmovable(true).setAllowGravity(false);
+
+    this.physics.add.overlap(this.player, goal, () => {
+      this.tweens.add({
+        targets: goal,
+        y: goal.y - 800,
+        duration: 1400,
+        ease: "Sine.easeIn",
+        onComplete: () => this.scene.start("WorldMapScene"),
+      });
     });
   }
 
