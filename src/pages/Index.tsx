@@ -13,8 +13,9 @@ import { DailyGames } from "@/components/DailyGames";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { lessons } from "@/data/lessons";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePictureSelector";
-import { Crown, Trophy, Flame, Calendar, BookOpen, Gamepad2, BookText, Brain, Headphones, MessageCircle } from "lucide-react";
+import { Crown, Trophy, Flame, Calendar, BookOpen, Gamepad2, BookText, Brain, Headphones, MessageCircle, Map } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type CategoryType = "daily" | "lessons" | "games" | "stories";
@@ -294,6 +295,31 @@ const Index = () => {
           {/* Leaderboard Tracker */}
           <LeaderboardRankTracker />
         </div>
+
+        {/* Adventure Mode Banner */}
+        <Card 
+          className="mb-6 cursor-pointer overflow-hidden border-2 border-yellow-400 hover:border-yellow-300 transition-all hover:shadow-xl hover:scale-[1.02]"
+          onClick={() => navigate("/adventure")}
+        >
+          <div className="relative bg-gradient-to-r from-green-600 via-green-500 to-emerald-500 p-4">
+            {/* Decorative clouds */}
+            <div className="absolute top-2 right-10 w-12 h-6 bg-white/30 rounded-full blur-sm" />
+            <div className="absolute top-4 right-24 w-8 h-4 bg-white/20 rounded-full blur-sm" />
+            
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="bg-yellow-400 p-3 rounded-xl shadow-lg">
+                <Map className="w-8 h-8 text-yellow-900" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-white drop-shadow-lg">🗺️ Adventure Mode</h3>
+                <p className="text-green-100 text-sm">Explore the world map & conquer dungeons!</p>
+              </div>
+              <Button className="bg-yellow-400 hover:bg-yellow-300 text-yellow-900 font-bold shadow-lg">
+                Play Now →
+              </Button>
+            </div>
+          </div>
+        </Card>
 
         {/* Show hero only on first visit, otherwise Word of the Day */}
         {isFirstVisit ? (
