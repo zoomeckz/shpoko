@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, MessageSquare, BookOpen, Lightbulb, MessageCircle, Users } from "lucide-react";
 import { useForum, ForumCategory } from "@/hooks/useForum";
+import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 
 const iconMap: Record<string, React.ElementType> = {
