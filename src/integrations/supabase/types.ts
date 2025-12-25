@@ -696,6 +696,288 @@ export type Database = {
         }
         Relationships: []
       }
+      roguelike_completed_nodes: {
+        Row: {
+          completed_at: string | null
+          completed_during_backtrack: boolean | null
+          id: string
+          map_id: string
+          node_id: string
+          score: number | null
+          user_id: string
+          xp_earned: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_during_backtrack?: boolean | null
+          id?: string
+          map_id: string
+          node_id: string
+          score?: number | null
+          user_id: string
+          xp_earned?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          completed_during_backtrack?: boolean | null
+          id?: string
+          map_id?: string
+          node_id?: string
+          score?: number | null
+          user_id?: string
+          xp_earned?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roguelike_completed_nodes_map_id_fkey"
+            columns: ["map_id"]
+            isOneToOne: false
+            referencedRelation: "roguelike_maps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roguelike_completed_nodes_node_id_fkey"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "roguelike_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roguelike_lessons: {
+        Row: {
+          category: string
+          created_at: string | null
+          difficulty: number | null
+          id: string
+          time_limit_seconds: number | null
+          title: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          difficulty?: number | null
+          id?: string
+          time_limit_seconds?: number | null
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          difficulty?: number | null
+          id?: string
+          time_limit_seconds?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
+      roguelike_maps: {
+        Row: {
+          background_image: string | null
+          created_at: string | null
+          id: string
+          is_boss_map: boolean | null
+          name: string
+          next_map_ids: string[] | null
+          order_index: number
+        }
+        Insert: {
+          background_image?: string | null
+          created_at?: string | null
+          id: string
+          is_boss_map?: boolean | null
+          name: string
+          next_map_ids?: string[] | null
+          order_index?: number
+        }
+        Update: {
+          background_image?: string | null
+          created_at?: string | null
+          id?: string
+          is_boss_map?: boolean | null
+          name?: string
+          next_map_ids?: string[] | null
+          order_index?: number
+        }
+        Relationships: []
+      }
+      roguelike_music: {
+        Row: {
+          artist: string | null
+          created_at: string | null
+          file_url: string
+          id: string
+          order_index: number | null
+          title: string
+        }
+        Insert: {
+          artist?: string | null
+          created_at?: string | null
+          file_url: string
+          id?: string
+          order_index?: number | null
+          title: string
+        }
+        Update: {
+          artist?: string | null
+          created_at?: string | null
+          file_url?: string
+          id?: string
+          order_index?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
+      roguelike_nodes: {
+        Row: {
+          connected_nodes: string[] | null
+          created_at: string | null
+          id: string
+          lesson_id: string | null
+          map_id: string
+          node_type: string
+          order_index: number | null
+          x_position: number
+          y_position: number
+        }
+        Insert: {
+          connected_nodes?: string[] | null
+          created_at?: string | null
+          id?: string
+          lesson_id?: string | null
+          map_id: string
+          node_type: string
+          order_index?: number | null
+          x_position: number
+          y_position: number
+        }
+        Update: {
+          connected_nodes?: string[] | null
+          created_at?: string | null
+          id?: string
+          lesson_id?: string | null
+          map_id?: string
+          node_type?: string
+          order_index?: number | null
+          x_position?: number
+          y_position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roguelike_nodes_map_id_fkey"
+            columns: ["map_id"]
+            isOneToOne: false
+            referencedRelation: "roguelike_maps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roguelike_progress: {
+        Row: {
+          created_at: string | null
+          current_map_id: string | null
+          current_node_id: string | null
+          id: string
+          is_backtracking: boolean | null
+          last_move_reset: string | null
+          lives: number | null
+          maps_completed: string[] | null
+          moves_today: number | null
+          total_nodes_completed: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_map_id?: string | null
+          current_node_id?: string | null
+          id?: string
+          is_backtracking?: boolean | null
+          last_move_reset?: string | null
+          lives?: number | null
+          maps_completed?: string[] | null
+          moves_today?: number | null
+          total_nodes_completed?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_map_id?: string | null
+          current_node_id?: string | null
+          id?: string
+          is_backtracking?: boolean | null
+          last_move_reset?: string | null
+          lives?: number | null
+          maps_completed?: string[] | null
+          moves_today?: number | null
+          total_nodes_completed?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roguelike_progress_current_map_id_fkey"
+            columns: ["current_map_id"]
+            isOneToOne: false
+            referencedRelation: "roguelike_maps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roguelike_questions: {
+        Row: {
+          correct_answer: string
+          created_at: string | null
+          id: string
+          lesson_id: string
+          options: string[] | null
+          order_index: number | null
+          question_text: string
+          question_text_bg: string | null
+          question_type: string
+          reading_text: string | null
+          time_bonus_seconds: number | null
+          word_translations: Json | null
+        }
+        Insert: {
+          correct_answer: string
+          created_at?: string | null
+          id?: string
+          lesson_id: string
+          options?: string[] | null
+          order_index?: number | null
+          question_text: string
+          question_text_bg?: string | null
+          question_type: string
+          reading_text?: string | null
+          time_bonus_seconds?: number | null
+          word_translations?: Json | null
+        }
+        Update: {
+          correct_answer?: string
+          created_at?: string | null
+          id?: string
+          lesson_id?: string
+          options?: string[] | null
+          order_index?: number | null
+          question_text?: string
+          question_text_bg?: string | null
+          question_type?: string
+          reading_text?: string | null
+          time_bonus_seconds?: number | null
+          word_translations?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roguelike_questions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "roguelike_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           created_at: string
