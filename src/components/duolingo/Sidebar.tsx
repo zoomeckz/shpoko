@@ -1,0 +1,89 @@
+import { cn } from "@/lib/utils";
+import { Link, useLocation } from "react-router-dom";
+import { Home, Trophy, Target, User, Settings, BookOpen, Flame, Crown } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import shpokoLogo from "@/assets/shpoko-logo.png";
+
+interface SidebarProps {
+  className?: string;
+}
+
+const navItems = [
+  { icon: Home, label: "Learn", path: "/" },
+  { icon: Trophy, label: "Leaderboards", path: "/leaderboard" },
+  { icon: Target, label: "Quests", path: "/quests" },
+  { icon: BookOpen, label: "Stories", path: "/stories" },
+  { icon: User, label: "Profile", path: "/profile" },
+];
+
+export const Sidebar = ({ className }: SidebarProps) => {
+  const location = useLocation();
+  const { profile } = useAuth();
+
+  return (
+    <aside className={cn(
+      "hidden lg:flex flex-col w-64 h-screen sticky top-0 bg-card border-r border-border p-4",
+      className
+    )}>
+      {/* Logo */}
+      <Link to="/" className="flex items-center gap-3 px-4 py-3 mb-6">
+        <img src={shpokoLogo} alt="Shpoko" className="w-10 h-10" />
+        <span className="text-2xl font-bold text-primary">Shpoko</span>
+      </Link>
+
+      {/* Navigation */}
+      <nav className="flex-1 space-y-1">
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          const Icon = item.icon;
+          
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={cn(
+                "flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-base",
+                isActive
+                  ? "bg-primary/10 text-primary border-2 border-primary"
+                  : "text-muted-foreground hover:bg-accent border-2 border-transparent"
+              )}
+            >
+              <Icon className="w-6 h-6" />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Premium banner */}
+      {!profile?.is_premium && (
+        <Link
+          to="/premium"
+          className="mt-4 p-4 bg-gradient-to-r from-warning/20 to-warning/10 rounded-xl border-2 border-warning/30 hover:border-warning transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <Crown className="w-8 h-8 text-warning" />
+            <div>
+              <p className="font-bold text-sm">Try Premium</p>
+              <p className="text-xs text-muted-foreground">No ads & unlimited hearts</p>
+            </div>
+          </div>
+        </Link>
+      )}
+
+      {/* User stats mini */}
+      <div className="mt-4 p-4 bg-accent rounded-xl">
+        <div className="flex items-center justify-around">
+          <div className="flex items-center gap-1">
+            <Flame className="w-5 h-5 text-warning" />
+            <span className="font-bold">{profile?.streak || 0}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Trophy className="w-5 h-5 text-primary" />
+            <span className="font-bold">{profile?.xp || 0}</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  );
+};
