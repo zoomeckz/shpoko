@@ -495,6 +495,36 @@ export type Database = {
         }
         Relationships: []
       }
+      leagues: {
+        Row: {
+          color: string
+          created_at: string
+          icon: string
+          id: string
+          min_xp_to_promote: number
+          name: string
+          tier: number
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          icon: string
+          id?: string
+          min_xp_to_promote?: number
+          name: string
+          tier: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          min_xp_to_promote?: number
+          name?: string
+          tier?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -537,6 +567,42 @@ export type Database = {
           updated_at?: string
           username?: string
           xp?: number
+        }
+        Relationships: []
+      }
+      quests: {
+        Row: {
+          action_type: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          target_count: number
+          title: string
+          type: string
+          xp_reward: number
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean
+          target_count?: number
+          title: string
+          type: string
+          xp_reward?: number
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          target_count?: number
+          title?: string
+          type?: string
+          xp_reward?: number
         }
         Relationships: []
       }
@@ -1011,6 +1077,50 @@ export type Database = {
         }
         Relationships: []
       }
+      user_leagues: {
+        Row: {
+          created_at: string
+          demoted: boolean | null
+          id: string
+          league_id: string
+          position: number | null
+          promoted: boolean | null
+          user_id: string
+          week_start: string
+          week_xp: number
+        }
+        Insert: {
+          created_at?: string
+          demoted?: boolean | null
+          id?: string
+          league_id: string
+          position?: number | null
+          promoted?: boolean | null
+          user_id: string
+          week_start: string
+          week_xp?: number
+        }
+        Update: {
+          created_at?: string
+          demoted?: boolean | null
+          id?: string
+          league_id?: string
+          position?: number | null
+          promoted?: boolean | null
+          user_id?: string
+          week_start?: string
+          week_xp?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_leagues_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_progress: {
         Row: {
           completed: boolean
@@ -1049,6 +1159,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_quests: {
+        Row: {
+          assigned_at: string
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          current_count: number
+          expires_at: string
+          id: string
+          quest_id: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_count?: number
+          expires_at: string
+          id?: string
+          quest_id: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_count?: number
+          expires_at?: string
+          id?: string
+          quest_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_quests_quest_id_fkey"
+            columns: ["quest_id"]
+            isOneToOne: false
+            referencedRelation: "quests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
