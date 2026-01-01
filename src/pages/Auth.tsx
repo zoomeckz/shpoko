@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { ShpokoGreetingCard } from "@/components/duolingo/ShpokoGreetingCard";
 
 const signUpSchema = z.object({
   username: z.string()
@@ -122,17 +123,22 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-2xl border-0">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-blue-600">
-            {isLogin ? "Welcome Back!" : "Join Shpoko"}
-          </CardTitle>
-          <CardDescription>
-            {isLogin
-              ? "Enter your credentials to continue learning"
-              : "Create an account to start your Bulgarian learning journey"}
-          </CardDescription>
-        </CardHeader>
+      <div className="w-full max-w-4xl grid gap-6 lg:grid-cols-2 items-center">
+        <div className="flex justify-center lg:justify-end">
+          <ShpokoGreetingCard className="w-full max-w-sm" />
+        </div>
+
+        <Card className="w-full max-w-md shadow-2xl border-0 justify-self-center lg:justify-self-start">
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-bold text-blue-600">
+              {isLogin ? "Welcome Back!" : "Join Shpoko"}
+            </CardTitle>
+            <CardDescription>
+              {isLogin
+                ? "Enter your credentials to continue learning"
+                : "Create an account to start your Bulgarian learning journey"}
+            </CardDescription>
+          </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
@@ -226,6 +232,7 @@ const Auth = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
