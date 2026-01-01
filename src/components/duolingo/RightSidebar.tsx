@@ -3,8 +3,8 @@ import { Flame, Trophy, Target, Zap, Crown, TrendingUp } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
-import { ShpokoMascot } from "@/components/ShpokoMascot";
-import shpokoHappy from "@/assets/shpoko-happy.png";
+import { ShpokoLottie } from "./ShpokoLottie";
+import { useState, useEffect } from "react";
 
 interface RightSidebarProps {
   className?: string;
@@ -21,6 +21,26 @@ interface RightSidebarProps {
   leagueIcon?: string;
 }
 
+// Greeting messages based on time of day and streak
+const getGreeting = (streak: number, username?: string) => {
+  const hour = new Date().getHours();
+  const name = username ? `, ${username}` : "";
+  
+  if (streak >= 7) {
+    return { text: `Amazing${name}! ${streak} day streak! 🔥`, mood: "celebrating" as const };
+  }
+  if (streak >= 3) {
+    return { text: `Great job${name}! Keep it up!`, mood: "excited" as const };
+  }
+  if (hour < 12) {
+    return { text: `Good morning${name}! Ready to learn?`, mood: "happy" as const };
+  }
+  if (hour < 18) {
+    return { text: `Good afternoon${name}! Let's practice!`, mood: "encouraging" as const };
+  }
+  return { text: `Good evening${name}! Time for a lesson?`, mood: "happy" as const };
+};
+
 export const RightSidebar = ({
   className,
   quests = [],
@@ -29,6 +49,15 @@ export const RightSidebar = ({
   leagueIcon = "🥉"
 }: RightSidebarProps) => {
   const { profile } = useAuth();
+  const [showSpeech, setShowSpeech] = useState(true);
+  
+  const greeting = getGreeting(profile?.streak || 0, profile?.username);
+
+  // Hide speech bubble after 5 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSpeech(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Default quests if none provided
   const displayQuests = quests.length > 0 ? quests : [
@@ -42,22 +71,20 @@ export const RightSidebar = ({
       "hidden xl:flex flex-col w-80 h-screen sticky top-0 p-4 space-y-4 overflow-y-auto",
       className
     )}>
-      {/* Mascot greeting */}
+      {/* Animated Mascot greeting */}
       <div className="bg-card rounded-2xl border-2 border-border p-4">
-        <div className="flex items-start gap-3">
-          <img 
-            src={shpokoHappy} 
-            alt="Shpoko" 
-            className="w-16 h-16 object-contain animate-float"
+        <div className="flex items-center gap-4">
+          <ShpokoLottie 
+            mood={greeting.mood}
+            size="md"
+            showSpeechBubble={showSpeech}
+            speechText={greeting.text}
+            onClick={() => setShowSpeech(true)}
           />
           <div className="flex-1">
-            <p className="font-medium text-sm">
-              {profile?.streak && profile.streak > 0 
-                ? `Great job! ${profile.streak} day streak!` 
-                : "Ready to learn today?"}
-            </p>
+            <p className="font-medium text-sm">{greeting.text}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Keep up the good work!
+              Tap me for encouragement!
             </p>
           </div>
         </div>
