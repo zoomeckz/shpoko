@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/duolingo/Sidebar";
 import { TopBar } from "@/components/duolingo/TopBar";
 import { LessonPath } from "@/components/duolingo/LessonPath";
 import { RightSidebar } from "@/components/duolingo/RightSidebar";
+import { ShpokoGreetingCard } from "@/components/duolingo/ShpokoGreetingCard";
 
 const Index = () => {
   const { user, loading } = useAuth();
