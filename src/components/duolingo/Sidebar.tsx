@@ -1,8 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Trophy, Target, User, Settings, BookOpen, Flame, Crown } from "lucide-react";
+import { Home, Trophy, Target, User, BookOpen, Flame, Crown, Zap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import shpokoLogo from "@/assets/shpoko-logo.png";
 
 interface SidebarProps {
   className?: string;
@@ -27,8 +26,8 @@ export const Sidebar = ({ className }: SidebarProps) => {
     )}>
       {/* Logo */}
       <Link to="/" className="flex items-center gap-3 px-4 py-3 mb-6">
-        <img src={shpokoLogo} alt="Shpoko" className="w-10 h-10" />
-        <span className="text-2xl font-bold text-primary">Shpoko</span>
+        <span className="text-3xl">🦝</span>
+        <span className="text-2xl font-extrabold text-primary">shpoko</span>
       </Link>
 
       {/* Navigation */}
@@ -64,7 +63,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
           <div className="flex items-center gap-3">
             <Crown className="w-8 h-8 text-warning" />
             <div>
-              <p className="font-bold text-sm">Try Premium</p>
+              <p className="font-bold text-sm">Try Super</p>
               <p className="text-xs text-muted-foreground">No ads & unlimited hearts</p>
             </div>
           </div>
@@ -74,12 +73,12 @@ export const Sidebar = ({ className }: SidebarProps) => {
       {/* User stats mini */}
       <div className="mt-4 p-4 bg-accent rounded-xl">
         <div className="flex items-center justify-around">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <Flame className="w-5 h-5 text-warning" />
             <span className="font-bold">{profile?.streak || 0}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Trophy className="w-5 h-5 text-primary" />
+          <div className="flex items-center gap-2">
+            <Zap className="w-5 h-5 text-primary" />
             <span className="font-bold">{profile?.xp || 0}</span>
           </div>
         </div>

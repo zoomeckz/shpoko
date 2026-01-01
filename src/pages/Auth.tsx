@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import { ShpokoGreetingCard } from "@/components/duolingo/ShpokoGreetingCard";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 const signUpSchema = z.object({
   username: z.string()
@@ -122,117 +122,174 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-500 to-blue-700 flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl grid gap-6 lg:grid-cols-2 items-center">
-        <div className="flex justify-center lg:justify-end">
-          <ShpokoGreetingCard className="w-full max-w-sm" />
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
+      <header className="border-b border-border bg-card">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2">
+            <span className="text-3xl">🦝</span>
+            <span className="text-2xl font-extrabold text-primary">shpoko</span>
+          </Link>
+          <Button
+            variant="ghost"
+            onClick={() => setIsLogin(!isLogin)}
+            className="font-bold text-primary"
+          >
+            {isLogin ? "SIGN UP" : "LOGIN"}
+          </Button>
         </div>
+      </header>
 
-        <Card className="w-full max-w-md shadow-2xl border-0 justify-self-center lg:justify-self-start">
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold text-blue-600">
-              {isLogin ? "Welcome Back!" : "Join Shpoko"}
-            </CardTitle>
-            <CardDescription>
-              {isLogin
-                ? "Enter your credentials to continue learning"
-                : "Create an account to start your Bulgarian learning journey"}
-            </CardDescription>
-          </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="Choose a username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className={errors.username ? "border-red-500" : ""}
-                  autoComplete="username"
-                />
-                {errors.username && (
-                  <p className="text-sm text-red-500">{errors.username}</p>
-                )}
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={errors.email ? "border-red-500" : ""}
-                autoComplete="email"
-              />
-              {errors.email && (
-                <p className="text-sm text-red-500">{errors.email}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={errors.password ? "border-red-500" : ""}
-                autoComplete={isLogin ? "current-password" : "new-password"}
-              />
-              {errors.password && (
-                <p className="text-sm text-red-500">{errors.password}</p>
-              )}
-            </div>
-
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Confirm your password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className={errors.confirmPassword ? "border-red-500" : ""}
-                  autoComplete="new-password"
-                />
-                {errors.confirmPassword && (
-                  <p className="text-sm text-red-500">{errors.confirmPassword}</p>
-                )}
-              </div>
-            )}
-
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
-              {loading ? "Loading..." : isLogin ? "Log In" : "Create Account"}
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-muted-foreground">
-              {isLogin ? "New to Shpoko?" : "Already have an account?"}
-            </p>
-            <Button
-              variant="link"
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setErrors({});
-                setConfirmPassword("");
-              }}
-              className="text-blue-600"
+      {/* Main content */}
+      <main className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-4xl grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left side - Mascot */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="hidden lg:flex flex-col items-center text-center"
+          >
+            <motion.div
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="text-[180px] select-none"
             >
-              {isLogin ? "Create an account" : "Log in"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-      </div>
+              🦝
+            </motion.div>
+            <h2 className="text-2xl font-bold text-foreground mt-4">
+              {isLogin ? "Welcome back!" : "Join millions of learners!"}
+            </h2>
+            <p className="text-muted-foreground mt-2 max-w-xs">
+              {isLogin 
+                ? "Continue your learning journey" 
+                : "Start learning a new language today. It's free, fun, and effective!"}
+            </p>
+          </motion.div>
+
+          {/* Right side - Form */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full max-w-md mx-auto"
+          >
+            <div className="bg-card rounded-2xl border-2 border-border p-8 shadow-lg">
+              <h1 className="text-2xl font-bold text-foreground text-center mb-6">
+                {isLogin ? "Log in" : "Create your profile"}
+              </h1>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {!isLogin && (
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="font-semibold">Username</Label>
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="Choose a username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className={cn(
+                        "h-12 rounded-xl border-2 text-base",
+                        errors.username ? "border-error" : "border-border"
+                      )}
+                      autoComplete="username"
+                    />
+                    {errors.username && (
+                      <p className="text-sm text-error">{errors.username}</p>
+                    )}
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="font-semibold">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className={cn(
+                      "h-12 rounded-xl border-2 text-base",
+                      errors.email ? "border-error" : "border-border"
+                    )}
+                    autoComplete="email"
+                  />
+                  {errors.email && (
+                    <p className="text-sm text-error">{errors.email}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="font-semibold">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={cn(
+                      "h-12 rounded-xl border-2 text-base",
+                      errors.password ? "border-error" : "border-border"
+                    )}
+                    autoComplete={isLogin ? "current-password" : "new-password"}
+                  />
+                  {errors.password && (
+                    <p className="text-sm text-error">{errors.password}</p>
+                  )}
+                </div>
+
+                {!isLogin && (
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword" className="font-semibold">Confirm Password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="Confirm your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className={cn(
+                        "h-12 rounded-xl border-2 text-base",
+                        errors.confirmPassword ? "border-error" : "border-border"
+                      )}
+                      autoComplete="new-password"
+                    />
+                    {errors.confirmPassword && (
+                      <p className="text-sm text-error">{errors.confirmPassword}</p>
+                    )}
+                  </div>
+                )}
+
+                <Button 
+                  type="submit" 
+                  disabled={loading}
+                  className="w-full h-12 text-base font-bold rounded-xl bg-primary hover:bg-primary-light shadow-[0_4px_0_0_hsl(var(--primary-dark))] active:translate-y-1 active:shadow-none transition-all"
+                >
+                  {loading ? "Loading..." : isLogin ? "LOG IN" : "CREATE ACCOUNT"}
+                </Button>
+              </form>
+
+              <div className="mt-6 text-center">
+                <p className="text-muted-foreground text-sm">
+                  {isLogin ? "Don't have an account?" : "Already have an account?"}
+                </p>
+                <button
+                  onClick={() => {
+                    setIsLogin(!isLogin);
+                    setErrors({});
+                    setConfirmPassword("");
+                  }}
+                  className="text-primary font-bold hover:underline mt-1"
+                >
+                  {isLogin ? "SIGN UP" : "LOG IN"}
+                </button>
+              </div>
+
+              <p className="text-xs text-muted-foreground text-center mt-6">
+                By signing in to Shpoko, you agree to our Terms and Privacy Policy.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </main>
     </div>
   );
 };
