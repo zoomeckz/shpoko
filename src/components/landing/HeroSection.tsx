@@ -19,7 +19,7 @@ export function HeroSection() {
               <span className="text-primary">learn a language!</span>
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-lg mx-auto lg:mx-0">
-              Learning with Shpoko is fun and addictive. Earn points for correct answers, 
+              Learning with SHPOKO is fun and addictive. Earn points for correct answers, 
               race against the clock, and level up. Our bite-sized lessons are effective.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">

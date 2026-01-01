@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, ChevronRight, Star, Sparkles } from "lucide-react";
-import { ShpokoMascot } from "@/components/ShpokoMascot";
 import { useLanguageMode } from "@/contexts/LanguageModeContext";
 import { getTranslations } from "@/lib/translations";
 
@@ -199,7 +198,7 @@ export const ShortStories = () => {
             <BookOpen className="w-5 h-5 text-primary" />
             <CardTitle className="text-lg">{t.shortStories}</CardTitle>
           </div>
-          <ShpokoMascot size="xs" />
+          <span className="text-xl">🦝</span>
         </div>
         <p className="text-sm text-muted-foreground">
           {t.readStoriesDescription}

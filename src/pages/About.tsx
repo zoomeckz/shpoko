@@ -1,18 +1,17 @@
 import { Instagram, ArrowLeft, Youtube, Twitch } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import shpokoLogo from "@/assets/shpoko-logo.png";
 
 const About = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="flex items-center justify-between p-4 bg-background border-b border-border">
+      <header className="flex items-center justify-between p-4 bg-card border-b border-border">
         <div className="flex items-center gap-4 cursor-pointer" onClick={() => navigate("/")}>
-          <img src={shpokoLogo} alt="Shpoko mascot" className="w-12 h-12" />
-          <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Shpoko
+          <span className="text-4xl">🦝</span>
+          <h1 className="text-2xl font-extrabold text-primary">
+            SHPOKO
           </h1>
         </div>
         <Button variant="ghost" onClick={() => navigate(-1)}>
@@ -24,10 +23,10 @@ const About = () => {
       <main className="container mx-auto px-4 py-16">
         <div className="max-w-2xl mx-auto text-center space-y-8">
           
-          <h2 className="text-3xl font-bold text-foreground">About Shpoko</h2>
+          <h2 className="text-3xl font-bold text-foreground">About SHPOKO</h2>
           
           <p className="text-lg text-muted-foreground leading-relaxed">
-            Shpoko started as a project born out of frustration and lacking resources on how to learn Bulgarian in a fun and interactive way. Tested by other foreigners that study differently, know different languages as a base and people with different hobbies - there is surely something that will suit you as well!
+            SHPOKO started as a project born out of frustration and lacking resources on how to learn Bulgarian in a fun and interactive way. Tested by other foreigners that study differently, know different languages as a base and people with different hobbies - there is surely something that will suit you as well!
           </p>
 
           <div className="pt-8">

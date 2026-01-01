@@ -128,7 +128,7 @@ const Auth = () => {
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <span className="text-3xl">🦝</span>
-            <span className="text-2xl font-extrabold text-primary">shpoko</span>
+            <span className="text-2xl font-extrabold text-primary">SHPOKO</span>
           </Link>
           <Button
             variant="ghost"

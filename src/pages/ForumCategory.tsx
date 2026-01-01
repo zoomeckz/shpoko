@@ -10,7 +10,7 @@ import { ArrowLeft, Plus, MessageSquare, Eye, Clock, Pin, Lock, ChevronUp, Chevr
 import { useAuth } from "@/contexts/AuthContext";
 import { useForum, ForumCategory as CategoryType, ForumThread } from "@/hooks/useForum";
 import { useToast } from "@/hooks/use-toast";
-import { ShpokoMascot } from "@/components/ShpokoMascot";
+
 import { formatDistanceToNow } from "date-fns";
 
 const ForumCategoryPage = () => {
@@ -185,7 +185,7 @@ const ForumCategoryPage = () => {
                     </p>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
-                        <ShpokoMascot size="xs" />
+                        <span className="text-lg">🦝</span>
                         <span>{thread.author_username}</span>
                       </div>
                       <div className="flex items-center gap-1">

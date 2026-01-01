@@ -14,7 +14,7 @@ export function LandingHeader() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <span className="text-3xl">🦝</span>
-            <span className="text-2xl font-extrabold text-primary">shpoko</span>
+            <span className="text-2xl font-extrabold text-primary">SHPOKO</span>
           </Link>
 
           {/* Desktop Navigation */}

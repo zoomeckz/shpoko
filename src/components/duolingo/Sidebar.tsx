@@ -27,7 +27,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
       {/* Logo */}
       <Link to="/" className="flex items-center gap-3 px-4 py-3 mb-6">
         <span className="text-3xl">🦝</span>
-        <span className="text-2xl font-extrabold text-primary">shpoko</span>
+        <span className="text-2xl font-extrabold text-primary">SHPOKO</span>
       </Link>
 
       {/* Navigation */}
