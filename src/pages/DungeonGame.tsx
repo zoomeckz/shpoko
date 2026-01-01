@@ -7,7 +7,7 @@ import { ArrowLeft, Heart, Skull, Zap, Star, Shield, SkipForward, Gift, Swords, 
 import { useAdventure, AdventureNode } from "@/hooks/useAdventure";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorldMapSounds } from "@/hooks/useWorldMapSounds";
-import { ShpokoMascot } from "@/components/ShpokoMascot";
+
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import dungeonBg from "@/assets/dungeon-entrance.jpg";
@@ -242,7 +242,7 @@ const DungeonGame = () => {
             <CardHeader>
               <div className="mx-auto mb-4 relative">
                 <div className="absolute inset-0 bg-purple-500/20 rounded-full blur-xl animate-pulse" />
-                <ShpokoMascot size="lg" />
+                <span className="text-8xl relative z-10">🦝</span>
               </div>
               <CardTitle className="text-2xl flex items-center justify-center gap-2">
                 <Swords className="w-6 h-6 text-purple-400" />
@@ -411,7 +411,7 @@ const DungeonGame = () => {
             <CardContent className="py-8">
               <div className="relative inline-block mb-4">
                 <div className="absolute inset-0 bg-yellow-500/30 rounded-full blur-xl animate-pulse" />
-                <ShpokoMascot size="lg" />
+                <span className="text-8xl relative z-10">🦝</span>
               </div>
               <h2 className="text-3xl font-bold text-green-400 mt-4">Victory!</h2>
               <p className="text-muted-foreground mt-2">You conquered the dungeon!</p>

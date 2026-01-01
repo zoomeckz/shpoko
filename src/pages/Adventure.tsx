@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ArrowLeft, Star, Play, Skull, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ShpokoMascot } from '@/components/ShpokoMascot';
+
 
 const Adventure = () => {
   const navigate = useNavigate();
@@ -116,7 +116,7 @@ const Adventure = () => {
         <div className="text-center animate-fade-in">
           <div className="relative inline-block">
             <div className="absolute inset-0 bg-yellow-400/30 rounded-full blur-3xl animate-pulse" />
-            <div className="relative animate-bounce"><ShpokoMascot size="lg" /></div>
+            <div className="relative animate-bounce text-8xl">🦝</div>
           </div>
           <h1 className="text-5xl font-bold text-white mt-8 drop-shadow-lg" style={{ textShadow: '3px 3px 0 #000' }}>
             🗺️ Adventure Mode 🗺️
@@ -130,7 +130,7 @@ const Adventure = () => {
   if (loading) {
     return (
       <div className="fixed inset-0 bg-sky-400 flex items-center justify-center">
-        <div className="text-center"><ShpokoMascot size="lg" /><p className="mt-4 text-lg text-white font-bold animate-pulse">Loading...</p></div>
+        <div className="text-center"><span className="text-8xl">🦝</span><p className="mt-4 text-lg text-white font-bold animate-pulse">Loading...</p></div>
       </div>
     );
   }

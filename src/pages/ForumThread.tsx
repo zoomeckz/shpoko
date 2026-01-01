@@ -7,7 +7,7 @@ import { ArrowLeft, MessageSquare, Clock, ChevronUp, ChevronDown, Trash2, Send }
 import { useAuth } from "@/contexts/AuthContext";
 import { useForum, ForumThread as ThreadType, ForumPost } from "@/hooks/useForum";
 import { useToast } from "@/hooks/use-toast";
-import { ShpokoMascot } from "@/components/ShpokoMascot";
+
 import { formatDistanceToNow } from "date-fns";
 import { Separator } from "@/components/ui/separator";
 
@@ -150,7 +150,7 @@ const ForumThreadPage = () => {
                 <h1 className="text-2xl font-bold mb-2">{thread.title}</h1>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
                   <div className="flex items-center gap-2">
-                    <ShpokoMascot size="xs" />
+                    <span className="text-lg">🦝</span>
                     <span>{thread.author_username}</span>
                   </div>
                   <div className="flex items-center gap-1">
@@ -219,7 +219,7 @@ const ForumThreadPage = () => {
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <ShpokoMascot size="xs" />
+                              <span className="text-lg">🦝</span>
                               <span>{post.author_username}</span>
                               <span>•</span>
                               <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>

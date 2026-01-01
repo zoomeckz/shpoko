@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { LessonComplete } from "@/components/LessonComplete";
 import { getLessonNavigation } from "@/lib/lessonNavigation";
-import { ShpokoMascot } from "@/components/ShpokoMascot";
+
 import { useUserProgress } from "@/hooks/useUserProgress";
 
 interface TypeInQuestion {
@@ -215,7 +215,7 @@ export const FillBlanksLesson = () => {
               <CardTitle className="text-center flex-1">
                 {currentQuestion.type === "typeIn" ? "Type the transliteration" : "Fill in the blank"}
               </CardTitle>
-              <ShpokoMascot size="sm" />
+              <span className="text-4xl">🦝</span>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -351,7 +351,7 @@ export const FillBlanksLesson = () => {
                       "flex items-center justify-center gap-3 p-4 rounded-lg animate-fade-in",
                       isCorrect ? "bg-green-500/20 text-green-600" : "bg-red-500/20 text-red-600"
                     )}>
-                      <ShpokoMascot size="xs" />
+                      <span className="text-2xl">🦝</span>
                       {isCorrect ? (
                         <div className="flex items-center gap-2">
                           <Check className="w-6 h-6" />

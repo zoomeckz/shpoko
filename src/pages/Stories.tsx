@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, BookOpen, Star, Check, X, CheckCircle } from "lucide-react";
 import { Header } from "@/components/Header";
-import { ShpokoMascot } from "@/components/ShpokoMascot";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -528,7 +528,7 @@ const Stories = () => {
               <h1 className="text-2xl font-bold">Short Stories</h1>
               <p className="text-muted-foreground">Read stories and answer questions to earn XP</p>
             </div>
-            <ShpokoMascot size="sm" className="ml-auto" />
+            <span className="text-4xl ml-auto">🦝</span>
           </div>
 
           {["beginner", "intermediate", "advanced"].map((level) => {
@@ -602,7 +602,7 @@ const Stories = () => {
                 {selectedStory.level}
               </Badge>
             </div>
-            <ShpokoMascot size="sm" />
+            <span className="text-4xl">🦝</span>
           </div>
 
           <Card className="mb-6">
@@ -659,7 +659,7 @@ const Stories = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Question about "{selectedStory.title}"</CardTitle>
-                <ShpokoMascot size="sm" />
+                <span className="text-4xl">🦝</span>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -725,7 +725,7 @@ const Stories = () => {
     <div className="min-h-screen bg-background p-4 flex items-center justify-center">
       <Card className="max-w-md w-full text-center">
         <CardHeader>
-          <ShpokoMascot size="lg" className="mx-auto mb-4" />
+          <span className="text-8xl mx-auto mb-4 block">🦝</span>
           <CardTitle className="text-2xl">Story Complete!</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">

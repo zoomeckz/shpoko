@@ -22,8 +22,8 @@ export function LandingFooter() {
           <div>
             <h4 className="font-bold text-foreground mb-4">Products</h4>
             <ul className="space-y-2">
-              <li><Link to="#" className="text-muted-foreground hover:text-foreground transition-colors">Shpoko for Schools</Link></li>
-              <li><Link to="#" className="text-muted-foreground hover:text-foreground transition-colors">Shpoko English Test</Link></li>
+              <li><Link to="#" className="text-muted-foreground hover:text-foreground transition-colors">SHPOKO for Schools</Link></li>
+              <li><Link to="#" className="text-muted-foreground hover:text-foreground transition-colors">SHPOKO English Test</Link></li>
               <li><Link to="#" className="text-muted-foreground hover:text-foreground transition-colors">Podcast</Link></li>
               <li><Link to="#" className="text-muted-foreground hover:text-foreground transition-colors">Stories</Link></li>
             </ul>
@@ -63,10 +63,10 @@ export function LandingFooter() {
         <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🦝</span>
-            <span className="text-xl font-extrabold text-primary">shpoko</span>
+            <span className="text-xl font-extrabold text-primary">SHPOKO</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Shpoko. All rights reserved.
+            © {new Date().getFullYear()} SHPOKO. All rights reserved.
           </p>
         </div>
       </div>

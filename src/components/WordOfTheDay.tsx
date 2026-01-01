@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { ShpokoMascot } from "@/components/ShpokoMascot";
 import { useLanguageMode } from "@/contexts/LanguageModeContext";
 import { getTranslations } from "@/lib/translations";
 
@@ -646,7 +645,7 @@ export const WordOfTheDay = () => {
     return (
       <Card className="p-3 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <ShpokoMascot size="xs" />
+          <span className="text-xl">🦝</span>
           <h2 className="text-sm font-bold text-foreground">{t.wordOfTheDay}</h2>
         </div>
 
@@ -688,7 +687,7 @@ export const WordOfTheDay = () => {
   return (
     <Card className="p-3 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
       <div className="flex items-center justify-center gap-2 mb-2">
-        <ShpokoMascot size="xs" />
+        <span className="text-xl">🦝</span>
         <h2 className="text-sm font-bold text-foreground">{t.wordOfTheDay}</h2>
       </div>
 
