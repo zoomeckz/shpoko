@@ -5,17 +5,10 @@ import { Sidebar } from "@/components/duolingo/Sidebar";
 import { TopBar } from "@/components/duolingo/TopBar";
 import { LessonPath } from "@/components/duolingo/LessonPath";
 import { RightSidebar } from "@/components/duolingo/RightSidebar";
-import { ShpokoGreetingCard } from "@/components/duolingo/ShpokoGreetingCard";
+import Landing from "@/pages/Landing";
 
 const Index = () => {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/auth");
-    }
-  }, [user, loading, navigate]);
 
   if (loading) {
     return (
@@ -25,8 +18,9 @@ const Index = () => {
     );
   }
 
+  // Show landing page for non-authenticated users
   if (!user) {
-    return null;
+    return <Landing />;
   }
 
   return (

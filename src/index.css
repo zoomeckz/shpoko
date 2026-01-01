@@ -2,126 +2,120 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Duolingo-inspired Design System with Facebook Blue */
 
 @layer base {
   :root {
-    --background: 214 100% 99%;
-    --foreground: 214 50% 10%;
-
-    --card: 214 100% 99%;
-    --card-foreground: 214 50% 10%;
-
-    --popover: 214 100% 99%;
-    --popover-foreground: 214 50% 10%;
-
-    /* Facebook-inspired blue primary */
-    --primary: 214 89% 52%;
+    /* Facebook Blue Primary Palette */
+    --primary: 214 89% 52%;           /* #1877F2 */
     --primary-foreground: 0 0% 100%;
-    --primary-light: 214 89% 62%;
-    --primary-dark: 214 89% 42%;
-
-    /* Bulgarian flag inspired colors */
-    --bulgarian-green: 120 100% 25%;
-    --bulgarian-red: 0 85% 50%;
-    --bulgarian-white: 0 0% 98%;
-
-    /* Learning progress colors */
-    --success: 142 76% 36%;
+    --primary-light: 214 89% 65%;     /* #4A9EFF hover */
+    --primary-dark: 214 89% 41%;      /* #1565C0 emphasis */
+    
+    /* Background & Surface */
+    --background: 0 0% 97%;           /* #F7F7F7 */
+    --foreground: 0 0% 24%;           /* #3C3C3C */
+    
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 24%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 24%;
+    
+    /* Success/Error - kept standard */
+    --success: 122 39% 49%;           /* #4CAF50 */
     --success-foreground: 0 0% 100%;
+    --success-dark: 122 39% 39%;
+    
+    --error: 4 90% 58%;               /* #F44336 */
+    --error-foreground: 0 0% 100%;
+    
     --warning: 45 100% 51%;
     --warning-foreground: 0 0% 10%;
-    --error: 0 85% 50%;
-    --error-foreground: 0 0% 100%;
-
-    /* Blue-tinted secondary and muted (replacing grey) */
-    --secondary: 214 40% 96%;
-    --secondary-foreground: 214 50% 25%;
-
-    --muted: 214 30% 94%;
-    --muted-foreground: 214 20% 45%;
-
-    --accent: 214 50% 92%;
-    --accent-foreground: 214 50% 25%;
-
-    --destructive: 0 85% 50%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 214 30% 88%;
-    --input: 214 30% 94%;
-    --ring: 214 89% 52%;
-
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
-    --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(142 76% 46%));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
     
-    /* Shadows - blue tinted */
-    --shadow-soft: 0 4px 15px -3px hsl(var(--primary) / 0.15);
-    --shadow-strong: 0 10px 30px -5px hsl(var(--primary) / 0.25);
-    --shadow-glow: 0 0 30px hsl(var(--primary) / 0.35);
-
+    /* Secondary & Muted */
+    --secondary: 214 20% 96%;
+    --secondary-foreground: 214 30% 30%;
+    
+    --muted: 214 15% 91%;
+    --muted-foreground: 214 10% 45%;
+    
+    --accent: 214 30% 94%;
+    --accent-foreground: 214 50% 25%;
+    
+    --destructive: 4 90% 58%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 214 20% 88%;
+    --input: 214 20% 94%;
+    --ring: 214 89% 52%;
+    
+    /* Duolingo-style shadows */
+    --shadow-button: 0 4px 0 0;
+    --shadow-card: 0 2px 10px -2px hsl(0 0% 0% / 0.08);
+    --shadow-elevated: 0 8px 30px -10px hsl(0 0% 0% / 0.15);
+    
     --radius: 1rem;
-
-    --sidebar-background: 214 40% 98%;
-    --sidebar-foreground: 214 30% 26%;
-    --sidebar-primary: 214 50% 15%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 214 30% 95%;
-    --sidebar-accent-foreground: 214 50% 15%;
-    --sidebar-border: 214 25% 90%;
+    
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 24%;
+    --sidebar-primary: 214 89% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 214 20% 96%;
+    --sidebar-accent-foreground: 214 30% 30%;
+    --sidebar-border: 214 20% 92%;
     --sidebar-ring: 214 89% 52%;
   }
 
   .dark {
-    --background: 214 40% 8%;
-    --foreground: 214 20% 95%;
-
-    --card: 214 40% 10%;
-    --card-foreground: 214 20% 95%;
-
-    --popover: 214 40% 10%;
-    --popover-foreground: 214 20% 95%;
-
-    /* Facebook blue - slightly brighter in dark mode */
     --primary: 214 89% 60%;
-    --primary-foreground: 214 40% 8%;
+    --primary-foreground: 0 0% 100%;
     --primary-light: 214 89% 70%;
     --primary-dark: 214 89% 50%;
-
-    --success: 142 76% 46%;
-    --success-foreground: 214 40% 8%;
-    --warning: 45 100% 55%;
-    --warning-foreground: 214 40% 8%;
-    --error: 0 85% 55%;
+    
+    --background: 220 15% 10%;
+    --foreground: 0 0% 95%;
+    
+    --card: 220 15% 13%;
+    --card-foreground: 0 0% 95%;
+    
+    --popover: 220 15% 13%;
+    --popover-foreground: 0 0% 95%;
+    
+    --success: 122 39% 55%;
+    --success-foreground: 0 0% 100%;
+    --success-dark: 122 39% 45%;
+    
+    --error: 4 90% 62%;
     --error-foreground: 0 0% 100%;
-
-    /* Blue-tinted dark mode */
-    --secondary: 214 40% 15%;
-    --secondary-foreground: 214 20% 90%;
-
-    --muted: 214 35% 12%;
-    --muted-foreground: 214 20% 60%;
-
-    --accent: 214 45% 18%;
-    --accent-foreground: 214 30% 92%;
-
-    --destructive: 0 85% 55%;
+    
+    --warning: 45 100% 55%;
+    --warning-foreground: 0 0% 10%;
+    
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 0 0% 90%;
+    
+    --muted: 220 15% 15%;
+    --muted-foreground: 0 0% 60%;
+    
+    --accent: 220 15% 20%;
+    --accent-foreground: 0 0% 95%;
+    
+    --destructive: 4 90% 62%;
     --destructive-foreground: 0 0% 100%;
-
-    --border: 214 35% 20%;
-    --input: 214 35% 15%;
+    
+    --border: 220 15% 22%;
+    --input: 220 15% 18%;
     --ring: 214 89% 60%;
     
-    --sidebar-background: 214 40% 10%;
-    --sidebar-foreground: 214 20% 95%;
+    --sidebar-background: 220 15% 10%;
+    --sidebar-foreground: 0 0% 95%;
     --sidebar-primary: 214 89% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 214 35% 15%;
-    --sidebar-accent-foreground: 214 20% 95%;
-    --sidebar-border: 214 35% 18%;
+    --sidebar-accent: 220 15% 18%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 220 15% 20%;
     --sidebar-ring: 214 89% 60%;
   }
 }
@@ -133,38 +127,148 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 700;
   }
 }
 
-/* Shpoko mascot animations */
+/* Duolingo-style button with 3D effect */
+@layer components {
+  .duo-button {
+    @apply relative font-bold uppercase tracking-wide rounded-2xl transition-all duration-150;
+    @apply active:translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  
+  .duo-button-primary {
+    @apply bg-primary text-primary-foreground;
+    box-shadow: 0 4px 0 0 hsl(var(--primary-dark));
+  }
+  
+  .duo-button-primary:hover:not(:disabled) {
+    @apply brightness-110;
+  }
+  
+  .duo-button-primary:active {
+    box-shadow: none;
+  }
+  
+  .duo-button-success {
+    @apply bg-success text-success-foreground;
+    box-shadow: 0 4px 0 0 hsl(var(--success-dark));
+  }
+  
+  .duo-button-secondary {
+    @apply bg-card text-foreground border-2 border-border;
+    box-shadow: 0 4px 0 0 hsl(var(--border));
+  }
+}
+
+/* Animations */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes count-up {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes bounce-in {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-up {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
 @keyframes wiggle {
   0%, 100% { transform: rotate(-3deg); }
   50% { transform: rotate(3deg); }
 }
 
-@keyframes tilt {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-10deg); }
-  75% { transform: rotate(10deg); }
-}
-
 @keyframes jump {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-15px); }
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+@keyframes sad-shake {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(-3px) rotate(-2deg); }
+  75% { transform: translateX(3px) rotate(2deg); }
 }
 
-@keyframes wave {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(20deg); }
-  75% { transform: rotate(-20deg); }
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
 }
 
-@keyframes nod {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(3px); }
+@layer utilities {
+  .animate-shake {
+    animation: shake 0.5s ease-in-out;
+  }
+  
+  .animate-confetti {
+    animation: confetti-fall 3s ease-out forwards;
+  }
+  
+  .animate-pulse-ring {
+    animation: pulse-ring 1s ease-out infinite;
+  }
+  
+  .animate-count-up {
+    animation: count-up 0.3s ease-out;
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .animate-bounce-in {
+    animation: bounce-in 0.4s ease-out;
+  }
+  
+  .animate-slide-up {
+    animation: slide-up 0.4s ease-out;
+  }
+  
+  .animate-wiggle {
+    animation: wiggle 0.5s ease-in-out infinite;
+  }
+  
+  .animate-jump {
+    animation: jump 0.6s ease-in-out;
+  }
+  
+  .animate-sad {
+    animation: sad-shake 0.4s ease-in-out;
+  }
+  
+  .animate-breathe {
+    animation: breathe 3s ease-in-out infinite;
+  }
 }
