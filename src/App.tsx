@@ -72,6 +72,14 @@ import Adventure from "./pages/Adventure";
 import DungeonGame from "./pages/DungeonGame";
 import Flashcards from "./pages/Flashcards";
 import FlashcardStudy from "./pages/FlashcardStudy";
+// Lesson Screen
+import LessonScreen from "./pages/LessonScreen";
+// Forum & Roguelike
+import Forum from "./pages/Forum";
+import ForumCategory from "./pages/ForumCategory";
+import ForumThread from "./pages/ForumThread";
+import RoguelikeMap from "./pages/RoguelikeMap";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -152,6 +160,15 @@ const App = () => (
               {/* Flashcards */}
               <Route path="/flashcards" element={<Flashcards />} />
               <Route path="/flashcards/:deckId" element={<FlashcardStudy />} />
+              {/* Lesson Screen */}
+              <Route path="/learn" element={<LessonScreen />} />
+              <Route path="/learn/:lessonId" element={<LessonScreen />} />
+              {/* Forum */}
+              <Route path="/forum" element={<Forum />} />
+              <Route path="/forum/:categoryId" element={<ForumCategory />} />
+              <Route path="/forum/thread/:threadId" element={<ForumThread />} />
+              {/* Roguelike */}
+              <Route path="/roguelike" element={<RoguelikeMap />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </LanguageModeProvider>
