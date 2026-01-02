@@ -79,6 +79,8 @@ import Forum from "./pages/Forum";
 import ForumCategory from "./pages/ForumCategory";
 import ForumThread from "./pages/ForumThread";
 import RoguelikeMap from "./pages/RoguelikeMap";
+// Mini Games
+import ShpokoFruitGame from "./pages/ShpokoFruitGame";
 
 const queryClient = new QueryClient();
 
@@ -167,8 +169,10 @@ const App = () => (
               <Route path="/forum" element={<Forum />} />
               <Route path="/forum/:categoryId" element={<ForumCategory />} />
               <Route path="/forum/thread/:threadId" element={<ForumThread />} />
-              {/* Roguelike */}
+{/* Roguelike */}
               <Route path="/roguelike" element={<RoguelikeMap />} />
+              {/* Mini Games */}
+              <Route path="/game/fruit-slicer" element={<ShpokoFruitGame />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </LanguageModeProvider>
