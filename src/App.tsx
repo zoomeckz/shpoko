@@ -81,6 +81,9 @@ import ForumThread from "./pages/ForumThread";
 import RoguelikeMap from "./pages/RoguelikeMap";
 // Mini Games
 import ShpokoFruitGame from "./pages/ShpokoFruitGame";
+// Profile & Quests
+import Profile from "./pages/Profile";
+import Quests from "./pages/Quests";
 
 const queryClient = new QueryClient();
 
@@ -173,6 +176,9 @@ const App = () => (
               <Route path="/roguelike" element={<RoguelikeMap />} />
               {/* Mini Games */}
               <Route path="/game/fruit-slicer" element={<ShpokoFruitGame />} />
+              {/* Profile & Quests */}
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/quests" element={<Quests />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </LanguageModeProvider>
