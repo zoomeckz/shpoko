@@ -1,11 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Volume2, VolumeX, Play, Pause, SkipBack, SkipForward, ArrowLeft } from 'lucide-react';
+import { Volume2, VolumeX, Play, Pause, SkipBack, SkipForward, ArrowLeft, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+
+interface WordData {
+  emoji: string;
+  word: string;
+  romanized: string;
+  meaning: string;
+}
 
 const ShpokoFruitGame = () => {
   const navigate = useNavigate();
-  const [gameState, setGameState] = useState<'loading' | 'menu' | 'playing' | 'paused'>('loading');
+  const { user, updateXP } = useAuth();
+  const { toast } = useToast();
+  const [gameState, setGameState] = useState<'loading' | 'menu' | 'playing' | 'paused' | 'gameover'>('loading');
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [score, setScore] = useState(0);
   const [misses, setMisses] = useState(0);
@@ -19,6 +30,7 @@ const ShpokoFruitGame = () => {
   const [currentTrack, setCurrentTrack] = useState(0);
   const [timeLeft, setTimeLeft] = useState(60);
   const [difficulty, setDifficulty] = useState(1);
+  const [xpAwarded, setXpAwarded] = useState(0);
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
@@ -34,46 +46,46 @@ const ShpokoFruitGame = () => {
     { title: "SHPOKO - Smell", url: "https://github.com/Anyonebutsam/awsoon/raw/main/src/Shpoko%20-%20Smell.mp3" }
   ];
 
-  const topics: Record<string, {emoji: string; word: string; meaning: string}[]> = {
+  const topics: Record<string, WordData[]> = {
     food: [
-      { emoji: '🍎', word: 'ябълка', meaning: 'apple' },
-      { emoji: '🍌', word: 'банан', meaning: 'banana' },
-      { emoji: '🍊', word: 'портокал', meaning: 'orange' },
-      { emoji: '🍇', word: 'грозде', meaning: 'grapes' },
-      { emoji: '🍓', word: 'ягода', meaning: 'strawberry' },
-      { emoji: '🍉', word: 'диня', meaning: 'watermelon' },
-      { emoji: '🍞', word: 'хляб', meaning: 'bread' },
-      { emoji: '🧀', word: 'сирене', meaning: 'cheese' }
+      { emoji: '🍎', word: 'ябълка', romanized: 'yabalka', meaning: 'apple' },
+      { emoji: '🍌', word: 'банан', romanized: 'banan', meaning: 'banana' },
+      { emoji: '🍊', word: 'портокал', romanized: 'portokal', meaning: 'orange' },
+      { emoji: '🍇', word: 'грозде', romanized: 'grozde', meaning: 'grapes' },
+      { emoji: '🍓', word: 'ягода', romanized: 'yagoda', meaning: 'strawberry' },
+      { emoji: '🍉', word: 'диня', romanized: 'dinya', meaning: 'watermelon' },
+      { emoji: '🍞', word: 'хляб', romanized: 'hlyab', meaning: 'bread' },
+      { emoji: '🧀', word: 'сирене', romanized: 'sirene', meaning: 'cheese' }
     ],
     animals: [
-      { emoji: '🐱', word: 'котка', meaning: 'cat' },
-      { emoji: '🐶', word: 'куче', meaning: 'dog' },
-      { emoji: '🐦', word: 'птица', meaning: 'bird' },
-      { emoji: '🐟', word: 'риба', meaning: 'fish' },
-      { emoji: '🐻', word: 'мечка', meaning: 'bear' },
-      { emoji: '🦊', word: 'лисица', meaning: 'fox' },
-      { emoji: '🐰', word: 'заек', meaning: 'rabbit' },
-      { emoji: '🦝', word: 'миеща мечка', meaning: 'raccoon' }
+      { emoji: '🐱', word: 'котка', romanized: 'kotka', meaning: 'cat' },
+      { emoji: '🐶', word: 'куче', romanized: 'kuche', meaning: 'dog' },
+      { emoji: '🐦', word: 'птица', romanized: 'ptitsa', meaning: 'bird' },
+      { emoji: '🐟', word: 'риба', romanized: 'riba', meaning: 'fish' },
+      { emoji: '🐻', word: 'мечка', romanized: 'mechka', meaning: 'bear' },
+      { emoji: '🦊', word: 'лисица', romanized: 'lisitsa', meaning: 'fox' },
+      { emoji: '🐰', word: 'заек', romanized: 'zaek', meaning: 'rabbit' },
+      { emoji: '🦝', word: 'миеща мечка', romanized: 'mieshta mechka', meaning: 'raccoon' }
     ],
     objects: [
-      { emoji: '📱', word: 'телефон', meaning: 'phone' },
-      { emoji: '📚', word: 'книга', meaning: 'book' },
-      { emoji: '✏️', word: 'молив', meaning: 'pencil' },
-      { emoji: '🎒', word: 'раница', meaning: 'backpack' },
-      { emoji: '⌚', word: 'часовник', meaning: 'watch' },
-      { emoji: '🔑', word: 'ключ', meaning: 'key' },
-      { emoji: '💡', word: 'крушка', meaning: 'light bulb' },
-      { emoji: '🚗', word: 'кола', meaning: 'car' }
+      { emoji: '📱', word: 'телефон', romanized: 'telefon', meaning: 'phone' },
+      { emoji: '📚', word: 'книга', romanized: 'kniga', meaning: 'book' },
+      { emoji: '✏️', word: 'молив', romanized: 'moliv', meaning: 'pencil' },
+      { emoji: '🎒', word: 'раница', romanized: 'ranitsa', meaning: 'backpack' },
+      { emoji: '⌚', word: 'часовник', romanized: 'chasovnik', meaning: 'watch' },
+      { emoji: '🔑', word: 'ключ', romanized: 'klyuch', meaning: 'key' },
+      { emoji: '💡', word: 'крушка', romanized: 'krushka', meaning: 'light bulb' },
+      { emoji: '🚗', word: 'кола', romanized: 'kola', meaning: 'car' }
     ],
     nature: [
-      { emoji: '🌳', word: 'дърво', meaning: 'tree' },
-      { emoji: '🌸', word: 'цвете', meaning: 'flower' },
-      { emoji: '🌞', word: 'слънце', meaning: 'sun' },
-      { emoji: '🌙', word: 'луна', meaning: 'moon' },
-      { emoji: '⭐', word: 'звезда', meaning: 'star' },
-      { emoji: '🌊', word: 'вълна', meaning: 'wave' },
-      { emoji: '🔥', word: 'огън', meaning: 'fire' },
-      { emoji: '💧', word: 'капка', meaning: 'drop' }
+      { emoji: '🌳', word: 'дърво', romanized: 'darvo', meaning: 'tree' },
+      { emoji: '🌸', word: 'цвете', romanized: 'tsvete', meaning: 'flower' },
+      { emoji: '🌞', word: 'слънце', romanized: 'slantse', meaning: 'sun' },
+      { emoji: '🌙', word: 'луна', romanized: 'luna', meaning: 'moon' },
+      { emoji: '⭐', word: 'звезда', romanized: 'zvezda', meaning: 'star' },
+      { emoji: '🌊', word: 'вълна', romanized: 'valna', meaning: 'wave' },
+      { emoji: '🔥', word: 'огън', romanized: 'ogan', meaning: 'fire' },
+      { emoji: '💧', word: 'капка', romanized: 'kapka', meaning: 'drop' }
     ]
   };
 
@@ -182,7 +194,7 @@ const ShpokoFruitGame = () => {
     const timerInterval = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
-          setGameState('menu');
+          handleGameOver();
           return 60;
         }
         return prev - 1;
@@ -191,6 +203,23 @@ const ShpokoFruitGame = () => {
 
     return () => clearInterval(timerInterval);
   }, [gameState]);
+
+  const handleGameOver = async () => {
+    setGameState('gameover');
+    handleAudioPause();
+    
+    // Calculate XP based on score (1 XP per 10 points scored)
+    const earnedXP = Math.floor(score / 10);
+    setXpAwarded(earnedXP);
+    
+    if (user && earnedXP > 0) {
+      await updateXP(earnedXP);
+      toast({
+        title: "Game Over!",
+        description: `You earned ${earnedXP} XP!`,
+      });
+    }
+  };
 
   // Increase difficulty
   useEffect(() => {
@@ -317,6 +346,7 @@ const ShpokoFruitGame = () => {
     setSlicedWords(prev => [...prev, {
       id: emoji.id,
       word: emoji.word,
+      romanized: emoji.romanized,
       meaning: emoji.meaning,
       x: emoji.x,
       y: emoji.y,
@@ -482,6 +512,55 @@ const ShpokoFruitGame = () => {
         </div>
       )}
 
+      {/* Game Over Screen */}
+      {gameState === 'gameover' && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
+          <div className="bg-white p-8 rounded-3xl shadow-2xl border-b-8 border-primary max-w-sm w-full mx-4 text-center">
+            <div className="text-6xl mb-4">🦝</div>
+            <h2 className="text-4xl font-black text-gray-800 font-nunito mb-4">
+              GAME OVER
+            </h2>
+            
+            <div className="bg-gray-100 rounded-2xl p-4 mb-6 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 font-bold">Score</span>
+                <span className="text-2xl font-black text-primary">{score}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 font-bold">Misses</span>
+                <span className="text-xl font-bold text-destructive">{misses}</span>
+              </div>
+              <div className="border-t border-gray-300 pt-2 flex justify-between items-center">
+                <span className="text-gray-600 font-bold flex items-center gap-1">
+                  <Zap className="w-5 h-5 text-primary" /> XP Earned
+                </span>
+                <span className="text-2xl font-black text-primary">+{xpAwarded}</span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setGameState('menu');
+                  setScore(0);
+                  setMisses(0);
+                  setXpAwarded(0);
+                }}
+                className="w-full py-4 bg-primary text-white rounded-2xl font-black text-lg hover:bg-primary/90 transition-all transform active:scale-95 border-b-4 border-primary-dark font-nunito"
+              >
+                PLAY AGAIN
+              </button>
+              <button
+                onClick={() => navigate('/')}
+                className="w-full py-3 bg-gray-200 text-gray-700 rounded-2xl font-bold text-lg hover:bg-gray-300 transition-all transform active:scale-95 font-nunito"
+              >
+                Back to Home
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Game Area */}
       <div className="w-full h-full relative">
         <div 
@@ -604,10 +683,13 @@ const ShpokoFruitGame = () => {
               }}
             >
               <div className="bg-white bg-opacity-95 px-6 py-3 rounded-2xl shadow-xl border-b-4 border-primary">
-                <div className="text-3xl font-black text-primary font-nunito">
+                <div className="text-2xl font-black text-primary font-nunito">
                   {word.word}
                 </div>
-                <div className="text-xl font-bold text-gray-600 font-nunito">
+                <div className="text-base font-medium text-muted-foreground italic font-nunito">
+                  {word.romanized}
+                </div>
+                <div className="text-lg font-bold text-gray-600 font-nunito">
                   {word.meaning}
                 </div>
               </div>

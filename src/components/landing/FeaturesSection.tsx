@@ -46,7 +46,7 @@ export function FeaturesSection() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground">
-            Why learners love Shpoko
+            Why learners love SHPOKO
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
             The world's most popular way to learn languages online. 

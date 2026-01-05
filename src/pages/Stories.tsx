@@ -403,15 +403,21 @@ const HoverableWord = ({ word }: { word: Word }) => {
     <Tooltip delayDuration={0}>
       <TooltipTrigger asChild>
         <span className="cursor-help hover:bg-primary/20 hover:text-primary px-0.5 rounded transition-colors inline-block">
-          {word.bulgarian}
+          <span className="block">{word.bulgarian}</span>
         </span>
       </TooltipTrigger>
       <TooltipContent side="top" className="text-center">
-        <div className="font-medium">{word.romanized}</div>
-        <div className="text-sm font-medium text-primary">{word.meaning}</div>
+        <div className="font-bold text-lg">{word.bulgarian}</div>
+        <div className="font-medium text-muted-foreground">{word.romanized}</div>
+        <div className="text-sm font-medium text-primary mt-1">{word.meaning}</div>
       </TooltipContent>
     </Tooltip>
   );
+};
+
+// Helper to get full sentence romanization
+const getSentenceRomanized = (sentence: Word[]): string => {
+  return sentence.map(w => w.romanized).join(" ");
 };
 
 const Stories = () => {
@@ -607,21 +613,28 @@ const Stories = () => {
 
           <Card className="mb-6">
             <CardContent className="pt-6">
-              <div className="space-y-4 text-xl leading-relaxed text-center">
+              <div className="space-y-6 text-xl leading-relaxed">
                 {selectedStory.sentences.map((sentence, sentenceIndex) => (
-                  <p key={sentenceIndex}>
-                    {sentence.map((word, wordIndex) => (
-                      <span key={wordIndex}>
-                        <HoverableWord word={word} />
-                        {wordIndex < sentence.length - 1 && " "}
-                      </span>
-                    ))}
-                  </p>
+                  <div key={sentenceIndex} className="text-center space-y-1">
+                    {/* Bulgarian Cyrillic */}
+                    <p className="text-xl font-bold">
+                      {sentence.map((word, wordIndex) => (
+                        <span key={wordIndex}>
+                          <HoverableWord word={word} />
+                          {wordIndex < sentence.length - 1 && " "}
+                        </span>
+                      ))}
+                    </p>
+                    {/* Romanization always visible */}
+                    <p className="text-base text-muted-foreground italic">
+                      {getSentenceRomanized(sentence)}
+                    </p>
+                  </div>
                 ))}
               </div>
 
-              <p className="text-sm text-muted-foreground mt-6 italic">
-                Hover over any word to see its romanization and meaning.
+              <p className="text-sm text-muted-foreground mt-6 italic text-center">
+                Tap any word to see its meaning.
               </p>
             </CardContent>
           </Card>
