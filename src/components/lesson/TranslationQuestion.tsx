@@ -4,13 +4,15 @@ import { Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { fuzzyMatchAnswer, FuzzyMatchResult } from "@/lib/fuzzyMatch";
 
 interface TranslationQuestionProps {
   sourceText: string;
   sourceLanguage: string;
   targetLanguage: string;
   correctAnswers: string[]; // Allow multiple correct answers
-  onAnswer: (isCorrect: boolean, answer: string) => void;
+  romanized?: string; // Romanized version of the source text
+  onAnswer: (isCorrect: boolean, answer: string, isPartial?: boolean) => void;
 }
 
 export function TranslationQuestion({
@@ -18,23 +20,23 @@ export function TranslationQuestion({
   sourceLanguage,
   targetLanguage,
   correctAnswers,
+  romanized,
   onAnswer,
 }: TranslationQuestionProps) {
   const [answer, setAnswer] = useState("");
   const [hasChecked, setHasChecked] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
+  const [matchResult, setMatchResult] = useState<FuzzyMatchResult | null>(null);
 
   const handleCheck = () => {
     if (!answer.trim() || hasChecked) return;
     setHasChecked(true);
     
-    const normalizedAnswer = answer.trim().toLowerCase();
-    const correct = correctAnswers.some(
-      ca => ca.toLowerCase() === normalizedAnswer
-    );
+    const result = fuzzyMatchAnswer(answer, correctAnswers);
+    setMatchResult(result);
     
-    setIsCorrect(correct);
-    onAnswer(correct, answer);
+    // Report as correct if exact or close, with partial flag for close answers
+    const isCorrectOrClose = result.isExact || result.isClose;
+    onAnswer(isCorrectOrClose, answer, result.isClose);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -42,6 +44,10 @@ export function TranslationQuestion({
       handleCheck();
     }
   };
+
+  const isExact = matchResult?.isExact ?? false;
+  const isClose = matchResult?.isClose ?? false;
+  const isWrong = matchResult?.isWrong ?? false;
 
   return (
     <div className="space-y-6">
@@ -58,6 +64,11 @@ export function TranslationQuestion({
             <p className="text-xl sm:text-2xl font-bold text-foreground">
               {sourceText}
             </p>
+            {romanized && (
+              <p className="text-base text-muted-foreground italic mt-1">
+                {romanized}
+              </p>
+            )}
             <p className="text-sm text-muted-foreground mt-1">
               {sourceLanguage} → {targetLanguage}
             </p>
@@ -75,8 +86,9 @@ export function TranslationQuestion({
           placeholder="Type your translation..."
           className={cn(
             "text-lg py-6 px-4 rounded-xl border-2 transition-all",
-            hasChecked && isCorrect && "border-success bg-success/5",
-            hasChecked && !isCorrect && "border-error bg-error/5 animate-shake"
+            hasChecked && isExact && "border-success bg-success/5",
+            hasChecked && isClose && "border-warning bg-warning/5",
+            hasChecked && isWrong && "border-error bg-error/5 animate-shake"
           )}
         />
         
@@ -86,11 +98,17 @@ export function TranslationQuestion({
             animate={{ opacity: 1, y: 0 }}
             className={cn(
               "mt-3 p-3 rounded-xl text-sm font-medium",
-              isCorrect ? "bg-success/10 text-success" : "bg-error/10 text-error"
+              isExact && "bg-success/10 text-success",
+              isClose && "bg-warning/10 text-warning",
+              isWrong && "bg-error/10 text-error"
             )}
           >
-            {isCorrect ? (
+            {isExact ? (
               <span>Great job! 🎉</span>
+            ) : isClose ? (
+              <span>
+                Almost! Your answer is acceptable, but the best answer is: <strong>{correctAnswers[0]}</strong>
+              </span>
             ) : (
               <span>
                 Correct answer: <strong>{correctAnswers[0]}</strong>

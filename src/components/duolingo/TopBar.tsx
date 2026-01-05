@@ -1,10 +1,11 @@
 import { cn } from "@/lib/utils";
-import { Flame, Heart, Zap, Crown, Menu, X, Home, Trophy, Target, User, LogOut } from "lucide-react";
+import { Flame, Heart, Zap, Crown, Menu, X, Home, Trophy, Target, User, LogOut, Gamepad2, Apple, Swords, Dices, BookOpen } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { motion, AnimatePresence } from "framer-motion";
+import { Separator } from "@/components/ui/separator";
 
 interface TopBarProps {
   className?: string;
@@ -15,6 +16,13 @@ const navItems = [
   { icon: Trophy, label: "Leaderboards", path: "/leaderboard" },
   { icon: Target, label: "Quests", path: "/quests" },
   { icon: User, label: "Profile", path: "/profile" },
+];
+
+const gameItems = [
+  { icon: Apple, label: "Fruit Slicer", path: "/game/fruit-slicer" },
+  { icon: Swords, label: "Dialogue Battle", path: "/game/dialogue-battle" },
+  { icon: Dices, label: "Rapid Fire", path: "/game/rapid-fire" },
+  { icon: Gamepad2, label: "Conjugation", path: "/game/conjugation" },
 ];
 
 export const TopBar = ({ className }: TopBarProps) => {
@@ -101,7 +109,7 @@ export const TopBar = ({ className }: TopBarProps) => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm lg:hidden"
           >
-            <div className="flex flex-col h-full p-4">
+            <div className="flex flex-col h-full p-4 overflow-y-auto">
               {/* Header */}
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
@@ -135,6 +143,55 @@ export const TopBar = ({ className }: TopBarProps) => {
               {/* Menu items */}
               <div className="flex-1 space-y-2">
                 {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.path;
+                  
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        "flex items-center gap-4 px-4 py-3 rounded-xl font-bold transition-colors",
+                        isActive 
+                          ? "bg-primary/10 text-primary" 
+                          : "text-foreground hover:bg-accent"
+                      )}
+                    >
+                      <Icon className="w-6 h-6" />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+
+                <Link
+                  to="/stories"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center gap-4 px-4 py-3 rounded-xl font-bold transition-colors",
+                    location.pathname === "/stories"
+                      ? "bg-primary/10 text-primary" 
+                      : "text-foreground hover:bg-accent"
+                  )}
+                >
+                  <BookOpen className="w-6 h-6" />
+                  <span>Stories</span>
+                </Link>
+
+                {/* Separator */}
+                <div className="py-3">
+                  <Separator />
+                </div>
+
+                {/* Games Section */}
+                <div className="px-4 py-2">
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                    <Gamepad2 className="w-4 h-4" />
+                    Games
+                  </p>
+                </div>
+                
+                {gameItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
                   

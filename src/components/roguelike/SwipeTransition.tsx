@@ -72,7 +72,7 @@ export function SwipeTransition({
     >
       {children || (
         <div className="text-primary-foreground text-4xl font-bold">
-          Shpoko
+          SHPOKO
         </div>
       )}
     </div>
