@@ -1,10 +1,9 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Sidebar } from "@/components/duolingo/Sidebar";
 import { TopBar } from "@/components/duolingo/TopBar";
 import { LessonPath } from "@/components/duolingo/LessonPath";
 import { RightSidebar } from "@/components/duolingo/RightSidebar";
+import { DailyLoginBonus } from "@/components/DailyLoginBonus";
 import Landing from "@/pages/Landing";
 
 const Index = () => {
@@ -25,6 +24,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Daily Login Bonus Modal */}
+      <DailyLoginBonus />
+      
       {/* Mobile top bar */}
       <TopBar />
       

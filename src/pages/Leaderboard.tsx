@@ -2,14 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Header } from "@/components/Header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Crown, Medal, ArrowLeft } from "lucide-react";
+import { Trophy, Crown, Medal, ArrowLeft, Flame, Star, Sparkles } from "lucide-react";
 import { ProfilePicture } from "@/components/ProfilePictureSelector";
-import { HallOfFame } from "@/components/HallOfFame";
-import { AdminChangeUsername } from "@/components/AdminChangeUsername";
 import { cn } from "@/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface LeaderboardEntry {
   id: string;
@@ -18,6 +16,7 @@ interface LeaderboardEntry {
   level: number;
   is_premium: boolean;
   profile_picture: string | null;
+  streak?: number;
 }
 
 const Leaderboard = () => {
@@ -29,20 +28,12 @@ const Leaderboard = () => {
   useEffect(() => {
     fetchLeaderboard();
 
-    // Subscribe to real-time updates on profiles table
     const channel = supabase
       .channel("leaderboard-updates")
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "profiles"
-        },
-        () => {
-          // Refetch leaderboard when any profile changes
-          fetchLeaderboard();
-        }
+        { event: "*", schema: "public", table: "profiles" },
+        () => fetchLeaderboard()
       )
       .subscribe();
 
@@ -63,117 +54,154 @@ const Leaderboard = () => {
   };
 
   const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Trophy className="w-8 h-8 text-yellow-500" />;
-    if (rank === 2) return <Medal className="w-8 h-8 text-gray-400" />;
-    if (rank === 3) return <Medal className="w-8 h-8 text-amber-600" />;
-    return <span className="w-8 h-8 flex items-center justify-center text-lg font-bold text-muted-foreground">#{rank}</span>;
+    if (rank === 1) return <Trophy className="w-6 h-6 text-yellow-500" />;
+    if (rank === 2) return <Medal className="w-6 h-6 text-gray-400" />;
+    if (rank === 3) return <Medal className="w-6 h-6 text-amber-600" />;
+    return <span className="w-6 h-6 flex items-center justify-center text-sm font-bold text-muted-foreground">#{rank}</span>;
+  };
+
+  const getRankBg = (rank: number) => {
+    if (rank === 1) return "bg-gradient-to-r from-yellow-500/20 to-yellow-500/5 border-yellow-500/30";
+    if (rank === 2) return "bg-gradient-to-r from-gray-400/20 to-gray-400/5 border-gray-400/30";
+    if (rank === 3) return "bg-gradient-to-r from-amber-600/20 to-amber-600/5 border-amber-600/30";
+    return "";
   };
 
   const userRank = entries.findIndex((e) => e.id === profile?.id) + 1;
 
   return (
     <div className="min-h-screen bg-background">
-      <Header 
-        streak={profile?.streak || 0}
-        hearts={5}
-        xp={profile?.xp || 0}
-        dailyGoalProgress={0}
-      />
-
-      <main className="max-w-4xl mx-auto p-4 py-8">
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" onClick={() => navigate("/")}>
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Back
-          </Button>
-          <h1 className="text-3xl font-bold">Leaderboard</h1>
-          <div className="ml-auto">
-            <AdminChangeUsername />
+      {/* Header */}
+      <div className="bg-card border-b sticky top-0 z-10">
+        <div className="max-w-2xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div className="flex-1">
+              <h1 className="text-xl font-bold font-nunito flex items-center gap-2">
+                <Trophy className="w-6 h-6 text-yellow-500" />
+                Leaderboard
+              </h1>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Hall of Fame */}
-        <div className="mb-6">
-          <HallOfFame />
-        </div>
+      <main className="max-w-2xl mx-auto p-4 pb-24">
+        {/* Top 3 Podium */}
+        {!loading && entries.length >= 3 && (
+          <div className="flex items-end justify-center gap-3 mb-8 mt-4">
+            {/* 2nd Place */}
+            <div className="flex flex-col items-center">
+              <ProfilePicture pictureId={entries[1]?.profile_picture} size="lg" />
+              <div className="mt-2 text-center">
+                <p className="font-semibold text-sm truncate max-w-[80px]">{entries[1]?.username}</p>
+                <p className="text-xs text-muted-foreground">{entries[1]?.xp} XP</p>
+              </div>
+              <div className="mt-2 w-16 h-16 bg-gray-400/20 rounded-t-lg flex items-center justify-center">
+                <Medal className="w-8 h-8 text-gray-400" />
+              </div>
+            </div>
+            
+            {/* 1st Place */}
+            <div className="flex flex-col items-center -mt-4">
+              <div className="relative">
+                <Crown className="w-8 h-8 text-yellow-500 absolute -top-8 left-1/2 -translate-x-1/2" />
+                <ProfilePicture pictureId={entries[0]?.profile_picture} size="xl" />
+              </div>
+              <div className="mt-2 text-center">
+                <p className="font-bold truncate max-w-[100px]">{entries[0]?.username}</p>
+                <p className="text-sm text-primary font-semibold">{entries[0]?.xp} XP</p>
+              </div>
+              <div className="mt-2 w-20 h-24 bg-yellow-500/20 rounded-t-lg flex items-center justify-center">
+                <Trophy className="w-10 h-10 text-yellow-500" />
+              </div>
+            </div>
+            
+            {/* 3rd Place */}
+            <div className="flex flex-col items-center">
+              <ProfilePicture pictureId={entries[2]?.profile_picture} size="lg" />
+              <div className="mt-2 text-center">
+                <p className="font-semibold text-sm truncate max-w-[80px]">{entries[2]?.username}</p>
+                <p className="text-xs text-muted-foreground">{entries[2]?.xp} XP</p>
+              </div>
+              <div className="mt-2 w-16 h-12 bg-amber-600/20 rounded-t-lg flex items-center justify-center">
+                <Medal className="w-6 h-6 text-amber-600" />
+              </div>
+            </div>
+          </div>
+        )}
 
+        {/* Your rank card */}
         {profile && userRank > 0 && (
-          <Card className="mb-6 bg-primary/10 border-primary">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <span className="text-2xl font-bold text-primary">#{userRank}</span>
-                  <ProfilePicture pictureId={profile.profile_picture} size="md" />
-                  <div>
-                    <p className="font-semibold">{profile.username} (You)</p>
-                    <p className="text-sm text-muted-foreground">Level {profile.level}</p>
-                  </div>
-                </div>
+          <Card className="mb-6 p-4 bg-primary/5 border-primary/30">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold">
+                #{userRank}
+              </div>
+              <ProfilePicture pictureId={profile.profile_picture} size="md" />
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  {profile.is_premium && <Crown className="w-5 h-5 text-yellow-500" />}
-                  <span className="text-xl font-bold text-primary">{profile.xp} XP</span>
+                  <p className="font-semibold truncate">{profile.username}</p>
+                  <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">You</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <Star className="w-3 h-3" /> Lvl {profile.level}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Flame className="w-3 h-3 text-orange-500" /> {profile.streak}
+                  </span>
                 </div>
               </div>
-            </CardContent>
+              <div className="text-right">
+                <span className="text-xl font-bold text-primary">{profile.xp}</span>
+                <span className="text-sm text-muted-foreground ml-1">XP</span>
+              </div>
+            </div>
           </Card>
         )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="w-6 h-6 text-yellow-500" />
-              Top Learners
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-center py-8">Loading...</div>
-            ) : entries.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No learners yet. Be the first!
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {entries.map((entry, index) => (
-                  <div
-                    key={entry.id}
-                    className={cn(
-                      "flex items-center gap-4 p-4 rounded-xl transition-all",
-                      entry.id === profile?.id
-                        ? "bg-primary/10 border-2 border-primary"
-                        : "bg-accent/50 hover:bg-accent border border-transparent"
+        {/* Full leaderboard */}
+        <div className="space-y-2">
+          {loading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+          ) : entries.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No learners yet. Be the first!
+            </div>
+          ) : (
+            entries.map((entry, index) => (
+              <Card
+                key={entry.id}
+                className={cn(
+                  "p-3 flex items-center gap-3 transition-all",
+                  entry.id === profile?.id && "ring-2 ring-primary ring-offset-2 ring-offset-background",
+                  getRankBg(index + 1)
+                )}
+              >
+                <div className="w-8 flex-shrink-0 flex justify-center">
+                  {getRankIcon(index + 1)}
+                </div>
+                <ProfilePicture pictureId={entry.profile_picture} size="sm" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold truncate">{entry.username}</p>
+                    {entry.is_premium && (
+                      <Crown className="w-4 h-4 text-yellow-500 flex-shrink-0" />
                     )}
-                  >
-                    <div className="flex-shrink-0">
-                      {getRankIcon(index + 1)}
-                    </div>
-                    <ProfilePicture pictureId={entry.profile_picture} size="md" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold text-lg truncate">{entry.username}</p>
-                        {entry.is_premium && (
-                          <Crown className="w-5 h-5 text-yellow-500 flex-shrink-0" />
-                        )}
-                        {entry.id === profile?.id && (
-                          <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-                            You
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Level {entry.level}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-xl font-bold text-primary">{entry.xp}</span>
-                      <span className="text-sm text-muted-foreground ml-1">XP</span>
-                    </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  <p className="text-xs text-muted-foreground">Level {entry.level}</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <span className="font-bold">{entry.xp}</span>
+                </div>
+              </Card>
+            ))
+          )}
+        </div>
       </main>
     </div>
   );
