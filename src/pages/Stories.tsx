@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, BookOpen, Star, Check, X, CheckCircle } from "lucide-react";
-import { Header } from "@/components/Header";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -519,32 +518,39 @@ const Stories = () => {
   if (!selectedStory) {
     return (
       <div className="min-h-screen bg-background">
-        <Header
-          streak={profile?.streak || 0}
-          hearts={5}
-          xp={profile?.xp || 0}
-          dailyGoalProgress={0}
-        />
-        <main className="max-w-4xl mx-auto p-4 py-6">
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">Short Stories</h1>
-              <p className="text-muted-foreground">Read stories and answer questions to earn XP</p>
+        {/* Header */}
+        <div className="bg-card border-b sticky top-0 z-10">
+          <div className="max-w-2xl mx-auto px-4 py-4">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div className="flex-1">
+                <h1 className="text-xl font-bold font-nunito flex items-center gap-2">
+                  <BookOpen className="w-6 h-6 text-primary" />
+                  Short Stories
+                </h1>
+                <p className="text-sm text-muted-foreground">Read and answer questions to earn XP</p>
+              </div>
+              <span className="text-3xl">🦝</span>
             </div>
-            <span className="text-4xl ml-auto">🦝</span>
           </div>
+        </div>
 
+        <main className="max-w-2xl mx-auto p-4 pb-24">
           {["beginner", "intermediate", "advanced"].map((level) => {
             const levelStories = stories.filter(s => s.level === level);
             if (levelStories.length === 0) return null;
             
             return (
               <div key={level} className="mb-8">
-                <h2 className="text-xl font-semibold capitalize mb-4">{level}</h2>
-                <div className="grid md:grid-cols-2 gap-4">
+                <h2 className="text-lg font-semibold capitalize mb-4 flex items-center gap-2">
+                  <Badge variant="outline" className={levelColors[level as keyof typeof levelColors]}>
+                    {level}
+                  </Badge>
+                  <span className="text-muted-foreground text-sm">({levelStories.length} stories)</span>
+                </h2>
+                <div className="grid gap-3">
                   {levelStories.map((story) => {
                     const isCompleted = isLessonCompleted(`story-${story.id}`);
                     return (
@@ -552,35 +558,31 @@ const Stories = () => {
                         key={story.id}
                         onClick={() => handleStorySelect(story)}
                         className={cn(
-                          "cursor-pointer hover:border-primary hover:shadow-md transition-all relative",
+                          "cursor-pointer hover:border-primary hover:shadow-md transition-all relative p-4",
                           isCompleted && "border-green-500/50 bg-green-500/5"
                         )}
                       >
-                        {isCompleted && (
-                          <div className="absolute top-2 right-2">
-                            <CheckCircle className="w-5 h-5 text-green-500 fill-green-500/20" />
-                          </div>
-                        )}
-                        <CardHeader className="pb-2">
-                          <div className="flex items-center justify-between pr-6">
-                            <CardTitle className="text-lg">{story.title}</CardTitle>
-                            <Badge variant="outline" className={levelColors[story.level]}>
-                              {story.level}
-                            </Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <BookOpen className="w-4 h-4" />
-                              <span>{story.sentences.length} sentences</span>
+                        <div className="flex items-center gap-4">
+                          {isCompleted ? (
+                            <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                              <CheckCircle className="w-5 h-5 text-green-500" />
                             </div>
-                            <Badge className="bg-primary/10 text-primary border-0">
-                              <Star className="w-3 h-3 mr-1 fill-current" />
-                              {story.xpReward} XP
-                            </Badge>
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <BookOpen className="w-5 h-5 text-primary" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold truncate">{story.title}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              {story.sentences.length} sentences • {story.questions.length} questions
+                            </p>
                           </div>
-                        </CardContent>
+                          <div className="flex items-center gap-1 text-primary font-semibold">
+                            <Star className="w-4 h-4 fill-current" />
+                            {story.xpReward}
+                          </div>
+                        </div>
                       </Card>
                     );
                   })}

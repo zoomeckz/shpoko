@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePictureSelector";
 import { ChangeUsernameDialog } from "@/components/ChangeUsernameDialog";
+import { Achievements } from "@/components/Achievements";
 import { 
   Flame, Trophy, Zap, Crown, Calendar, Target, BookOpen, 
   Settings, LogOut, Edit, Award, TrendingUp
@@ -185,7 +186,7 @@ const Profile = () => {
               </Card>
             </motion.div>
 
-            {/* Achievements Preview */}
+            {/* Achievements */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -199,54 +200,7 @@ const Profile = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
-                    {/* Sample achievements */}
-                    {profile.streak >= 1 && (
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="w-14 h-14 rounded-full bg-warning/20 flex items-center justify-center text-2xl">
-                          🔥
-                        </div>
-                        <span className="text-xs text-muted-foreground">First Streak</span>
-                      </div>
-                    )}
-                    {profile.xp >= 100 && (
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center text-2xl">
-                          ⚡
-                        </div>
-                        <span className="text-xs text-muted-foreground">100 XP</span>
-                      </div>
-                    )}
-                    {stats.totalLessons >= 1 && (
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="w-14 h-14 rounded-full bg-success/20 flex items-center justify-center text-2xl">
-                          📚
-                        </div>
-                        <span className="text-xs text-muted-foreground">First Lesson</span>
-                      </div>
-                    )}
-                    {profile.level >= 5 && (
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="w-14 h-14 rounded-full bg-error/20 flex items-center justify-center text-2xl">
-                          🎯
-                        </div>
-                        <span className="text-xs text-muted-foreground">Level 5</span>
-                      </div>
-                    )}
-                    {/* Locked achievements */}
-                    <div className="flex flex-col items-center gap-1 opacity-40">
-                      <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center text-2xl">
-                        🔒
-                      </div>
-                      <span className="text-xs text-muted-foreground">???</span>
-                    </div>
-                    <div className="flex flex-col items-center gap-1 opacity-40">
-                      <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center text-2xl">
-                        🔒
-                      </div>
-                      <span className="text-xs text-muted-foreground">???</span>
-                    </div>
-                  </div>
+                  <Achievements compact showUnlockPopup={false} />
                 </CardContent>
               </Card>
             </motion.div>
