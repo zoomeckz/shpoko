@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDailyLoginBonus, BONUS_TIERS_INFO } from "@/hooks/useDailyLoginBonus";
+import { useDuolingoSounds } from "@/hooks/useDuolingoSounds";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Gift, Flame, Heart, Sparkles, X, Check } from "lucide-react";
@@ -8,23 +9,32 @@ import { cn } from "@/lib/utils";
 
 export const DailyLoginBonus = () => {
   const { consecutiveDays, todaysClaimed, bonusXP, bonusHearts, claimBonus, loading } = useDailyLoginBonus();
+  const { playComplete, playXP, playStreak } = useDuolingoSounds();
   const [showModal, setShowModal] = useState(false);
   const [claiming, setClaiming] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     // Show modal on mount if bonus is available
     if (!loading && !todaysClaimed) {
-      const timer = setTimeout(() => setShowModal(true), 500);
+      const timer = setTimeout(() => {
+        setShowModal(true);
+        playStreak(); // Play sound when modal appears
+      }, 500);
       return () => clearTimeout(timer);
     }
-  }, [loading, todaysClaimed]);
+  }, [loading, todaysClaimed, playStreak]);
 
   const handleClaim = async () => {
     setClaiming(true);
+    setShowConfetti(true);
+    playComplete(); // Play celebration sound
     await claimBonus();
+    setTimeout(() => playXP(), 300); // Play XP sound after a short delay
     setTimeout(() => {
       setClaiming(false);
       setShowModal(false);
+      setShowConfetti(false);
     }, 1500);
   };
 
@@ -47,9 +57,32 @@ export const DailyLoginBonus = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <Card className="w-full max-w-md p-6 bg-card border-2 border-primary/20 relative overflow-hidden">
+              {/* Confetti animation */}
+              {showConfetti && (
+                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                  {[...Array(20)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute w-2 h-2 rounded-full"
+                      style={{
+                        left: `${Math.random() * 100}%`,
+                        backgroundColor: ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6'][i % 5],
+                      }}
+                      initial={{ y: -10, opacity: 1 }}
+                      animate={{
+                        y: 400,
+                        opacity: 0,
+                        x: (Math.random() - 0.5) * 100,
+                        rotate: Math.random() * 360,
+                      }}
+                      transition={{ duration: 1.5, delay: i * 0.05 }}
+                    />
+                  ))}
+                </div>
+              )}
               <button
                 onClick={() => setShowModal(false)}
-                className="absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+                className="absolute top-4 right-4 text-muted-foreground hover:text-foreground z-10"
               >
                 <X className="w-5 h-5" />
               </button>
