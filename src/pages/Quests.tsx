@@ -4,16 +4,17 @@ import { useEffect } from "react";
 import { Sidebar } from "@/components/duolingo/Sidebar";
 import { TopBar } from "@/components/duolingo/TopBar";
 import { useQuests } from "@/hooks/useQuests";
+import { WeeklyChallenges } from "@/components/WeeklyChallenges";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { 
   Target, Zap, Flame, BookOpen, Trophy, Clock, 
-  CheckCircle2, Gift, Crown 
+  CheckCircle2, Gift, Crown, ChevronRight 
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 
 const getQuestIcon = (actionType: string) => {
   switch (actionType) {
@@ -89,7 +90,42 @@ const Quests = () => {
               <p className="text-muted-foreground">Complete quests to earn bonus XP!</p>
             </motion.div>
 
-            {/* Daily Quests */}
+            {/* Weekly Challenges */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="mb-6"
+            >
+              <WeeklyChallenges />
+            </motion.div>
+
+            {/* Achievements Link */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08 }}
+              className="mb-6"
+            >
+              <Card
+                className="border-2 cursor-pointer hover:border-primary/50 transition-colors"
+                onClick={() => navigate("/achievements")}
+              >
+                <CardContent className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+                      <Trophy className="w-6 h-6 text-yellow-500" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold">Achievements</h3>
+                      <p className="text-sm text-muted-foreground">View all badges and progress</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                </CardContent>
+              </Card>
+            </motion.div>
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

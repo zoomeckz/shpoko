@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAchievements, Achievement, ACHIEVEMENTS } from "@/hooks/useAchievements";
+import { useDuolingoSounds } from "@/hooks/useDuolingoSounds";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +17,9 @@ interface AchievementsProps {
 
 export const Achievements = ({ compact = false, showUnlockPopup = true }: AchievementsProps) => {
   const { unlockedAchievements, lockedAchievements, progress, checkAndUnlock, loading } = useAchievements();
+  const { playComplete, playStreak } = useDuolingoSounds();
   const [newUnlocks, setNewUnlocks] = useState<Achievement[]>([]);
+  const [showConfetti, setShowConfetti] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -24,12 +27,16 @@ export const Achievements = ({ compact = false, showUnlockPopup = true }: Achiev
       const unlocked = await checkAndUnlock();
       if (unlocked.length > 0 && showUnlockPopup) {
         setNewUnlocks(unlocked);
+        setShowConfetti(true);
+        playComplete(); // Play achievement sound
+        setTimeout(() => playStreak(), 300); // Play streak sound for extra celebration
         unlocked.forEach(a => {
           toast({
             title: `🏆 Achievement Unlocked!`,
             description: `${a.name} - +${a.xpReward} XP`,
           });
         });
+        setTimeout(() => setShowConfetti(false), 3000);
       }
     };
     check();

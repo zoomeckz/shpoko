@@ -397,7 +397,7 @@ const ConjugationGame = () => {
                 onClick={() => handleAnswer(option)}
                 disabled={!!showFeedback}
                 className={cn(
-                  "p-4 rounded-lg border-2 text-xl font-medium transition-all",
+                  "p-4 rounded-lg border-2 text-xl font-medium transition-all flex items-center justify-center text-center",
                   "hover:border-primary hover:bg-primary/10",
                   showFeedback && option === correctAnswer && "border-green-500 bg-green-500/20",
                   showFeedback === "wrong" && option !== correctAnswer && "opacity-50"
