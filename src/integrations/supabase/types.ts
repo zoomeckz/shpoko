@@ -435,6 +435,63 @@ export type Database = {
           },
         ]
       }
+      friend_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          message_type: string
+          read: boolean
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          message_type?: string
+          read?: boolean
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          message_type?: string
+          read?: boolean
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          created_at: string
+          friend_id: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_id: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_id?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       game_attempts: {
         Row: {
           created_at: string
@@ -531,11 +588,14 @@ export type Database = {
           email: string | null
           id: string
           is_premium: boolean
+          last_activity_date: string | null
           last_username_change: string | null
           level: number
           premium_until: string | null
           profile_picture: string | null
           streak: number
+          streak_freeze_used_at: string | null
+          streak_freezes: number
           updated_at: string
           username: string
           xp: number
@@ -545,11 +605,14 @@ export type Database = {
           email?: string | null
           id: string
           is_premium?: boolean
+          last_activity_date?: string | null
           last_username_change?: string | null
           level?: number
           premium_until?: string | null
           profile_picture?: string | null
           streak?: number
+          streak_freeze_used_at?: string | null
+          streak_freezes?: number
           updated_at?: string
           username: string
           xp?: number
@@ -559,11 +622,14 @@ export type Database = {
           email?: string | null
           id?: string
           is_premium?: boolean
+          last_activity_date?: string | null
           last_username_change?: string | null
           level?: number
           premium_until?: string | null
           profile_picture?: string | null
           streak?: number
+          streak_freeze_used_at?: string | null
+          streak_freezes?: number
           updated_at?: string
           username?: string
           xp?: number
@@ -1043,6 +1109,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      streak_freeze_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          transaction_type: string
+          user_id: string
+          xp_cost: number | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          transaction_type: string
+          user_id: string
+          xp_cost?: number | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          transaction_type?: string
+          user_id?: string
+          xp_cost?: number | null
+        }
+        Relationships: []
       }
       subscriptions: {
         Row: {

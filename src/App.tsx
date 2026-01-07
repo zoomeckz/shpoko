@@ -85,6 +85,8 @@ import ShpokoFruitGame from "./pages/ShpokoFruitGame";
 import Profile from "./pages/Profile";
 import Quests from "./pages/Quests";
 import AchievementsPage from "./pages/AchievementsPage";
+import Friends from "./pages/Friends";
+import Shop from "./pages/Shop";
 
 const queryClient = new QueryClient();
 
@@ -181,6 +183,8 @@ const App = () => (
               <Route path="/profile" element={<Profile />} />
               <Route path="/quests" element={<Quests />} />
               <Route path="/achievements" element={<AchievementsPage />} />
+              <Route path="/friends" element={<Friends />} />
+              <Route path="/shop" element={<Shop />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </LanguageModeProvider>
