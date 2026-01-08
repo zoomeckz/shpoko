@@ -79,3 +79,23 @@ export const fadeSlideUp: Variants = {
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -20 },
 };
+
+// Animated item wrapper component
+interface AnimatedItemProps {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+}
+
+export const AnimatedItem = ({ children, delay = 0, className }: AnimatedItemProps) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.3, ease: "easeOut" }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
