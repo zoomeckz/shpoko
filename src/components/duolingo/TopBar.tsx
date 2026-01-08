@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Flame, Heart, Zap, Crown, Menu, X, Home, Trophy, Target, User, LogOut, Gamepad2, Apple, Swords, Dices, BookOpen, Users, ShoppingBag } from "lucide-react";
+import { Flame, Heart, Zap, Crown, Menu, X, Home, Trophy, Target, User, LogOut, Gamepad2, Apple, Swords, Dices, BookOpen, BookMarked, Users, ShoppingBag } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -166,16 +166,30 @@ export const TopBar = ({ className }: TopBarProps) => {
                 })}
 
                 <Link
-                  to="/stories"
+                  to="/scenarios"
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
                     "flex items-center gap-4 px-4 py-3 rounded-xl font-bold transition-colors",
-                    location.pathname === "/stories"
+                    location.pathname === "/scenarios" || location.pathname.startsWith("/scenarios/")
                       ? "bg-primary/10 text-primary" 
                       : "text-foreground hover:bg-accent"
                   )}
                 >
                   <BookOpen className="w-6 h-6" />
+                  <span>Scenarios</span>
+                </Link>
+
+                <Link
+                  to="/stories"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center gap-4 px-4 py-3 rounded-xl font-bold transition-colors",
+                    location.pathname === "/stories" || location.pathname.startsWith("/stories/")
+                      ? "bg-primary/10 text-primary" 
+                      : "text-foreground hover:bg-accent"
+                  )}
+                >
+                  <BookMarked className="w-6 h-6" />
                   <span>Stories</span>
                 </Link>
 

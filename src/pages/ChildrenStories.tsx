@@ -370,14 +370,14 @@ const ChildrenStories = () => {
   }, [storyId, partId]);
 
   const handleStorySelect = (story: ChildrenStory) => {
-    navigate(`/children-stories/${story.id}`);
+    navigate(`/stories/${story.id}`);
     setSelectedStory(story);
     setSelectedPart(null);
   };
 
   const handlePartSelect = (part: StoryPart) => {
     if (!selectedStory) return;
-    navigate(`/children-stories/${selectedStory.id}/${part.id}`);
+    navigate(`/stories/${selectedStory.id}/${part.id}`);
     setSelectedPart(part);
     setIsCompleted(false);
   };
@@ -408,10 +408,10 @@ const ChildrenStories = () => {
   const handleBackToList = () => {
     if (selectedPart) {
       setSelectedPart(null);
-      if (selectedStory) navigate(`/children-stories/${selectedStory.id}`);
+      if (selectedStory) navigate(`/stories/${selectedStory.id}`);
     } else {
       setSelectedStory(null);
-      navigate("/children-stories");
+      navigate("/stories");
     }
   };
 

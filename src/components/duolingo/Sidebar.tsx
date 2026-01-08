@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Trophy, Target, User, BookOpen, Flame, Crown, Zap, Gamepad2, Swords, Apple, Dices, Users, ShoppingBag } from "lucide-react";
+import { Home, Trophy, Target, User, BookOpen, BookMarked, Flame, Crown, Zap, Gamepad2, Swords, Apple, Dices, Users, ShoppingBag } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Separator } from "@/components/ui/separator";
 
@@ -12,7 +12,8 @@ const navItems = [
   { icon: Home, label: "Learn", path: "/" },
   { icon: Trophy, label: "Leaderboards", path: "/leaderboard" },
   { icon: Target, label: "Quests", path: "/quests" },
-  { icon: BookOpen, label: "Stories", path: "/stories" },
+  { icon: BookOpen, label: "Scenarios", path: "/scenarios" },
+  { icon: BookMarked, label: "Stories", path: "/stories" },
   { icon: Users, label: "Friends", path: "/friends" },
   { icon: ShoppingBag, label: "Shop", path: "/shop" },
   { icon: User, label: "Profile", path: "/profile" },
@@ -43,7 +44,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + "/");
           const Icon = item.icon;
           
           return (

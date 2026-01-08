@@ -493,7 +493,7 @@ const LingqReader = () => {
 
   // Handlers
   const handleStorySelect = (story: Story) => {
-    navigate(`/stories/${story.id}`);
+    navigate(`/scenarios/${story.id}`);
   };
 
   const handlePlaySentence = useCallback(() => {
@@ -646,7 +646,7 @@ const LingqReader = () => {
     setShowQuiz(false);
     setQuizCompleted(false);
     setQuizScore({ score: 0, total: 0 });
-    navigate("/stories");
+    navigate("/scenarios");
   };
 
   // Story list view
