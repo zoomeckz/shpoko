@@ -21,9 +21,9 @@ import Leaderboard from "./pages/Leaderboard";
 import Premium from "./pages/Premium";
 import NotFound from "./pages/NotFound";
 import LingqReader from "./pages/LingqReader";
+import ChildrenStories from "./pages/ChildrenStories";
 import ContextoGame from "./pages/ContextoGame";
 import TierAssessment from "./pages/TierAssessment";
-import RapidFireGame from "./pages/RapidFireGame";
 import ConjugationGame from "./pages/ConjugationGame";
 import PhraseClozeCombat from "./pages/PhraseClozeCombat";
 import FixMyBulgarianGame from "./pages/FixMyBulgarianGame";
@@ -121,9 +121,12 @@ const App = () => (
               <Route path="/lesson/fill-blanks" element={<FillBlanksLesson />} />
               <Route path="/lesson/match-cyrillic" element={<MatchCyrillicLesson />} />
               <Route path="/lesson/choose-word" element={<ChooseWordLesson />} />
-              {/* Stories - LingQ Reader */}
-              <Route path="/stories" element={<LingqReader />} />
-              <Route path="/stories/:storyId" element={<LingqReader />} />
+              {/* Scenarios - LingQ Reader */}
+              <Route path="/scenarios" element={<LingqReader />} />
+              <Route path="/scenarios/:storyId" element={<LingqReader />} />
+              {/* Children's Stories */}
+              <Route path="/children-stories" element={<ChildrenStories />} />
+              <Route path="/children-stories/:storyId" element={<ChildrenStories />} />
               {/* Topic Lessons */}
               <Route path="/topic/colors" element={<ColorsLesson />} />
               <Route path="/topic/numbers" element={<NumbersTopicLesson />} />
