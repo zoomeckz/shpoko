@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Trophy, Target, User, BookOpen, Flame, Crown, Zap, Gamepad2, Swords, Apple, Dices, Users, ShoppingBag, Library } from "lucide-react";
+import { Home, Trophy, Target, User, BookOpen, Flame, Crown, Zap, Gamepad2, Swords, Apple, Dices, Users, ShoppingBag } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Separator } from "@/components/ui/separator";
 
@@ -13,7 +13,6 @@ const navItems = [
   { icon: Trophy, label: "Leaderboards", path: "/leaderboard" },
   { icon: Target, label: "Quests", path: "/quests" },
   { icon: BookOpen, label: "Stories", path: "/stories" },
-  { icon: Library, label: "Reader", path: "/reader" },
   { icon: Users, label: "Friends", path: "/friends" },
   { icon: ShoppingBag, label: "Shop", path: "/shop" },
   { icon: User, label: "Profile", path: "/profile" },

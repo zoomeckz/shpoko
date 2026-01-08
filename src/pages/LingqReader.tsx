@@ -41,17 +41,25 @@ interface Word {
   meaning: string;
 }
 
+interface Question {
+  question: string;
+  options: string[];
+  correctIndex: number;
+}
+
 interface Story {
   id: string;
   title: string;
   level: "beginner" | "intermediate" | "advanced";
   xpReward: number;
   sentences: Word[][];
+  questions: Question[];
   audio?: string;
 }
 
-// Story data - keeping the same content but enhancing the reader
+// Story data with questions
 const stories: Story[] = [
+  // BEGINNER STORIES
   {
     id: "morning",
     title: "Good Morning",
@@ -76,6 +84,10 @@ const stories: Story[] = [
         { bulgarian: "на", romanized: "na", meaning: "to" },
         { bulgarian: "работа.", romanized: "rabota.", meaning: "work." },
       ],
+    ],
+    questions: [
+      { question: "What does the person drink in the morning?", options: ["Tea", "Coffee", "Water", "Juice"], correctIndex: 1 },
+      { question: "Where does the person go?", options: ["School", "Home", "Work", "Market"], correctIndex: 2 },
     ],
   },
   {
@@ -103,6 +115,10 @@ const stories: Story[] = [
         { bulgarian: "два", romanized: "dva", meaning: "two" },
         { bulgarian: "лева.", romanized: "leva.", meaning: "leva." },
       ],
+    ],
+    questions: [
+      { question: "What fruit is bought at the market?", options: ["Oranges", "Bananas", "Apples", "Grapes"], correctIndex: 2 },
+      { question: "What color are the apples?", options: ["Green", "Yellow", "Red", "Blue"], correctIndex: 2 },
     ],
   },
   {
@@ -133,6 +149,10 @@ const stories: Story[] = [
         { bulgarian: "ги.", romanized: "gi.", meaning: "them." },
       ],
     ],
+    questions: [
+      { question: "How is the family described?", options: ["Small", "Big", "Happy", "Sad"], correctIndex: 1 },
+      { question: "Who does the person have?", options: ["Two brothers", "Two sisters", "A brother and a sister", "No siblings"], correctIndex: 2 },
+    ],
   },
   {
     id: "weather",
@@ -161,7 +181,12 @@ const stories: Story[] = [
         { bulgarian: "излеза.", romanized: "izleza.", meaning: "go out." },
       ],
     ],
+    questions: [
+      { question: "What is the weather like today?", options: ["Rainy", "Cloudy", "Sunny", "Snowy"], correctIndex: 2 },
+      { question: "How does the person feel?", options: ["Sad", "Angry", "Tired", "Happy"], correctIndex: 3 },
+    ],
   },
+  // INTERMEDIATE STORIES
   {
     id: "restaurant",
     title: "At the Restaurant",
@@ -193,6 +218,10 @@ const stories: Story[] = [
         { bulgarian: "вкусна.", romanized: "vkusna.", meaning: "delicious." },
       ],
     ],
+    questions: [
+      { question: "Where does the person sit?", options: ["Near the door", "Near the window", "At the bar", "Outside"], correctIndex: 1 },
+      { question: "What does the person order?", options: ["Pizza and pasta", "Salad and soup", "Meat and rice", "Fish and chips"], correctIndex: 1 },
+    ],
   },
   {
     id: "bus-ride",
@@ -223,6 +252,10 @@ const stories: Story[] = [
         { bulgarian: "е", romanized: "e", meaning: "is" },
         { bulgarian: "кратко.", romanized: "kratko.", meaning: "short." },
       ],
+    ],
+    questions: [
+      { question: "How long does the person wait?", options: ["Ten minutes", "Five minutes", "One hour", "Two minutes"], correctIndex: 1 },
+      { question: "How is the journey described?", options: ["Long", "Short", "Boring", "Exciting"], correctIndex: 1 },
     ],
   },
   {
@@ -256,7 +289,12 @@ const stories: Story[] = [
         { bulgarian: "пак.", romanized: "pak.", meaning: "again." },
       ],
     ],
+    questions: [
+      { question: "Where does the person meet their new friend?", options: ["At school", "In the park", "At work", "At home"], correctIndex: 1 },
+      { question: "What is the friend's name?", options: ["Ivan", "Georgi", "Peter", "Dimitar"], correctIndex: 2 },
+    ],
   },
+  // ADVANCED STORIES
   {
     id: "job-interview",
     title: "The Job Interview",
@@ -290,6 +328,10 @@ const stories: Story[] = [
         { bulgarian: "работата!", romanized: "rabotata!", meaning: "the job!" },
       ],
     ],
+    questions: [
+      { question: "How long did the person prepare?", options: ["One day", "One week", "One month", "One hour"], correctIndex: 1 },
+      { question: "What was the result of the interview?", options: ["They failed", "They got the job", "They have to wait", "They declined"], correctIndex: 1 },
+    ],
   },
   {
     id: "mountain-trip",
@@ -322,6 +364,10 @@ const stories: Story[] = [
         { bulgarian: "се", romanized: "se", meaning: "myself" },
         { bulgarian: "свободен.", romanized: "svoboden.", meaning: "free." },
       ],
+    ],
+    questions: [
+      { question: "When did they start climbing?", options: ["In the evening", "At noon", "In the morning", "At night"], correctIndex: 2 },
+      { question: "How is the view from the peak?", options: ["Boring", "Ordinary", "Incredible", "Foggy"], correctIndex: 2 },
     ],
   },
   {
@@ -358,9 +404,12 @@ const stories: Story[] = [
         { bulgarian: "времена.", romanized: "vremena.", meaning: "times." },
       ],
     ],
+    questions: [
+      { question: "What did grandmother make?", options: ["Cake", "Banitsa", "Soup", "Bread"], correctIndex: 1 },
+      { question: "Who did the person play with?", options: ["Friends", "Siblings", "Cousins", "Neighbors"], correctIndex: 2 },
+    ],
   },
 ];
-
 const levelColors = {
   beginner: "bg-green-500/10 text-green-600 border-green-500/30",
   intermediate: "bg-yellow-500/10 text-yellow-600 border-yellow-500/30",
@@ -429,7 +478,7 @@ const LingqReader = () => {
 
   // Handlers
   const handleStorySelect = (story: Story) => {
-    navigate(`/lingq-reader/${story.id}`);
+    navigate(`/stories/${story.id}`);
   };
 
   const handlePlaySentence = useCallback(() => {
