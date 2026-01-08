@@ -125,7 +125,11 @@ const App = () => (
               {/* Scenarios - LingQ Reader */}
               <Route path="/scenarios" element={<LingqReader />} />
               <Route path="/scenarios/:storyId" element={<LingqReader />} />
-              {/* Children's Stories */}
+              {/* Stories - Children's Stories */}
+              <Route path="/stories" element={<ChildrenStories />} />
+              <Route path="/stories/:storyId" element={<ChildrenStories />} />
+              <Route path="/stories/:storyId/:partId" element={<ChildrenStories />} />
+              {/* Legacy path (keep working) */}
               <Route path="/children-stories" element={<ChildrenStories />} />
               <Route path="/children-stories/:storyId" element={<ChildrenStories />} />
               <Route path="/children-stories/:storyId/:partId" element={<ChildrenStories />} />

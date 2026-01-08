@@ -92,7 +92,7 @@ export const ShortStories = () => {
         {stories.map((story) => (
           <div
             key={story.id}
-            onClick={() => navigate(`/children-stories/${story.id}`)}
+            onClick={() => navigate(`/stories/${story.id}`)}
             className="p-3 rounded-lg border bg-card hover:border-amber-500 hover:shadow-sm transition-all cursor-pointer"
           >
             <div className="flex items-center justify-between mb-1">
@@ -115,7 +115,7 @@ export const ShortStories = () => {
         ))}
 
         <Button 
-          onClick={() => navigate("/children-stories")} 
+          onClick={() => navigate("/stories")} 
           className="w-full gap-2 border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
           variant="outline"
         >
