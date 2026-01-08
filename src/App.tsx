@@ -20,7 +20,7 @@ import ChooseWordLesson from "./pages/ChooseWordLesson";
 import Leaderboard from "./pages/Leaderboard";
 import Premium from "./pages/Premium";
 import NotFound from "./pages/NotFound";
-import Stories from "./pages/Stories";
+import LingqReader from "./pages/LingqReader";
 import ContextoGame from "./pages/ContextoGame";
 import TierAssessment from "./pages/TierAssessment";
 import RapidFireGame from "./pages/RapidFireGame";
@@ -87,7 +87,6 @@ import Quests from "./pages/Quests";
 import AchievementsPage from "./pages/AchievementsPage";
 import Friends from "./pages/Friends";
 import Shop from "./pages/Shop";
-import LingqReader from "./pages/LingqReader";
 
 const queryClient = new QueryClient();
 
@@ -122,9 +121,9 @@ const App = () => (
               <Route path="/lesson/fill-blanks" element={<FillBlanksLesson />} />
               <Route path="/lesson/match-cyrillic" element={<MatchCyrillicLesson />} />
               <Route path="/lesson/choose-word" element={<ChooseWordLesson />} />
-              {/* Stories */}
-              <Route path="/stories" element={<Stories />} />
-              <Route path="/stories/:storyId" element={<Stories />} />
+              {/* Stories - LingQ Reader */}
+              <Route path="/stories" element={<LingqReader />} />
+              <Route path="/stories/:storyId" element={<LingqReader />} />
               {/* Topic Lessons */}
               <Route path="/topic/colors" element={<ColorsLesson />} />
               <Route path="/topic/numbers" element={<NumbersTopicLesson />} />
@@ -186,9 +185,7 @@ const App = () => (
               <Route path="/achievements" element={<AchievementsPage />} />
               <Route path="/friends" element={<Friends />} />
               <Route path="/shop" element={<Shop />} />
-              {/* LingQ Reader */}
-              <Route path="/reader" element={<LingqReader />} />
-              <Route path="/reader/:storyId" element={<LingqReader />} />
+              <Route path="*" element={<NotFound />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </LanguageModeProvider>
