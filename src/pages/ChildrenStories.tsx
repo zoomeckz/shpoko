@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -6,14 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   ArrowLeft,
-  BookOpen,
   Star,
-  Volume2,
-  ChevronLeft,
-  ChevronRight,
   Check,
-  Sparkles,
   BookMarked,
+  ChevronRight,
+  BookOpen,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -21,12 +18,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { PageTransition, AnimatedItem } from "@/components/PageTransition";
-import { useTextToSpeechCached } from "@/hooks/useTextToSpeechCached";
+import { LingqWord } from "@/components/lingq/LingqWord";
+import { useLingqVocabulary } from "@/hooks/useLingqVocabulary";
 
-interface StoryParagraph {
-  bulgarian: string;
-  romanized: string;
-  english: string;
+interface StoryPart {
+  id: string;
+  title: string;
+  titleEnglish: string;
+  sentences: {
+    bulgarian: string;
+    english: string;
+    wordTranslations: Record<string, { translation: string; romanization?: string }>;
+  }[];
 }
 
 interface ChildrenStory {
@@ -34,223 +37,299 @@ interface ChildrenStory {
   title: string;
   titleRomanized: string;
   titleEnglish: string;
-  author?: string;
   level: "beginner" | "intermediate" | "advanced";
   xpReward: number;
-  paragraphs: StoryParagraph[];
+  parts: StoryPart[];
   moral?: string;
   moralEnglish?: string;
 }
 
-// Children's stories data
+// Story data - simplified with proper escaping
 const childrenStories: ChildrenStory[] = [
   {
     id: "drebnoto-choveche",
     title: "Дребното човече",
     titleRomanized: "Drebnoto choveche",
     titleEnglish: "The Little Person",
-    level: "beginner",
-    xpReward: 25,
-    paragraphs: [
-      {
-        bulgarian: "Живяло едно време едно дребно човече.",
-        romanized: "Zhivyalo edno vreme edno drebno choveche.",
-        english: "Once upon a time there lived a little person.",
-      },
-      {
-        bulgarian: "То било толкова малко, че можело да се скрие под една гъба.",
-        romanized: "To bilo tolkova malko, che mozhelo da se skrie pod edna gaba.",
-        english: "It was so small that it could hide under a mushroom.",
-      },
-      {
-        bulgarian: "Един ден дребното човече тръгнало на път.",
-        romanized: "Edin den drebnoto choveche tragnalo na pat.",
-        english: "One day the little person set off on a journey.",
-      },
-      {
-        bulgarian: "По пътя срещнало едно голямо куче.",
-        romanized: "Po patya sreshtnalo edno golyamo kuche.",
-        english: "On the way it met a big dog.",
-      },
-      {
-        bulgarian: "\"Къде отиваш?\" попитало кучето.",
-        romanized: "\"Kade otivash?\" popitalo kucheto.",
-        english: "\"Where are you going?\" asked the dog.",
-      },
-      {
-        bulgarian: "\"Отивам да търся приятели,\" отговорило човечето.",
-        romanized: "\"Otivam da tarsya priyateli,\" otgovorilo chovecheto.",
-        english: "\"I'm going to look for friends,\" replied the little person.",
-      },
-      {
-        bulgarian: "\"Мога ли да дойда с теб?\" попитало кучето.",
-        romanized: "\"Moga li da doida s teb?\" popitalo kucheto.",
-        english: "\"Can I come with you?\" asked the dog.",
-      },
-      {
-        bulgarian: "\"Разбира се!\" казало човечето щастливо.",
-        romanized: "\"Razbira se!\" kazalo chovecheto shtastlivo.",
-        english: "\"Of course!\" said the little person happily.",
-      },
-      {
-        bulgarian: "И така двамата станали най-добри приятели.",
-        romanized: "I taka dvamata stanali nay-dobri priyateli.",
-        english: "And so the two became best friends.",
-      },
-    ],
-    moral: "Приятелите се намират по най-неочакваните начини.",
-    moralEnglish: "Friends are found in the most unexpected ways.",
-  },
-  {
-    id: "zlatnata-ribka",
-    title: "Златната рибка",
-    titleRomanized: "Zlatnata ribka",
-    titleEnglish: "The Golden Fish",
-    level: "beginner",
-    xpReward: 25,
-    paragraphs: [
-      {
-        bulgarian: "Един беден рибар живеел край морето.",
-        romanized: "Edin beden ribar zhiveel kray moreto.",
-        english: "A poor fisherman lived by the sea.",
-      },
-      {
-        bulgarian: "Всеки ден той ходел да лови риба.",
-        romanized: "Vseki den toy hodel da lovi riba.",
-        english: "Every day he went fishing.",
-      },
-      {
-        bulgarian: "Веднъж той хванал една златна рибка.",
-        romanized: "Vednaazh toy hvanal edna zlatna ribka.",
-        english: "Once he caught a golden fish.",
-      },
-      {
-        bulgarian: "\"Моля те, пусни ме!\" казала рибката.",
-        romanized: "\"Molya te, pusni me!\" kazala ribkata.",
-        english: "\"Please let me go!\" said the fish.",
-      },
-      {
-        bulgarian: "\"Ще изпълня три твои желания.\"",
-        romanized: "\"Shte izpalnya tri tvoi zhelaniya.\"",
-        english: "\"I will grant you three wishes.\"",
-      },
-      {
-        bulgarian: "Рибарят помислил и казал: \"Искам само да бъда щастлив.\"",
-        romanized: "Ribaryat pomislil i kazal: \"Iskam samo da bada shtastliv.\"",
-        english: "The fisherman thought and said: \"I just want to be happy.\"",
-      },
-      {
-        bulgarian: "Рибката се усмихнала: \"Това вече го имаш.\"",
-        romanized: "Ribkata se usmihnala: \"Tova veche go imash.\"",
-        english: "The fish smiled: \"You already have that.\"",
-      },
-      {
-        bulgarian: "И рибарят разбрал, че щастието е в простите неща.",
-        romanized: "I ribaryat razbral, che shtastieto e v prostite neshta.",
-        english: "And the fisherman understood that happiness is in simple things.",
-      },
-    ],
-    moral: "Щастието не се купува с пари.",
-    moralEnglish: "Happiness cannot be bought with money.",
-  },
-  {
-    id: "trima-bratya",
-    title: "Тримата братя",
-    titleRomanized: "Trimata bratya",
-    titleEnglish: "The Three Brothers",
     level: "intermediate",
-    xpReward: 35,
-    paragraphs: [
+    xpReward: 50,
+    parts: [
       {
-        bulgarian: "В едно село живели трима братя.",
-        romanized: "V edno selo zhiveli trima bratya.",
-        english: "In a village lived three brothers.",
+        id: "1-1",
+        title: "В кръчмата",
+        titleEnglish: "At the Tavern",
+        sentences: [
+          {
+            bulgarian: "Живяло едно време един твърде дребничък господин.",
+            english: "Once upon a time there lived a very small gentleman.",
+            wordTranslations: {
+              "Живяло": { translation: "lived", romanization: "zhivyalo" },
+              "едно": { translation: "one", romanization: "edno" },
+              "време": { translation: "time", romanization: "vreme" },
+              "един": { translation: "a/one", romanization: "edin" },
+              "твърде": { translation: "very", romanization: "tvarde" },
+              "дребничък": { translation: "tiny/small", romanization: "drebnichak" },
+              "господин": { translation: "gentleman", romanization: "gospodin" },
+            }
+          },
+          {
+            bulgarian: "Щом седнел в кръчмата да пийне чаша вино или халба бира, чувал все едно и също от кръчмаря.",
+            english: "Whenever he sat in the tavern to drink a glass of wine or a mug of beer, he heard the same thing from the innkeeper.",
+            wordTranslations: {
+              "Щом": { translation: "whenever", romanization: "shtom" },
+              "седнел": { translation: "sat down", romanization: "sednel" },
+              "кръчмата": { translation: "the tavern", romanization: "krachmata" },
+              "пийне": { translation: "drink", romanization: "piyne" },
+              "чаша": { translation: "glass", romanization: "chasha" },
+              "вино": { translation: "wine", romanization: "vino" },
+              "или": { translation: "or", romanization: "ili" },
+              "халба": { translation: "mug", romanization: "halba" },
+              "бира": { translation: "beer", romanization: "bira" },
+              "чувал": { translation: "heard", romanization: "chuval" },
+              "кръчмаря": { translation: "the innkeeper", romanization: "krachmarya" },
+            }
+          },
+          {
+            bulgarian: "Добре дошло, дребно човече!",
+            english: "Welcome, little person!",
+            wordTranslations: {
+              "Добре": { translation: "well/good", romanization: "dobre" },
+              "дошло": { translation: "come", romanization: "doshlo" },
+              "дребно": { translation: "little/small", romanization: "drebno" },
+              "човече": { translation: "person", romanization: "choveche" },
+            }
+          },
+          {
+            bulgarian: "Ах, тези думи така го ядосвали!",
+            english: "Ah, these words made him so angry!",
+            wordTranslations: {
+              "Ах": { translation: "Ah", romanization: "ah" },
+              "тези": { translation: "these", romanization: "tezi" },
+              "думи": { translation: "words", romanization: "dumi" },
+              "така": { translation: "so", romanization: "taka" },
+              "го": { translation: "him", romanization: "go" },
+              "ядосвали": { translation: "angered", romanization: "yadosvali" },
+            }
+          },
+        ]
       },
       {
-        bulgarian: "Най-големият бил силен, средният - умен, а най-малкият - добър.",
-        romanized: "Nay-golemiyat bil silen, sredniyat - umen, a nay-malkiyat - dobar.",
-        english: "The oldest was strong, the middle one - smart, and the youngest - kind.",
+        id: "1-2",
+        title: "При обущаря",
+        titleEnglish: "At the Shoemaker",
+        sentences: [
+          {
+            bulgarian: "Една сутрин дребосъкът отишъл при обущаря.",
+            english: "One morning the little man went to the shoemaker.",
+            wordTranslations: {
+              "Една": { translation: "one", romanization: "edna" },
+              "сутрин": { translation: "morning", romanization: "sutrin" },
+              "дребосъкът": { translation: "the little man", romanization: "drebosakat" },
+              "отишъл": { translation: "went", romanization: "otishal" },
+              "при": { translation: "to/at", romanization: "pri" },
+              "обущаря": { translation: "the shoemaker", romanization: "obushtarya" },
+            }
+          },
+          {
+            bulgarian: "Майсторе, искам да ми направиш колкото се може по-високи токове.",
+            english: "Master, I want you to make me the highest heels possible.",
+            wordTranslations: {
+              "Майсторе": { translation: "Master", romanization: "maystora" },
+              "искам": { translation: "I want", romanization: "iskam" },
+              "ми": { translation: "me", romanization: "mi" },
+              "направиш": { translation: "make", romanization: "napravish" },
+              "колкото": { translation: "as much as", romanization: "kolkoto" },
+              "може": { translation: "possible", romanization: "mozhe" },
+              "по-високи": { translation: "higher", romanization: "po-visoki" },
+              "токове": { translation: "heels", romanization: "tokove" },
+            }
+          },
+          {
+            bulgarian: "Искам да спрат да ми викат дребно човече. Това ме ядосва ужасно.",
+            english: "I want them to stop calling me little person. This makes me terribly angry.",
+            wordTranslations: {
+              "Искам": { translation: "I want", romanization: "iskam" },
+              "спрат": { translation: "stop", romanization: "sprat" },
+              "викат": { translation: "call", romanization: "vikat" },
+              "Това": { translation: "this", romanization: "tova" },
+              "ме": { translation: "me", romanization: "me" },
+              "ядосва": { translation: "angers", romanization: "yadosva" },
+              "ужасно": { translation: "terribly", romanization: "uzhasno" },
+            }
+          },
+        ]
       },
       {
-        bulgarian: "Един ден баща им ги повикал и казал:",
-        romanized: "Edin den bashta im gi povikal i kazal:",
-        english: "One day their father called them and said:",
+        id: "1-3",
+        title: "Отново в кръчмата",
+        titleEnglish: "Back at the Tavern",
+        sentences: [
+          {
+            bulgarian: "Обущарят запретнал ръкави и се захванал за работа.",
+            english: "The shoemaker rolled up his sleeves and got to work.",
+            wordTranslations: {
+              "Обущарят": { translation: "the shoemaker", romanization: "obushtaryat" },
+              "запретнал": { translation: "rolled up", romanization: "zapretnal" },
+              "ръкави": { translation: "sleeves", romanization: "rakavi" },
+              "захванал": { translation: "got to", romanization: "zahvanal" },
+              "работа": { translation: "work", romanization: "rabota" },
+            }
+          },
+          {
+            bulgarian: "Дребосъкът платил и отишъл в кръчмата.",
+            english: "The little man paid and went to the tavern.",
+            wordTranslations: {
+              "платил": { translation: "paid", romanization: "platil" },
+              "отишъл": { translation: "went", romanization: "otishal" },
+            }
+          },
+          {
+            bulgarian: "Домакинът веднага го забелязал и се провикнал: Добре дошло, дребно човече!",
+            english: "The host immediately noticed him and called out: Welcome, little person!",
+            wordTranslations: {
+              "Домакинът": { translation: "the host", romanization: "domakinat" },
+              "веднага": { translation: "immediately", romanization: "vednaga" },
+              "забелязал": { translation: "noticed", romanization: "zabelyazal" },
+              "провикнал": { translation: "called out", romanization: "proviknal" },
+            }
+          },
+          {
+            bulgarian: "Високите токове не помогнали. Дребосъкът хукнал при шапкаря.",
+            english: "The high heels didn't help. The little man rushed to the hatter.",
+            wordTranslations: {
+              "Високите": { translation: "the high", romanization: "visokite" },
+              "помогнали": { translation: "helped", romanization: "pomognali" },
+              "хукнал": { translation: "rushed", romanization: "huknal" },
+              "шапкаря": { translation: "the hatter", romanization: "shapkarya" },
+            }
+          },
+        ]
       },
       {
-        bulgarian: "\"Искам да намерите най-ценното нещо на света.\"",
-        romanized: "\"Iskam da namerite nay-tsennoto neshto na sveta.\"",
-        english: "\"I want you to find the most valuable thing in the world.\"",
+        id: "1-4",
+        title: "Пътуването до Рим",
+        titleEnglish: "The Journey to Rome",
+        sentences: [
+          {
+            bulgarian: "Нито високите токове, нито огромната шапка помогнали.",
+            english: "Neither the high heels nor the huge hat helped.",
+            wordTranslations: {
+              "Нито": { translation: "neither", romanization: "nito" },
+              "огромната": { translation: "the huge", romanization: "ogromnata" },
+              "шапка": { translation: "hat", romanization: "shapka" },
+            }
+          },
+          {
+            bulgarian: "Дребосъкът решил да отиде в Рим и да попита папата.",
+            english: "The little man decided to go to Rome and ask the Pope.",
+            wordTranslations: {
+              "решил": { translation: "decided", romanization: "reshil" },
+              "отиде": { translation: "go", romanization: "otide" },
+              "Рим": { translation: "Rome", romanization: "Rim" },
+              "попита": { translation: "ask", romanization: "popita" },
+              "папата": { translation: "the Pope", romanization: "papata" },
+            }
+          },
+          {
+            bulgarian: "По пътя срещнал ханджия и прислужник, които също имали въпроси.",
+            english: "On the way he met an innkeeper and a servant who also had questions.",
+            wordTranslations: {
+              "пътя": { translation: "the way", romanization: "patya" },
+              "срещнал": { translation: "met", romanization: "sreshnal" },
+              "ханджия": { translation: "innkeeper", romanization: "handzhiya" },
+              "прислужник": { translation: "servant", romanization: "prislujnik" },
+              "също": { translation: "also", romanization: "sashto" },
+              "имали": { translation: "had", romanization: "imali" },
+              "въпроси": { translation: "questions", romanization: "vaprosi" },
+            }
+          },
+        ]
       },
       {
-        bulgarian: "Първият брат донесъл злато.",
-        romanized: "Parviyat brat donesal zlato.",
-        english: "The first brother brought gold.",
+        id: "1-5",
+        title: "При папата",
+        titleEnglish: "At the Pope",
+        sentences: [
+          {
+            bulgarian: "Тримата пристигнали в Рим и помолили за аудиенция с папата.",
+            english: "The three arrived in Rome and asked for an audience with the Pope.",
+            wordTranslations: {
+              "Тримата": { translation: "the three", romanization: "trimata" },
+              "пристигнали": { translation: "arrived", romanization: "pristignali" },
+              "помолили": { translation: "asked for", romanization: "pomolili" },
+              "аудиенция": { translation: "audience", romanization: "audientsiya" },
+            }
+          },
+          {
+            bulgarian: "Папата ги поканил в красива зала с огромно огледало.",
+            english: "The Pope invited them into a beautiful hall with a huge mirror.",
+            wordTranslations: {
+              "Папата": { translation: "the Pope", romanization: "papata" },
+              "поканил": { translation: "invited", romanization: "pokanil" },
+              "красива": { translation: "beautiful", romanization: "krasiva" },
+              "зала": { translation: "hall", romanization: "zala" },
+              "огледало": { translation: "mirror", romanization: "ogledalo" },
+            }
+          },
+          {
+            bulgarian: "Всеки трябвало да погледне в огледалото и да каже какво вижда.",
+            english: "Each one had to look in the mirror and say what they saw.",
+            wordTranslations: {
+              "Всеки": { translation: "each one", romanization: "vseki" },
+              "трябвало": { translation: "had to", romanization: "tryabvalo" },
+              "погледне": { translation: "look", romanization: "pogledne" },
+              "каже": { translation: "say", romanization: "kazhe" },
+              "вижда": { translation: "sees", romanization: "vizhda" },
+            }
+          },
+        ]
       },
       {
-        bulgarian: "Вторият донесъл книги пълни с мъдрост.",
-        romanized: "Vtoriyat donesal knigi palni s madrost.",
-        english: "The second brought books full of wisdom.",
-      },
-      {
-        bulgarian: "Третият се върнал с празни ръце, но с много приятели.",
-        romanized: "Tretiyat se varnal s prazni ratse, no s mnogo priyateli.",
-        english: "The third returned with empty hands, but with many friends.",
-      },
-      {
-        bulgarian: "\"Ти победи,\" казал бащата на най-малкия.",
-        romanized: "\"Ti pobedi,\" kazal bashtata na nay-malkiya.",
-        english: "\"You win,\" said the father to the youngest.",
-      },
-      {
-        bulgarian: "\"Защото приятелството е най-голямото богатство.\"",
-        romanized: "\"Zashtoto priyatelstvoto e nay-golyamoto bogatstvo.\"",
-        english: "\"Because friendship is the greatest wealth.\"",
+        id: "1-6",
+        title: "Поуката",
+        titleEnglish: "The Moral",
+        sentences: [
+          {
+            bulgarian: "Папата казал на дребосъка: Трябва да се мериш според ръста си.",
+            english: "The Pope told the little man: You must measure yourself by your own height.",
+            wordTranslations: {
+              "казал": { translation: "told", romanization: "kazal" },
+              "Трябва": { translation: "must", romanization: "tryabva" },
+              "мериш": { translation: "measure", romanization: "merish" },
+              "според": { translation: "according to", romanization: "spored" },
+              "ръста": { translation: "height", romanization: "rasta" },
+            }
+          },
+          {
+            bulgarian: "Едва когато израстеш достатъчно, хората ще спрат да те наричат дребно човече.",
+            english: "Only when you grow enough will people stop calling you little person.",
+            wordTranslations: {
+              "Едва": { translation: "only", romanization: "edva" },
+              "когато": { translation: "when", romanization: "kogato" },
+              "израстеш": { translation: "grow", romanization: "izrastesh" },
+              "достатъчно": { translation: "enough", romanization: "dostatachno" },
+              "хората": { translation: "people", romanization: "horata" },
+              "наричат": { translation: "call", romanization: "narichat" },
+            }
+          },
+          {
+            bulgarian: "Истинското величие идва от вътрешния растеж, не от външните атрибути.",
+            english: "True greatness comes from inner growth, not from external attributes.",
+            wordTranslations: {
+              "Истинското": { translation: "true", romanization: "istinskoto" },
+              "величие": { translation: "greatness", romanization: "velichie" },
+              "идва": { translation: "comes", romanization: "idva" },
+              "вътрешния": { translation: "inner", romanization: "vatreshniya" },
+              "растеж": { translation: "growth", romanization: "rastezh" },
+              "външните": { translation: "external", romanization: "vanshnite" },
+              "атрибути": { translation: "attributes", romanization: "atributi" },
+            }
+          },
+        ]
       },
     ],
-    moral: "Приятелството е по-ценно от златото.",
-    moralEnglish: "Friendship is more valuable than gold.",
-  },
-  {
-    id: "lisitsata-i-grozdeto",
-    title: "Лисицата и гроздето",
-    titleRomanized: "Lisitsata i grozdeto",
-    titleEnglish: "The Fox and the Grapes",
-    level: "beginner",
-    xpReward: 20,
-    paragraphs: [
-      {
-        bulgarian: "Една лисица видяла грозде на висока лоза.",
-        romanized: "Edna lisitsa vidyala grozde na visoka loza.",
-        english: "A fox saw grapes on a high vine.",
-      },
-      {
-        bulgarian: "Гроздето изглеждало много вкусно.",
-        romanized: "Grozdeto izglejdalo mnogo vkusno.",
-        english: "The grapes looked very delicious.",
-      },
-      {
-        bulgarian: "Лисицата скочила, но не можала да ги достигне.",
-        romanized: "Lisitsata skochila, no ne mozhala da gi dostiigne.",
-        english: "The fox jumped, but couldn't reach them.",
-      },
-      {
-        bulgarian: "Скочила пак и пак, но без успех.",
-        romanized: "Skochila pak i pak, no bez uspeh.",
-        english: "She jumped again and again, but without success.",
-      },
-      {
-        bulgarian: "Накрая лисицата казала: \"Това грозде е кисело!\"",
-        romanized: "Nakraya lisitsata kazala: \"Tova grozde e kiselo!\"",
-        english: "Finally the fox said: \"Those grapes are sour!\"",
-      },
-      {
-        bulgarian: "И си тръгнала с вдигната глава.",
-        romanized: "I si tragnala s vdignata glava.",
-        english: "And she left with her head held high.",
-      },
-    ],
-    moral: "Лесно е да се омаловажи това, което не можем да имаме.",
-    moralEnglish: "It's easy to despise what we cannot have.",
+    moral: "Истинското величие идва от вътрешния растеж, не от външните атрибути.",
+    moralEnglish: "True greatness comes from inner growth, not from external attributes.",
   },
 ];
 
@@ -263,124 +342,106 @@ const levelColors = {
 const ChildrenStories = () => {
   const navigate = useNavigate();
   const { storyId } = useParams();
-  const { profile, user, updateXP } = useAuth();
+  const { user, updateXP } = useAuth();
   const { toast } = useToast();
   const { isLessonCompleted, refetch: refetchProgress } = useUserProgress();
-  const { playPronunciation: speak } = useTextToSpeechCached();
+  const { vocabulary, saveWord, updateWordStatus, markAsKnown, deleteWord } = useLingqVocabulary();
 
   const [selectedStory, setSelectedStory] = useState<ChildrenStory | null>(null);
-  const [currentParagraphIndex, setCurrentParagraphIndex] = useState(0);
-  const [showTranslation, setShowTranslation] = useState(true);
-  const [showRomanization, setShowRomanization] = useState(true);
+  const [selectedPart, setSelectedPart] = useState<StoryPart | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
 
-  // Load story from URL
-  useState(() => {
+  useEffect(() => {
     if (storyId) {
-      const story = childrenStories.find(s => s.id === storyId);
+      const parts = storyId.split("/");
+      const mainId = parts[0];
+      const partId = parts[1];
+      
+      const story = childrenStories.find(s => s.id === mainId);
       if (story) {
         setSelectedStory(story);
-        setCurrentParagraphIndex(0);
-        setIsCompleted(false);
+        if (partId) {
+          const part = story.parts.find(p => p.id === partId);
+          if (part) setSelectedPart(part);
+        }
       }
     }
-  });
+  }, [storyId]);
 
   const handleStorySelect = (story: ChildrenStory) => {
     navigate(`/children-stories/${story.id}`);
     setSelectedStory(story);
-    setCurrentParagraphIndex(0);
+    setSelectedPart(null);
+  };
+
+  const handlePartSelect = (part: StoryPart) => {
+    if (!selectedStory) return;
+    navigate(`/children-stories/${selectedStory.id}/${part.id}`);
+    setSelectedPart(part);
     setIsCompleted(false);
   };
 
-  const handlePlayParagraph = () => {
-    if (!selectedStory) return;
-    const paragraph = selectedStory.paragraphs[currentParagraphIndex];
-    speak(paragraph.bulgarian);
-  };
-
-  const handleNextParagraph = () => {
-    if (selectedStory && currentParagraphIndex < selectedStory.paragraphs.length - 1) {
-      setCurrentParagraphIndex(prev => prev + 1);
-    }
-  };
-
-  const handlePrevParagraph = () => {
-    if (currentParagraphIndex > 0) {
-      setCurrentParagraphIndex(prev => prev - 1);
-    }
-  };
-
   const handleComplete = async () => {
-    if (!selectedStory || !user) return;
+    if (!selectedStory || !selectedPart || !user) return;
+    const partLessonId = `children-story-${selectedStory.id}-${selectedPart.id}`;
+    const alreadyCompleted = isLessonCompleted(partLessonId);
+    const earnedXP = alreadyCompleted ? 0 : Math.floor(selectedStory.xpReward / selectedStory.parts.length);
 
-    const storyLessonId = `children-story-${selectedStory.id}`;
-    const alreadyCompleted = isLessonCompleted(storyLessonId);
-    const earnedXP = alreadyCompleted ? 0 : selectedStory.xpReward;
-
-    if (earnedXP > 0) {
-      await updateXP(earnedXP);
-    }
+    if (earnedXP > 0) await updateXP(earnedXP);
 
     await supabase.from("user_progress").upsert({
       user_id: user.id,
-      lesson_id: storyLessonId,
+      lesson_id: partLessonId,
       completed: true,
       score: earnedXP,
-      correct_answers: selectedStory.paragraphs.length,
-      total_answers: selectedStory.paragraphs.length,
+      correct_answers: selectedPart.sentences.length,
+      total_answers: selectedPart.sentences.length,
       completed_at: new Date().toISOString(),
     }, { onConflict: "user_id,lesson_id" });
 
     refetchProgress();
     setIsCompleted(true);
-
-    toast({
-      title: "Приказката завърши! 🎉",
-      description: earnedXP > 0 
-        ? `Спечелихте ${earnedXP} XP!` 
-        : "Вече сте прочели тази приказка.",
-    });
+    toast({ title: "Частта е завършена! 🎉", description: earnedXP > 0 ? `+${earnedXP} XP` : "" });
   };
 
   const handleBackToList = () => {
-    setSelectedStory(null);
-    setCurrentParagraphIndex(0);
-    setIsCompleted(false);
-    navigate("/children-stories");
+    if (selectedPart) {
+      setSelectedPart(null);
+      if (selectedStory) navigate(`/children-stories/${selectedStory.id}`);
+    } else {
+      setSelectedStory(null);
+      navigate("/children-stories");
+    }
   };
 
-  // Keyboard shortcuts
-  useState(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!selectedStory || isCompleted) return;
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+  const handleWordSave = useCallback((word: string, translation: string, romanization?: string, notes?: string, status?: number) => {
+    saveWord(word, translation, romanization, notes, status);
+  }, [saveWord]);
 
-      switch (e.key) {
-        case "ArrowRight":
-        case "n":
-          e.preventDefault();
-          handleNextParagraph();
-          break;
-        case "ArrowLeft":
-        case "p":
-          e.preventDefault();
-          handlePrevParagraph();
-          break;
-        case " ":
-          e.preventDefault();
-          handlePlayParagraph();
-          break;
-        case "Escape":
-          e.preventDefault();
-          handleBackToList();
-          break;
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  });
+  const renderWord = (word: string, translations: Record<string, { translation: string; romanization?: string }>) => {
+    const cleanWord = word.replace(/[,.!?;:–—\-()]/g, "");
+    const punctuation = word.match(/[,.!?;:–—\-()]+$/)?.[0] || "";
+    const wordData = translations[cleanWord] || translations[cleanWord.toLowerCase()];
+    const existingVocab = vocabulary.find(v => v.word.toLowerCase() === cleanWord.toLowerCase());
+    
+    if (!cleanWord.trim()) return word;
+    
+    return (
+      <span key={word + Math.random()}>
+        <LingqWord
+          word={cleanWord}
+          translation={wordData?.translation || ""}
+          romanization={wordData?.romanization}
+          existingVocab={existingVocab}
+          onSave={handleWordSave}
+          onUpdateStatus={updateWordStatus}
+          onMarkKnown={markAsKnown}
+          onDelete={deleteWord}
+        />
+        {punctuation}{" "}
+      </span>
+    );
+  };
 
   // Story list view
   if (!selectedStory) {
@@ -388,7 +449,6 @@ const ChildrenStories = () => {
       <PageTransition>
         <div className="min-h-screen bg-background p-4">
           <div className="max-w-4xl mx-auto">
-            {/* Header */}
             <div className="flex items-center gap-4 mb-6">
               <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
                 <ArrowLeft className="w-5 h-5" />
@@ -399,49 +459,23 @@ const ChildrenStories = () => {
               </div>
             </div>
 
-            <p className="text-muted-foreground mb-6">
-              Четете български детски приказки и учете нови думи!
-            </p>
+            <p className="text-muted-foreground mb-6">Четете приказки с интерактивни преводи!</p>
 
-            {/* Story Grid */}
             <div className="grid gap-4 md:grid-cols-2">
               {childrenStories.map((story, idx) => {
-                const storyLessonId = `children-story-${story.id}`;
-                const completed = isLessonCompleted(storyLessonId);
+                const completedParts = story.parts.filter(part => isLessonCompleted(`children-story-${story.id}-${part.id}`)).length;
+                const progress = (completedParts / story.parts.length) * 100;
 
                 return (
                   <AnimatedItem key={story.id} delay={idx * 0.05}>
-                    <Card
-                      onClick={() => handleStorySelect(story)}
-                      className={cn(
-                        "p-4 cursor-pointer transition-all hover:border-primary hover:shadow-lg",
-                        completed && "border-green-500/50 bg-green-500/5"
-                      )}
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h3 className="font-bold text-lg">{story.title}</h3>
-                          <p className="text-sm text-muted-foreground">{story.titleRomanized}</p>
-                          <p className="text-xs text-muted-foreground italic">{story.titleEnglish}</p>
-                        </div>
-                        {completed && (
-                          <div className="bg-green-500 rounded-full p-1">
-                            <Check className="w-4 h-4 text-white" />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2 mt-3">
-                        <Badge variant="outline" className={levelColors[story.level]}>
-                          {story.level}
-                        </Badge>
-                        <Badge className="bg-primary/10 text-primary border-0">
-                          <Star className="w-3 h-3 mr-1 fill-current" />
-                          {story.xpReward} XP
-                        </Badge>
-                        <Badge variant="outline">
-                          {story.paragraphs.length} параграфа
-                        </Badge>
+                    <Card onClick={() => handleStorySelect(story)} className={cn("p-4 cursor-pointer transition-all hover:border-primary", progress === 100 && "border-green-500/50 bg-green-500/5")}>
+                      <h3 className="font-bold text-lg">{story.title}</h3>
+                      <p className="text-sm text-muted-foreground">{story.titleEnglish}</p>
+                      <Progress value={progress} className="h-2 my-3" />
+                      <div className="flex gap-2">
+                        <Badge variant="outline" className={levelColors[story.level]}>{story.level}</Badge>
+                        <Badge className="bg-primary/10 text-primary"><Star className="w-3 h-3 mr-1" />{story.xpReward} XP</Badge>
+                        <Badge variant="outline">{story.parts.length} части</Badge>
                       </div>
                     </Card>
                   </AnimatedItem>
@@ -454,136 +488,94 @@ const ChildrenStories = () => {
     );
   }
 
-  // Story reading view
-  const currentParagraph = selectedStory.paragraphs[currentParagraphIndex];
-  const progress = ((currentParagraphIndex + 1) / selectedStory.paragraphs.length) * 100;
-  const isLastParagraph = currentParagraphIndex === selectedStory.paragraphs.length - 1;
+  // Parts list view
+  if (!selectedPart) {
+    return (
+      <PageTransition>
+        <div className="min-h-screen bg-background p-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-4 mb-6">
+              <Button variant="ghost" size="icon" onClick={handleBackToList}><ArrowLeft className="w-5 h-5" /></Button>
+              <div>
+                <h1 className="text-2xl font-bold">{selectedStory.title}</h1>
+                <p className="text-sm text-muted-foreground">{selectedStory.titleEnglish}</p>
+              </div>
+            </div>
 
+            <div className="space-y-3">
+              {selectedStory.parts.map((part, idx) => {
+                const completed = isLessonCompleted(`children-story-${selectedStory.id}-${part.id}`);
+                return (
+                  <AnimatedItem key={part.id} delay={idx * 0.03}>
+                    <Card onClick={() => handlePartSelect(part)} className={cn("p-4 cursor-pointer hover:border-primary flex items-center justify-between", completed && "border-green-500/50 bg-green-500/5")}>
+                      <div className="flex items-center gap-4">
+                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center font-bold", completed ? "bg-green-500 text-white" : "bg-muted")}>
+                          {completed ? <Check className="w-5 h-5" /> : idx + 1}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{part.title}</h3>
+                          <p className="text-sm text-muted-foreground">{part.titleEnglish}</p>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                    </Card>
+                  </AnimatedItem>
+                );
+              })}
+            </div>
+
+            {selectedStory.moral && (
+              <Card className="mt-6 p-4 bg-primary/5">
+                <div className="flex items-center gap-2 mb-2"><BookOpen className="w-5 h-5 text-primary" /><h3 className="font-semibold">Поука</h3></div>
+                <p>{selectedStory.moral}</p>
+                <p className="text-sm text-muted-foreground italic mt-1">{selectedStory.moralEnglish}</p>
+              </Card>
+            )}
+          </div>
+        </div>
+      </PageTransition>
+    );
+  }
+
+  // Reading view
   return (
     <PageTransition>
       <div className="min-h-screen bg-background p-4">
-        <div className="max-w-3xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-4">
-            <Button variant="ghost" size="icon" onClick={handleBackToList}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div className="text-center">
-              <h2 className="font-bold">{selectedStory.title}</h2>
-              <p className="text-xs text-muted-foreground">{selectedStory.titleEnglish}</p>
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="ghost" size="icon" onClick={handleBackToList}><ArrowLeft className="w-5 h-5" /></Button>
+            <div>
+              <h1 className="text-xl font-bold">{selectedPart.title}</h1>
+              <p className="text-sm text-muted-foreground">{selectedPart.titleEnglish}</p>
             </div>
-            <Badge className="bg-primary/10 text-primary border-0">
-              {currentParagraphIndex + 1} / {selectedStory.paragraphs.length}
-            </Badge>
           </div>
 
-          {/* Progress */}
-          <Progress value={progress} className="h-2 mb-6" />
-
-          {/* Main Content */}
-          {!isCompleted ? (
-            <Card className="p-6 mb-6">
-              {/* Bulgarian text */}
-              <div className="text-center mb-6">
-                <p className="text-2xl font-medium leading-relaxed mb-3">
-                  {currentParagraph.bulgarian}
-                </p>
-                
-                {showRomanization && (
-                  <p className="text-lg text-muted-foreground italic mb-2">
-                    {currentParagraph.romanized}
+          <Card className="p-6 mb-6">
+            <div className="space-y-8">
+              {selectedPart.sentences.map((sentence, idx) => (
+                <div key={idx} className="space-y-2">
+                  <p className="text-lg leading-relaxed">
+                    {sentence.bulgarian.split(/\s+/).map((word) => renderWord(word, sentence.wordTranslations))}
                   </p>
-                )}
-
-                {showTranslation && (
-                  <p className="text-base text-muted-foreground">
-                    {currentParagraph.english}
-                  </p>
-                )}
-              </div>
-
-              {/* Audio button */}
-              <div className="flex justify-center mb-6">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={handlePlayParagraph}
-                  className="gap-2"
-                >
-                  <Volume2 className="w-5 h-5" />
-                  Слушай
-                </Button>
-              </div>
-
-              {/* Navigation */}
-              <div className="flex items-center justify-between">
-                <Button
-                  variant="ghost"
-                  onClick={handlePrevParagraph}
-                  disabled={currentParagraphIndex === 0}
-                >
-                  <ChevronLeft className="w-5 h-5 mr-1" />
-                  Назад
-                </Button>
-
-                {isLastParagraph ? (
-                  <Button onClick={handleComplete} className="gap-2">
-                    <Sparkles className="w-4 h-4" />
-                    Завърши
-                  </Button>
-                ) : (
-                  <Button onClick={handleNextParagraph}>
-                    Напред
-                    <ChevronRight className="w-5 h-5 ml-1" />
-                  </Button>
-                )}
-              </div>
-            </Card>
-          ) : (
-            /* Completion screen */
-            <Card className="p-6 text-center">
-              <div className="text-6xl mb-4">🎉</div>
-              <h2 className="text-2xl font-bold mb-2">Браво!</h2>
-              <p className="text-muted-foreground mb-4">
-                Прочетохте "{selectedStory.title}"
-              </p>
-
-              {selectedStory.moral && (
-                <div className="bg-primary/5 rounded-lg p-4 mb-6">
-                  <p className="font-medium text-primary mb-1">Поука:</p>
-                  <p className="italic">{selectedStory.moral}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {selectedStory.moralEnglish}
-                  </p>
+                  <p className="text-sm text-muted-foreground italic">{sentence.english}</p>
                 </div>
-              )}
-
-              <div className="flex gap-3 justify-center">
-                <Button variant="outline" onClick={handleBackToList}>
-                  Всички приказки
-                </Button>
-                <Button
-                  onClick={() => {
-                    setCurrentParagraphIndex(0);
-                    setIsCompleted(false);
-                  }}
-                >
-                  Прочети отново
-                </Button>
-              </div>
-            </Card>
-          )}
-
-          {/* Keyboard shortcuts hint */}
-          {!isCompleted && (
-            <div className="text-center text-xs text-muted-foreground mt-4">
-              <span className="inline-flex items-center gap-4">
-                <span>← → навигация</span>
-                <span>Space аудио</span>
-                <span>Esc изход</span>
-              </span>
+              ))}
             </div>
-          )}
+          </Card>
+
+          <div className="flex justify-between">
+            <Button variant="outline" onClick={handleBackToList}><ArrowLeft className="w-4 h-4 mr-2" />Назад</Button>
+            {!isCompleted ? (
+              <Button onClick={handleComplete}><Check className="w-4 h-4 mr-2" />Завърши</Button>
+            ) : (
+              selectedStory.parts.findIndex(p => p.id === selectedPart.id) < selectedStory.parts.length - 1 && (
+                <Button onClick={() => handlePartSelect(selectedStory.parts[selectedStory.parts.findIndex(p => p.id === selectedPart.id) + 1])}>
+                  Следваща<ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              )
+            )}
+          </div>
+          <p className="mt-6 text-center text-sm text-muted-foreground">💡 Щракнете върху дума за превод</p>
         </div>
       </div>
     </PageTransition>
