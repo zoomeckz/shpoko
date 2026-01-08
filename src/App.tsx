@@ -81,6 +81,7 @@ import ForumThread from "./pages/ForumThread";
 import RoguelikeMap from "./pages/RoguelikeMap";
 // Mini Games
 import ShpokoFruitGame from "./pages/ShpokoFruitGame";
+import RapidFireGame from "./pages/RapidFireGame";
 // Profile & Quests
 import Profile from "./pages/Profile";
 import Quests from "./pages/Quests";
