@@ -9,7 +9,8 @@ import {
   ChevronDown, 
   X,
   Trash2,
-  BookOpen
+  BookOpen,
+  BarChart3
 } from "lucide-react";
 import { 
   STATUS_LABELS, 
@@ -17,6 +18,7 @@ import {
   VocabularyWord 
 } from "@/hooks/useLingqVocabulary";
 import { cn } from "@/lib/utils";
+import { getFrequencyInfo, getFrequencyBarWidth } from "@/data/bulgarianWordFrequency";
 
 interface WordPopupProps {
   word: string;
@@ -96,6 +98,36 @@ export const WordPopup = ({
           <X className="h-4 w-4" />
         </Button>
       </div>
+
+      {/* Word Frequency Indicator */}
+      {(() => {
+        const freqInfo = getFrequencyInfo(word);
+        return (
+          <div className="mb-4 p-2 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-2 mb-1">
+              <BarChart3 className="w-3 h-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">Frequency:</span>
+              <span className={cn("text-xs font-medium", freqInfo.color)}>
+                {freqInfo.label}
+              </span>
+            </div>
+            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+              <div 
+                className={cn(
+                  "h-full rounded-full transition-all",
+                  freqInfo.level === 1 && "bg-green-500",
+                  freqInfo.level === 2 && "bg-blue-500",
+                  freqInfo.level === 3 && "bg-yellow-500",
+                  freqInfo.level === 4 && "bg-orange-500",
+                  freqInfo.level === 5 && "bg-red-500"
+                )}
+                style={{ width: `${getFrequencyBarWidth(freqInfo.level)}%` }}
+              />
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">{freqInfo.description}</p>
+          </div>
+        );
+      })()}
 
       {/* Translation input */}
       <div className="mb-4">
