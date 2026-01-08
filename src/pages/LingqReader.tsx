@@ -604,13 +604,13 @@ const LingqReader = () => {
   };
 
   const handleBackToList = () => {
-    navigate("/stories");
     setSelectedStory(null);
     setCurrentSentenceIndex(0);
     setIsCompleted(false);
     setShowQuiz(false);
     setQuizCompleted(false);
     setQuizScore({ score: 0, total: 0 });
+    navigate("/stories");
   };
 
   // Story list view

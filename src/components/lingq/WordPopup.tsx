@@ -151,12 +151,12 @@ export const WordPopup = ({
             </button>
           )}
         </div>
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>1=New</span>
-          <span>2=Recognized</span>
-          <span>3=Familiar</span>
-          <span>4=Learned</span>
-          <span className="text-green-600">✓=Known</span>
+        <div className="grid grid-cols-5 gap-1 text-[10px] text-muted-foreground text-center mt-1">
+          <span>New</span>
+          <span>Recognized</span>
+          <span>Familiar</span>
+          <span>Learned</span>
+          <span className="text-green-600">Known</span>
         </div>
       </div>
 
