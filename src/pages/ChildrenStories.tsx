@@ -341,7 +341,7 @@ const levelColors = {
 
 const ChildrenStories = () => {
   const navigate = useNavigate();
-  const { storyId } = useParams();
+  const { storyId, partId } = useParams();
   const { user, updateXP } = useAuth();
   const { toast } = useToast();
   const { isLessonCompleted, refetch: refetchProgress } = useUserProgress();
@@ -353,20 +353,21 @@ const ChildrenStories = () => {
 
   useEffect(() => {
     if (storyId) {
-      const parts = storyId.split("/");
-      const mainId = parts[0];
-      const partId = parts[1];
-      
-      const story = childrenStories.find(s => s.id === mainId);
+      const story = childrenStories.find(s => s.id === storyId);
       if (story) {
         setSelectedStory(story);
         if (partId) {
           const part = story.parts.find(p => p.id === partId);
           if (part) setSelectedPart(part);
+        } else {
+          setSelectedPart(null);
         }
       }
+    } else {
+      setSelectedStory(null);
+      setSelectedPart(null);
     }
-  }, [storyId]);
+  }, [storyId, partId]);
 
   const handleStorySelect = (story: ChildrenStory) => {
     navigate(`/children-stories/${story.id}`);
