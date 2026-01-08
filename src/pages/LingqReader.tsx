@@ -507,17 +507,53 @@ const LingqReader = () => {
     speak(word);
   }, [speak]);
 
-  const handleNextSentence = () => {
+  const handleNextSentence = useCallback(() => {
     if (selectedStory && currentSentenceIndex < selectedStory.sentences.length - 1) {
       setCurrentSentenceIndex(prev => prev + 1);
     }
-  };
+  }, [selectedStory, currentSentenceIndex]);
 
-  const handlePrevSentence = () => {
+  const handlePrevSentence = useCallback(() => {
     if (currentSentenceIndex > 0) {
       setCurrentSentenceIndex(prev => prev - 1);
     }
-  };
+  }, [currentSentenceIndex]);
+
+  // Keyboard shortcuts for reader navigation
+  useEffect(() => {
+    if (!selectedStory || isCompleted || showQuiz || showVocabReview) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if user is typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      switch (e.key) {
+        case "ArrowRight":
+        case "n":
+          e.preventDefault();
+          handleNextSentence();
+          break;
+        case "ArrowLeft":
+        case "p":
+          e.preventDefault();
+          handlePrevSentence();
+          break;
+        case " ": // Spacebar
+          e.preventDefault();
+          handlePlaySentence();
+          break;
+        case "Escape":
+          e.preventDefault();
+          handleBackToList();
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedStory, isCompleted, showQuiz, showVocabReview, handleNextSentence, handlePrevSentence, handlePlaySentence]);
 
   const handleComplete = async () => {
     if (!selectedStory || !user) return;
@@ -964,10 +1000,19 @@ const LingqReader = () => {
                     onPlayAudio={handlePlaySentence}
                   />
 
-                  {/* Instructions */}
-                  <p className="text-center text-sm text-muted-foreground mt-4">
-                    Click any word to see translation and save to vocabulary
-                  </p>
+                  {/* Instructions with keyboard shortcuts */}
+                  <div className="text-center text-sm text-muted-foreground mt-4 space-y-1">
+                    <p>Click any word to see translation and save to vocabulary</p>
+                    <p className="text-xs">
+                      <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">←</kbd>
+                      <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono ml-1">→</kbd>
+                      <span className="mx-2">navigate</span>
+                      <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">Space</kbd>
+                      <span className="ml-1">play audio</span>
+                      <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono ml-3">Esc</kbd>
+                      <span className="ml-1">exit</span>
+                    </p>
+                  </div>
                 </Card>
 
                 {/* Next/Complete button */}
