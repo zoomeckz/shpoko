@@ -128,6 +128,7 @@ const App = () => (
               {/* Children's Stories */}
               <Route path="/children-stories" element={<ChildrenStories />} />
               <Route path="/children-stories/:storyId" element={<ChildrenStories />} />
+              <Route path="/children-stories/:storyId/:partId" element={<ChildrenStories />} />
               {/* Topic Lessons */}
               <Route path="/topic/colors" element={<ColorsLesson />} />
               <Route path="/topic/numbers" element={<NumbersTopicLesson />} />
