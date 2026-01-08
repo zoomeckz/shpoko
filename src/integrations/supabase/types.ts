@@ -1315,6 +1315,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_vocabulary: {
+        Row: {
+          created_at: string
+          id: string
+          last_reviewed_at: string | null
+          next_review_at: string | null
+          notes: string | null
+          romanization: string | null
+          status: number
+          times_correct: number
+          times_seen: number
+          translation: string | null
+          updated_at: string
+          user_id: string
+          word: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_reviewed_at?: string | null
+          next_review_at?: string | null
+          notes?: string | null
+          romanization?: string | null
+          status?: number
+          times_correct?: number
+          times_seen?: number
+          translation?: string | null
+          updated_at?: string
+          user_id: string
+          word: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_reviewed_at?: string | null
+          next_review_at?: string | null
+          notes?: string | null
+          romanization?: string | null
+          status?: number
+          times_correct?: number
+          times_seen?: number
+          translation?: string | null
+          updated_at?: string
+          user_id?: string
+          word?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
