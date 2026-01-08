@@ -373,7 +373,7 @@ const LingqReader = () => {
   const { profile, user, updateXP } = useAuth();
   const { toast } = useToast();
   const { isLessonCompleted, refetch: refetchProgress } = useUserProgress();
-  const { speak } = useTextToSpeechCached();
+  const { playPronunciation: speak } = useTextToSpeechCached();
   const {
     vocabulary,
     getWordStatus,
@@ -436,11 +436,11 @@ const LingqReader = () => {
     if (!selectedStory) return;
     const sentence = selectedStory.sentences[currentSentenceIndex];
     const text = sentence.map(w => w.bulgarian).join(" ");
-    speak(text, "bg");
+    speak(text);
   }, [selectedStory, currentSentenceIndex, speak]);
 
   const handlePlayWord = useCallback((word: string) => {
-    speak(word, "bg");
+    speak(word);
   }, [speak]);
 
   const handleNextSentence = () => {
