@@ -87,6 +87,7 @@ import Quests from "./pages/Quests";
 import AchievementsPage from "./pages/AchievementsPage";
 import Friends from "./pages/Friends";
 import Shop from "./pages/Shop";
+import LingqReader from "./pages/LingqReader";
 
 const queryClient = new QueryClient();
 
@@ -185,6 +186,9 @@ const App = () => (
               <Route path="/achievements" element={<AchievementsPage />} />
               <Route path="/friends" element={<Friends />} />
               <Route path="/shop" element={<Shop />} />
+              {/* LingQ Reader */}
+              <Route path="/reader" element={<LingqReader />} />
+              <Route path="/reader/:storyId" element={<LingqReader />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </LanguageModeProvider>
