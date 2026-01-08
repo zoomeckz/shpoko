@@ -1005,7 +1005,7 @@ const LingqReader = () => {
                                 translation={word.meaning}
                                 romanization={word.romanized}
                                 existingVocab={getWordStatus(word.bulgarian)}
-                                onSave={saveWord}
+                                onSave={handleWordSave}
                                 onUpdateStatus={updateWordStatus}
                                 onMarkKnown={markAsKnown}
                                 onDelete={deleteWord}
@@ -1050,6 +1050,14 @@ const LingqReader = () => {
             />
           </div>
         )}
+
+        {/* Vocab Limit Dialog for reading view */}
+        <VocabLimitDialog
+          open={showVocabLimitDialog}
+          onOpenChange={setShowVocabLimitDialog}
+          currentCount={getStats().total}
+          limit={vocabLimit === Infinity ? 50 : vocabLimit}
+        />
       </div>
     </PageTransition>
   );
