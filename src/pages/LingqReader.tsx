@@ -20,7 +20,10 @@ import {
   ChevronRight,
   Check,
   Sparkles,
-  Library
+  Library,
+  Brain,
+  HelpCircle,
+  Crown,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +37,9 @@ import { SentencePlayer } from "@/components/lingq/SentencePlayer";
 import { VocabularyPanel } from "@/components/lingq/VocabularyPanel";
 import { PageTransition, AnimatedItem } from "@/components/PageTransition";
 import { useTextToSpeechCached } from "@/hooks/useTextToSpeechCached";
+import { VocabLimitDialog } from "@/components/lingq/VocabLimitDialog";
+import { ComprehensionQuiz } from "@/components/lingq/ComprehensionQuiz";
+import { VocabularyReview } from "@/components/lingq/VocabularyReview";
 
 interface Word {
   bulgarian: string;
@@ -428,9 +434,13 @@ const LingqReader = () => {
     getWordStatus,
     saveWord,
     updateWordStatus,
+    updateWordAfterReview,
     markAsKnown,
     deleteWord,
     getStats,
+    getLearningWords,
+    canAddWord,
+    vocabLimit,
   } = useLingqVocabulary();
 
   // State
@@ -440,6 +450,11 @@ const LingqReader = () => {
   const [showRomanization, setShowRomanization] = useState(true);
   const [showVocabPanel, setShowVocabPanel] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [quizScore, setQuizScore] = useState({ score: 0, total: 0 });
+  const [showVocabLimitDialog, setShowVocabLimitDialog] = useState(false);
+  const [showVocabReview, setShowVocabReview] = useState(false);
 
   // Load story from URL
   useEffect(() => {
@@ -507,9 +522,26 @@ const LingqReader = () => {
   const handleComplete = async () => {
     if (!selectedStory || !user) return;
 
+    // Show quiz if story has questions
+    if (selectedStory.questions && selectedStory.questions.length > 0 && !quizCompleted) {
+      setShowQuiz(true);
+      return;
+    }
+
+    await finishStory();
+  };
+
+  const finishStory = async () => {
+    if (!selectedStory || !user) return;
+
     const storyLessonId = `lingq-${selectedStory.id}`;
     const alreadyCompleted = isLessonCompleted(storyLessonId);
-    const earnedXP = alreadyCompleted ? 0 : selectedStory.xpReward;
+    let earnedXP = alreadyCompleted ? 0 : selectedStory.xpReward;
+    
+    // Add quiz bonus XP
+    if (quizCompleted && quizScore.score > 0) {
+      earnedXP += quizScore.score * 5;
+    }
 
     if (earnedXP > 0) {
       await updateXP(earnedXP);
@@ -536,11 +568,49 @@ const LingqReader = () => {
     });
   };
 
+  const handleQuizComplete = (score: number, total: number) => {
+    setQuizScore({ score, total });
+    setQuizCompleted(true);
+    setShowQuiz(false);
+    finishStory();
+  };
+
+  const handleVocabReviewComplete = async (results: { word: string; correct: boolean }[]) => {
+    setShowVocabReview(false);
+    
+    const correctCount = results.filter(r => r.correct).length;
+    if (correctCount > 0 && user) {
+      await updateXP(correctCount * 3);
+      toast({
+        title: "Review Complete!",
+        description: `You earned ${correctCount * 3} XP from reviewing vocabulary!`,
+      });
+    }
+  };
+
+  const handleWordSave = async (
+    word: string,
+    translation: string,
+    romanization?: string,
+    notes?: string,
+    status?: number
+  ) => {
+    // Check if we can add a word
+    if (!getWordStatus(word) && !canAddWord()) {
+      setShowVocabLimitDialog(true);
+      return null;
+    }
+    return saveWord(word, translation, romanization, notes, status);
+  };
+
   const handleBackToList = () => {
-    navigate("/lingq-reader");
+    navigate("/stories");
     setSelectedStory(null);
     setCurrentSentenceIndex(0);
     setIsCompleted(false);
+    setShowQuiz(false);
+    setQuizCompleted(false);
+    setQuizScore({ score: 0, total: 0 });
   };
 
   // Story list view
@@ -569,13 +639,22 @@ const LingqReader = () => {
             </div>
           </div>
 
-          {/* Vocabulary Stats */}
+          {/* Vocabulary Stats & Review Button */}
           <div className="max-w-4xl mx-auto px-4 py-4">
             <Card className="p-4 mb-6">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-4">
                 <div className="flex items-center gap-2">
                   <BookOpen className="h-5 w-5 text-primary" />
                   <span className="font-semibold">Your Vocabulary</span>
+                  <span className="text-xs text-muted-foreground">
+                    ({getStats().total}/{getStats().limit === Infinity ? "∞" : getStats().limit})
+                  </span>
+                  {!getStats().isPremium && (
+                    <Badge variant="outline" className="text-xs">
+                      <Crown className="w-3 h-3 mr-1" />
+                      Free
+                    </Badge>
+                  )}
                 </div>
                 <div className="flex items-center gap-4 text-sm">
                   <div>
@@ -592,14 +671,45 @@ const LingqReader = () => {
                     <span className="text-green-600 font-bold">{getStats().known}</span>
                     <span className="text-muted-foreground ml-1">Known</span>
                   </div>
-                  <div>
-                    <span className="font-bold">{getStats().total}</span>
-                    <span className="text-muted-foreground ml-1">Total</span>
-                  </div>
                 </div>
               </div>
+              {getLearningWords().length > 0 && (
+                <Button 
+                  onClick={() => setShowVocabReview(true)} 
+                  className="w-full mt-4 gap-2"
+                  variant="outline"
+                >
+                  <Brain className="w-4 h-4" />
+                  Review Vocabulary ({getLearningWords().length} words)
+                </Button>
+              )}
             </Card>
           </div>
+
+          {/* Vocab Review Mode */}
+          {showVocabReview && (
+            <div className="fixed inset-0 bg-background z-50 overflow-auto p-4">
+              <div className="max-w-2xl mx-auto pt-8">
+                <Button variant="ghost" onClick={() => setShowVocabReview(false)} className="mb-4">
+                  <ArrowLeft className="w-4 h-4 mr-2" /> Back to Library
+                </Button>
+                <VocabularyReview
+                  words={getLearningWords()}
+                  onComplete={handleVocabReviewComplete}
+                  onUpdateWord={updateWordAfterReview}
+                  onPlayAudio={handlePlayWord}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Vocab Limit Dialog */}
+          <VocabLimitDialog
+            open={showVocabLimitDialog}
+            onOpenChange={setShowVocabLimitDialog}
+            currentCount={getStats().total}
+            limit={vocabLimit === Infinity ? 50 : vocabLimit}
+          />
 
           {/* Story Grid */}
           <main className="max-w-4xl mx-auto px-4 pb-24">
@@ -765,7 +875,16 @@ const LingqReader = () => {
 
           {/* Content */}
           <div className="flex-1 overflow-auto">
-            {isCompleted ? (
+            {showQuiz && selectedStory.questions ? (
+              // Comprehension Quiz
+              <div className="p-6">
+                <ComprehensionQuiz
+                  questions={selectedStory.questions}
+                  onComplete={handleQuizComplete}
+                  storyTitle={selectedStory.title}
+                />
+              </div>
+            ) : isCompleted ? (
               // Completion screen
               <div className="flex items-center justify-center min-h-[60vh]">
                 <Card className="max-w-md w-full text-center p-8 animate-bounce-in">
@@ -819,7 +938,7 @@ const LingqReader = () => {
                             translation={word.meaning}
                             romanization={word.romanized}
                             existingVocab={getWordStatus(word.bulgarian)}
-                            onSave={saveWord}
+                            onSave={handleWordSave}
                             onUpdateStatus={updateWordStatus}
                             onMarkKnown={markAsKnown}
                             onDelete={deleteWord}

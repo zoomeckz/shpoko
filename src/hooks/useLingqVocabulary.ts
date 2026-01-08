@@ -42,12 +42,26 @@ export const STATUS_TEXT_COLORS = {
   5: "text-foreground",
 } as const;
 
+// SRS intervals in hours based on status
+const SRS_INTERVALS = {
+  1: 4,      // New -> 4 hours
+  2: 24,     // Recognized -> 1 day
+  3: 72,     // Familiar -> 3 days
+  4: 168,    // Learned -> 1 week
+  5: 720,    // Known -> 30 days (for occasional review)
+} as const;
+
+const FREE_VOCAB_LIMIT = 50;
+
 export const useLingqVocabulary = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const [vocabulary, setVocabulary] = useState<VocabularyWord[]>([]);
   const [loading, setLoading] = useState(true);
   const [vocabularyMap, setVocabularyMap] = useState<Map<string, VocabularyWord>>(new Map());
+
+  const isPremium = profile?.is_premium || false;
+  const vocabLimit = isPremium ? Infinity : FREE_VOCAB_LIMIT;
 
   // Fetch all user vocabulary
   const fetchVocabulary = useCallback(async () => {
@@ -85,6 +99,24 @@ export const useLingqVocabulary = () => {
     fetchVocabulary();
   }, [fetchVocabulary]);
 
+  // Calculate next review time based on SRS
+  const calculateNextReview = (status: number): string => {
+    const hours = SRS_INTERVALS[status as keyof typeof SRS_INTERVALS] || 24;
+    const nextReview = new Date();
+    nextReview.setHours(nextReview.getHours() + hours);
+    return nextReview.toISOString();
+  };
+
+  // Check if user can add more words
+  const canAddWord = useCallback((): boolean => {
+    return vocabulary.length < vocabLimit;
+  }, [vocabulary.length, vocabLimit]);
+
+  // Get remaining word slots
+  const getRemainingSlots = useCallback((): number => {
+    return Math.max(0, vocabLimit - vocabulary.length);
+  }, [vocabulary.length, vocabLimit]);
+
   // Get word status (returns undefined if word is new/unknown)
   const getWordStatus = useCallback((word: string): VocabularyWord | undefined => {
     return vocabularyMap.get(word.toLowerCase().replace(/[.,!?;:'"]/g, ""));
@@ -113,8 +145,17 @@ export const useLingqVocabulary = () => {
       return null;
     }
 
+    const cleanWord = word.toLowerCase().replace(/[.,!?;:'"]/g, "");
+    const existingWord = vocabularyMap.get(cleanWord);
+    
+    // Check limit only for new words
+    if (!existingWord && !canAddWord()) {
+      // Return null - the calling code will show the limit dialog
+      return null;
+    }
+
     try {
-      const cleanWord = word.toLowerCase().replace(/[.,!?;:'"]/g, "");
+      const nextReviewAt = calculateNextReview(status);
       
       const { data, error } = await supabase
         .from("user_vocabulary")
@@ -126,6 +167,8 @@ export const useLingqVocabulary = () => {
           notes: notes || null,
           status,
           times_seen: 1,
+          next_review_at: nextReviewAt,
+          last_reviewed_at: new Date().toISOString(),
         }, { onConflict: "user_id,word" })
         .select()
         .single();
@@ -149,20 +192,22 @@ export const useLingqVocabulary = () => {
       });
       return null;
     }
-  }, [user, toast, fetchVocabulary]);
+  }, [user, toast, fetchVocabulary, vocabularyMap, canAddWord]);
 
-  // Update word status
+  // Update word status with SRS scheduling
   const updateWordStatus = useCallback(async (word: string, newStatus: number): Promise<boolean> => {
     if (!user) return false;
 
     try {
       const cleanWord = word.toLowerCase().replace(/[.,!?;:'"]/g, "");
+      const nextReviewAt = calculateNextReview(newStatus);
       
       const { error } = await supabase
         .from("user_vocabulary")
         .update({ 
           status: newStatus,
           last_reviewed_at: new Date().toISOString(),
+          next_review_at: nextReviewAt,
         })
         .eq("user_id", user.id)
         .eq("word", cleanWord);
@@ -176,6 +221,43 @@ export const useLingqVocabulary = () => {
       return false;
     }
   }, [user, fetchVocabulary]);
+
+  // Update word after review (with correct/incorrect handling)
+  const updateWordAfterReview = useCallback(async (
+    word: string, 
+    newStatus: number, 
+    wasCorrect: boolean
+  ): Promise<boolean> => {
+    if (!user) return false;
+
+    try {
+      const cleanWord = word.toLowerCase().replace(/[.,!?;:'"]/g, "");
+      const existing = vocabularyMap.get(cleanWord);
+      if (!existing) return false;
+
+      const nextReviewAt = calculateNextReview(newStatus);
+      
+      const { error } = await supabase
+        .from("user_vocabulary")
+        .update({ 
+          status: newStatus,
+          last_reviewed_at: new Date().toISOString(),
+          next_review_at: nextReviewAt,
+          times_seen: existing.times_seen + 1,
+          times_correct: wasCorrect ? existing.times_correct + 1 : existing.times_correct,
+        })
+        .eq("user_id", user.id)
+        .eq("word", cleanWord);
+
+      if (error) throw error;
+
+      await fetchVocabulary();
+      return true;
+    } catch (error) {
+      console.error("Error updating word:", error);
+      return false;
+    }
+  }, [user, fetchVocabulary, vocabularyMap]);
 
   // Mark word as known (status 5)
   const markAsKnown = useCallback(async (word: string): Promise<boolean> => {
@@ -236,18 +318,26 @@ export const useLingqVocabulary = () => {
       familiar: vocabulary.filter(w => w.status === 3).length,
       learned: vocabulary.filter(w => w.status === 4).length,
       known: vocabulary.filter(w => w.status === 5).length,
+      limit: vocabLimit,
+      remaining: getRemainingSlots(),
+      isPremium,
     };
     return stats;
-  }, [vocabulary]);
+  }, [vocabulary, vocabLimit, getRemainingSlots, isPremium]);
 
   // Get words due for review (SRS-style)
   const getWordsForReview = useCallback(() => {
     const now = new Date();
     return vocabulary.filter(w => {
-      if (w.status === 5) return false; // Known words don't need review
+      if (w.status === 5) return false; // Known words don't need regular review
       if (!w.next_review_at) return true; // Never reviewed
       return new Date(w.next_review_at) <= now;
     });
+  }, [vocabulary]);
+
+  // Get words that are currently being learned (not known yet)
+  const getLearningWords = useCallback(() => {
+    return vocabulary.filter(w => w.status < 5);
   }, [vocabulary]);
 
   return {
@@ -257,11 +347,17 @@ export const useLingqVocabulary = () => {
     isWordKnown,
     saveWord,
     updateWordStatus,
+    updateWordAfterReview,
     markAsKnown,
     incrementTimesSeen,
     deleteWord,
     getStats,
     getWordsForReview,
+    getLearningWords,
+    canAddWord,
+    getRemainingSlots,
+    vocabLimit,
+    isPremium,
     refetch: fetchVocabulary,
   };
 };
