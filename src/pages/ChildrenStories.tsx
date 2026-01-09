@@ -10,6 +10,7 @@ import {
   Check,
   BookMarked,
   ChevronRight,
+  ChevronLeft,
   BookOpen,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -489,8 +490,21 @@ const ChildrenStories = () => {
     );
   }
 
+  // Calculate progress stats
+  const getProgressStats = () => {
+    const completedParts = selectedStory.parts.filter(part => 
+      isLessonCompleted(`children-story-${selectedStory.id}-${part.id}`)
+    );
+    const completedCount = completedParts.length;
+    const totalParts = selectedStory.parts.length;
+    const earnedXP = Math.floor((completedCount / totalParts) * selectedStory.xpReward);
+    return { completedCount, totalParts, earnedXP, progress: (completedCount / totalParts) * 100 };
+  };
+
   // Parts list view
   if (!selectedPart) {
+    const { completedCount, totalParts, earnedXP, progress } = getProgressStats();
+    
     return (
       <PageTransition>
         <div className="min-h-screen bg-background p-4">
@@ -503,9 +517,34 @@ const ChildrenStories = () => {
               </div>
             </div>
 
+            {/* Progress Overview */}
+            <Card className="p-4 mb-6 bg-gradient-to-r from-primary/10 to-primary/5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-primary" />
+                  <span className="font-semibold">Прогрес</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Badge variant="outline" className="bg-background">
+                    <Check className="w-3 h-3 mr-1" />
+                    {completedCount}/{totalParts} части
+                  </Badge>
+                  <Badge className="bg-primary/20 text-primary">
+                    <Star className="w-3 h-3 mr-1" />
+                    {earnedXP}/{selectedStory.xpReward} XP
+                  </Badge>
+                </div>
+              </div>
+              <Progress value={progress} className="h-3" />
+              {progress === 100 && (
+                <p className="text-sm text-green-600 mt-2 text-center font-medium">🎉 Историята е завършена!</p>
+              )}
+            </Card>
+
             <div className="space-y-3">
               {selectedStory.parts.map((part, idx) => {
                 const completed = isLessonCompleted(`children-story-${selectedStory.id}-${part.id}`);
+                const partXP = Math.floor(selectedStory.xpReward / totalParts);
                 return (
                   <AnimatedItem key={part.id} delay={idx * 0.03}>
                     <Card onClick={() => handlePartSelect(part)} className={cn("p-4 cursor-pointer hover:border-primary flex items-center justify-between", completed && "border-green-500/50 bg-green-500/5")}>
@@ -518,7 +557,18 @@ const ChildrenStories = () => {
                           <p className="text-sm text-muted-foreground">{part.titleEnglish}</p>
                         </div>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      <div className="flex items-center gap-2">
+                        {completed ? (
+                          <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30">
+                            <Check className="w-3 h-3 mr-1" />+{partXP} XP
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-muted-foreground">
+                            <Star className="w-3 h-3 mr-1" />{partXP} XP
+                          </Badge>
+                        )}
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
                     </Card>
                   </AnimatedItem>
                 );
@@ -538,18 +588,82 @@ const ChildrenStories = () => {
     );
   }
 
-  // Reading view
+  // Reading view - get current part index and navigation helpers
+  const currentPartIndex = selectedStory.parts.findIndex(p => p.id === selectedPart.id);
+  const prevPart = currentPartIndex > 0 ? selectedStory.parts[currentPartIndex - 1] : null;
+  const nextPart = currentPartIndex < selectedStory.parts.length - 1 ? selectedStory.parts[currentPartIndex + 1] : null;
+  const currentPartCompleted = isLessonCompleted(`children-story-${selectedStory.id}-${selectedPart.id}`);
+
   return (
     <PageTransition>
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-4 mb-6">
+          {/* Header with back button */}
+          <div className="flex items-center gap-4 mb-4">
             <Button variant="ghost" size="icon" onClick={handleBackToList}><ArrowLeft className="w-5 h-5" /></Button>
-            <div>
+            <div className="flex-1">
               <h1 className="text-xl font-bold">{selectedPart.title}</h1>
               <p className="text-sm text-muted-foreground">{selectedPart.titleEnglish}</p>
             </div>
+            {currentPartCompleted && (
+              <Badge className="bg-green-500/20 text-green-600 border-green-500/30">
+                <Check className="w-3 h-3 mr-1" />Завършена
+              </Badge>
+            )}
           </div>
+
+          {/* Part Navigator */}
+          <Card className="p-3 mb-6 bg-muted/50">
+            <div className="flex items-center justify-between">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                disabled={!prevPart}
+                onClick={() => prevPart && handlePartSelect(prevPart)}
+                className="gap-1"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">{prevPart?.title || "Предишна"}</span>
+                <span className="sm:hidden">Пред.</span>
+              </Button>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">
+                  Част {currentPartIndex + 1} / {selectedStory.parts.length}
+                </span>
+                <div className="flex gap-1">
+                  {selectedStory.parts.map((part, idx) => {
+                    const partCompleted = isLessonCompleted(`children-story-${selectedStory.id}-${part.id}`);
+                    const isCurrent = idx === currentPartIndex;
+                    return (
+                      <button
+                        key={part.id}
+                        onClick={() => handlePartSelect(part)}
+                        className={cn(
+                          "w-2.5 h-2.5 rounded-full transition-all",
+                          partCompleted ? "bg-green-500" : "bg-muted-foreground/30",
+                          isCurrent && "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                        )}
+                        title={part.title}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+              
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                disabled={!nextPart}
+                onClick={() => nextPart && handlePartSelect(nextPart)}
+                className="gap-1"
+              >
+                <span className="hidden sm:inline">{nextPart?.title || "Следваща"}</span>
+                <span className="sm:hidden">След.</span>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </Card>
 
           <Card className="p-6 mb-6">
             <div className="space-y-8">
@@ -565,15 +679,17 @@ const ChildrenStories = () => {
           </Card>
 
           <div className="flex justify-between">
-            <Button variant="outline" onClick={handleBackToList}><ArrowLeft className="w-4 h-4 mr-2" />Назад</Button>
-            {!isCompleted ? (
+            <Button variant="outline" onClick={handleBackToList}><ArrowLeft className="w-4 h-4 mr-2" />Към списък</Button>
+            {!isCompleted && !currentPartCompleted ? (
               <Button onClick={handleComplete}><Check className="w-4 h-4 mr-2" />Завърши</Button>
+            ) : nextPart ? (
+              <Button onClick={() => handlePartSelect(nextPart)}>
+                Следваща част<ChevronRight className="w-4 h-4 ml-2" />
+              </Button>
             ) : (
-              selectedStory.parts.findIndex(p => p.id === selectedPart.id) < selectedStory.parts.length - 1 && (
-                <Button onClick={() => handlePartSelect(selectedStory.parts[selectedStory.parts.findIndex(p => p.id === selectedPart.id) + 1])}>
-                  Следваща<ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
-              )
+              <Button variant="outline" onClick={handleBackToList}>
+                <Check className="w-4 h-4 mr-2" />Завърши историята
+              </Button>
             )}
           </div>
           <p className="mt-6 text-center text-sm text-muted-foreground">💡 Щракнете върху дума за превод</p>
