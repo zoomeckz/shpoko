@@ -15,15 +15,14 @@ export const DailyLoginBonus = () => {
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
-    // Show modal on mount if bonus is available
+    // Show modal on mount if bonus is available - no auto sound
     if (!loading && !todaysClaimed) {
       const timer = setTimeout(() => {
         setShowModal(true);
-        playStreak(); // Play sound when modal appears
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [loading, todaysClaimed, playStreak]);
+  }, [loading, todaysClaimed]);
 
   const handleClaim = async () => {
     setClaiming(true);

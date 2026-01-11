@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLeague } from "@/hooks/useLeague";
 import { useAuth } from "@/contexts/AuthContext";
-import { useDuolingoSounds } from "@/hooks/useDuolingoSounds";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -79,7 +79,6 @@ interface LeagueCardProps {
 export const LeagueCard = ({ compact = false }: LeagueCardProps) => {
   const { currentLeague, participants, userParticipation, loading, getUserPosition } = useLeague();
   const { profile } = useAuth();
-  const { playComplete } = useDuolingoSounds();
   const [showPromotion, setShowPromotion] = useState(false);
 
   const userPosition = getUserPosition();
@@ -92,12 +91,7 @@ export const LeagueCard = ({ compact = false }: LeagueCardProps) => {
   const isInPromotionZone = userPosition !== null && userPosition <= promotionZone;
   const isInDemotionZone = userPosition !== null && userPosition > demotionZone;
 
-  // Animation for position changes
-  useEffect(() => {
-    if (isInPromotionZone && userPosition === 1) {
-      playComplete();
-    }
-  }, [isInPromotionZone, userPosition, playComplete]);
+  // Sound was removed - it was playing repeatedly on re-renders
 
   if (loading) {
     return (
