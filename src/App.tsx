@@ -99,6 +99,14 @@ import AdminForum from "./pages/admin/AdminForum";
 import AdminQuizzes from "./pages/admin/AdminQuizzes";
 import AdminLeagues from "./pages/admin/AdminLeagues";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminLessons from "./pages/admin/AdminLessons";
+import AdminVocabulary from "./pages/admin/AdminVocabulary";
+import AdminAdventure from "./pages/admin/AdminAdventure";
+import AdminSkins from "./pages/admin/AdminSkins";
+import AdminShop from "./pages/admin/AdminShop";
+import AdminPremium from "./pages/admin/AdminPremium";
+import AdminHallOfFame from "./pages/admin/AdminHallOfFame";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 const queryClient = new QueryClient();
 
@@ -208,6 +216,22 @@ const App = () => (
               <Route path="/shop" element={<Shop />} />
               <Route path="/trade-history" element={<TradeHistory />} />
               <Route path="/image-analyzer" element={<ImageAnalyzer />} />
+              {/* Admin Routes */}
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/analytics" element={<AdminAnalytics />} />
+              <Route path="/admin/lessons" element={<AdminLessons />} />
+              <Route path="/admin/quizzes" element={<AdminQuizzes />} />
+              <Route path="/admin/vocabulary" element={<AdminVocabulary />} />
+              <Route path="/admin/roguelike" element={<AdminRoguelike />} />
+              <Route path="/admin/adventure" element={<AdminAdventure />} />
+              <Route path="/admin/leagues" element={<AdminLeagues />} />
+              <Route path="/admin/skins" element={<AdminSkins />} />
+              <Route path="/admin/shop" element={<AdminShop />} />
+              <Route path="/admin/premium" element={<AdminPremium />} />
+              <Route path="/admin/forum" element={<AdminForum />} />
+              <Route path="/admin/hall-of-fame" element={<AdminHallOfFame />} />
+              <Route path="/admin/settings" element={<AdminSettings />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </LanguageModeProvider>
