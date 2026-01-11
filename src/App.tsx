@@ -93,7 +93,6 @@ import ImageAnalyzer from "./pages/ImageAnalyzer";
 // Admin
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
-
 import AdminForum from "./pages/admin/AdminForum";
 import AdminQuizzes from "./pages/admin/AdminQuizzes";
 import AdminLeagues from "./pages/admin/AdminLeagues";
@@ -106,6 +105,7 @@ import AdminShop from "./pages/admin/AdminShop";
 import AdminPremium from "./pages/admin/AdminPremium";
 import AdminHallOfFame from "./pages/admin/AdminHallOfFame";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminQuests from "./pages/admin/AdminQuests";
 
 const queryClient = new QueryClient();
 
@@ -223,6 +223,7 @@ const App = () => (
               
               <Route path="/admin/adventure" element={<AdminAdventure />} />
               <Route path="/admin/leagues" element={<AdminLeagues />} />
+              <Route path="/admin/quests" element={<AdminQuests />} />
               <Route path="/admin/skins" element={<AdminSkins />} />
               <Route path="/admin/shop" element={<AdminShop />} />
               <Route path="/admin/premium" element={<AdminPremium />} />

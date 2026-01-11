@@ -27,8 +27,6 @@ export default function AdminSettings() {
         "skin_trades",
         "dungeon_runs",
         "adventure_progress",
-        "roguelike_progress",
-        "roguelike_completed_nodes",
         "quiz_attempts",
         "quiz_feedback",
         "forum_threads",
@@ -93,8 +91,7 @@ export default function AdminSettings() {
       // Clear progress
       await supabase.from("user_progress").delete().eq("user_id", userId);
       await supabase.from("adventure_progress").delete().eq("user_id", userId);
-      await supabase.from("roguelike_progress").delete().eq("user_id", userId);
-      await supabase.from("roguelike_completed_nodes").delete().eq("user_id", userId);
+      await supabase.from("dungeon_runs").delete().eq("user_id", userId);
     },
     onSuccess: () => {
       toast.success("User progress reset");

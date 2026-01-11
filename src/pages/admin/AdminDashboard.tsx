@@ -11,7 +11,7 @@ interface DashboardStats {
   totalQuizzes: number;
   totalForumThreads: number;
   totalVocabulary: number;
-  totalRoguelikeNodes: number;
+  totalAdventureNodes: number;
   totalLeagues: number;
 }
 
@@ -23,7 +23,7 @@ export default function AdminDashboard() {
     totalQuizzes: 0,
     totalForumThreads: 0,
     totalVocabulary: 0,
-    totalRoguelikeNodes: 0,
+    totalAdventureNodes: 0,
     totalLeagues: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -47,7 +47,7 @@ export default function AdminDashboard() {
           supabase.from("quizzes").select("id", { count: "exact", head: true }),
           supabase.from("forum_threads").select("id", { count: "exact", head: true }),
           supabase.from("user_vocabulary").select("id", { count: "exact", head: true }),
-          supabase.from("roguelike_nodes").select("id", { count: "exact", head: true }),
+          supabase.from("adventure_nodes").select("id", { count: "exact", head: true }),
           supabase.from("leagues").select("id", { count: "exact", head: true }),
         ]);
 
@@ -58,7 +58,7 @@ export default function AdminDashboard() {
           totalQuizzes: quizzesRes.count || 0,
           totalForumThreads: threadsRes.count || 0,
           totalVocabulary: vocabRes.count || 0,
-          totalRoguelikeNodes: nodesRes.count || 0,
+          totalAdventureNodes: nodesRes.count || 0,
           totalLeagues: leaguesRes.count || 0,
         });
       } catch (error) {
@@ -78,7 +78,7 @@ export default function AdminDashboard() {
     { title: "Total Quizzes", value: stats.totalQuizzes, icon: BookOpen, color: "text-purple-500" },
     { title: "Forum Threads", value: stats.totalForumThreads, icon: MessageSquare, color: "text-orange-500" },
     { title: "Vocabulary Items", value: stats.totalVocabulary, icon: TrendingUp, color: "text-pink-500" },
-    { title: "Roguelike Nodes", value: stats.totalRoguelikeNodes, icon: Gamepad2, color: "text-cyan-500" },
+    { title: "Adventure Nodes", value: stats.totalAdventureNodes, icon: Gamepad2, color: "text-cyan-500" },
     { title: "Leagues", value: stats.totalLeagues, icon: Trophy, color: "text-red-500" },
   ];
 
@@ -119,9 +119,9 @@ export default function AdminDashboard() {
                 <Users className="h-5 w-5" />
                 <span>Manage Users</span>
               </a>
-              <a href="/admin/roguelike" className="flex items-center gap-2 p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors">
+              <a href="/admin/adventure" className="flex items-center gap-2 p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors">
                 <Gamepad2 className="h-5 w-5" />
-                <span>Edit Roguelike Content</span>
+                <span>Manage Adventure</span>
               </a>
               <a href="/admin/forum" className="flex items-center gap-2 p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors">
                 <MessageSquare className="h-5 w-5" />
