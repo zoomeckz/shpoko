@@ -382,15 +382,15 @@ const Shop = () => {
                   {/* Streak Freezes Tab */}
                   <TabsContent value="freezes">
                     <motion.div variants={staggerItem}>
-                      <Card className="border-2 mb-6 overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5" />
-                        <CardHeader className="pb-3">
+                      <Card className="relative border-2 mb-6 overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 pointer-events-none" />
+                        <CardHeader className="pb-3 relative z-10">
                           <CardTitle className="flex items-center gap-2">
                             <Snowflake className="w-6 h-6 text-cyan-500" />
                             Streak Freeze
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-4 relative z-10">
                           <p className="text-muted-foreground">
                             Protect your streak when you can't practice! A freeze will
                             automatically be used if you miss a day.
