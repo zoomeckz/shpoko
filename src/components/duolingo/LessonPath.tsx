@@ -1,10 +1,11 @@
 import { LessonNode } from "./LessonNode";
 import { useNavigate } from "react-router-dom";
-import { lessons } from "@/data/lessons";
+import { lessons, DeepDiveLesson } from "@/data/lessons";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Star, BookOpen, MessageCircle, Mic, Headphones, PenTool } from "lucide-react";
+import { Star, BookOpen, MessageCircle, Mic, Headphones, PenTool, Award } from "lucide-react";
+import { toast } from "sonner";
 
 interface LessonPathProps {
   className?: string;
@@ -64,9 +65,26 @@ export const LessonPath = ({ className }: LessonPathProps) => {
     return "locked";
   };
 
+  const handleDeepDiveClick = (deepDive: DeepDiveLesson) => {
+    // Show reward info
+    if (deepDive.skinReward || deepDive.badgeReward) {
+      const rewards = [];
+      if (deepDive.skinReward) rewards.push("🎭 Skin");
+      if (deepDive.badgeReward) rewards.push("🏆 Badge");
+      toast.info(`Complete for: ${rewards.join(" + ")} + ${deepDive.xpReward} XP`);
+    }
+    
+    navigate(deepDive.route);
+  };
+
+  const isDeepDiveCompleted = (deepDiveId: string): boolean => {
+    // Check if the deep dive lesson has been completed
+    return isLessonCompleted(deepDiveId);
+  };
+
   // Add chest nodes after every 4 lessons
   const getNodesWithChests = () => {
-    const nodes: Array<{ type: "lesson" | "chest"; lesson?: typeof lessons[0]; index: number }> = [];
+    const nodes: Array<{ type: "lesson" | "chest" | "milestone"; lesson?: typeof lessons[0]; index: number }> = [];
     
     lessons.forEach((lesson, i) => {
       nodes.push({ type: "lesson", lesson, index: i });
@@ -75,6 +93,11 @@ export const LessonPath = ({ className }: LessonPathProps) => {
       if ((i + 1) % 4 === 0 && i < lessons.length - 1) {
         nodes.push({ type: "chest", index: i });
       }
+      
+      // Add milestone badge after every 8th lesson
+      if ((i + 1) % 8 === 0 && i < lessons.length - 1) {
+        nodes.push({ type: "milestone", index: i });
+      }
     });
     
     return nodes;
@@ -82,8 +105,8 @@ export const LessonPath = ({ className }: LessonPathProps) => {
 
   const nodes = getNodesWithChests();
 
-  // Get first 10 lessons for demo
-  const displayNodes = nodes.slice(0, 15);
+  // Get first 15 lessons for demo
+  const displayNodes = nodes.slice(0, 20);
 
   return (
     <div className={cn("flex flex-col items-center gap-4 py-8", className)}>
@@ -97,6 +120,16 @@ export const LessonPath = ({ className }: LessonPathProps) => {
           <h3 className="font-extrabold text-lg uppercase tracking-wide">Section 1</h3>
           <p className="text-sm opacity-90">Basics</p>
         </div>
+      </motion.div>
+
+      {/* Deep dive instruction */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        className="text-center text-sm text-muted-foreground px-4 max-w-xs"
+      >
+        <p>💡 Hover completed lessons to reveal <span className="text-primary font-semibold">deep-dive branches</span> for extra XP, skins & badges!</p>
       </motion.div>
 
       {/* Start lesson button for current */}
@@ -125,8 +158,27 @@ export const LessonPath = ({ className }: LessonPathProps) => {
                 status="available"
                 position="center"
                 isChest={true}
-                onClick={() => {/* Open chest reward */}}
+                onClick={() => {
+                  toast.success("🎁 Chest opened! +50 XP");
+                }}
               />
+            </motion.div>
+          );
+        }
+
+        if (node.type === "milestone") {
+          return (
+            <motion.div 
+              key={`milestone-${node.index}`} 
+              className="py-6 flex flex-col items-center"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: visualIndex * 0.05 }}
+            >
+              <div className="bg-gradient-to-r from-warning/20 via-warning/30 to-warning/20 px-6 py-3 rounded-full border-2 border-warning/50 flex items-center gap-2">
+                <Award className="w-5 h-5 text-warning" />
+                <span className="font-bold text-warning">Milestone {Math.floor(node.index / 8) + 1}</span>
+              </div>
             </motion.div>
           );
         }
@@ -134,7 +186,7 @@ export const LessonPath = ({ className }: LessonPathProps) => {
         const lesson = node.lesson!;
         const status = getNodeStatus(lesson.id, node.index);
         const lessonProgress = getLessonProgress(lesson.id);
-        const icon = lessonIcons[lesson.category || "default"] || lessonIcons.default;
+        const icon = lessonIcons[lesson.category?.toLowerCase() || "default"] || lessonIcons.default;
 
         return (
           <motion.div 
@@ -155,6 +207,9 @@ export const LessonPath = ({ className }: LessonPathProps) => {
               label={lesson.title}
               progress={status === "current" ? lessonProgress : undefined}
               icon={icon}
+              deepDives={lesson.deepDives}
+              onDeepDiveClick={handleDeepDiveClick}
+              isDeepDiveCompleted={isDeepDiveCompleted}
               onClick={() => {
                 if (lesson.route) {
                   navigate(lesson.route);

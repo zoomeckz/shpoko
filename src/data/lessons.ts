@@ -1,3 +1,14 @@
+export interface DeepDiveLesson {
+  id: string;
+  title: string;
+  description: string;
+  xpReward: number;
+  route: string;
+  type: 'practice' | 'challenge' | 'mastery';
+  skinReward?: string; // Skin ID to unlock
+  badgeReward?: string; // Badge name to unlock
+}
+
 export interface Lesson {
   id: string;
   title: string;
@@ -10,6 +21,10 @@ export interface Lesson {
   category: string;
   isPremium?: boolean;
   route?: string;
+  deepDives?: {
+    left?: DeepDiveLesson;
+    right?: DeepDiveLesson;
+  };
 }
 
 export const lessons: Lesson[] = [
@@ -25,6 +40,25 @@ export const lessons: Lesson[] = [
     difficulty: "beginner",
     category: "Basics",
     route: "/lesson/cyrillic",
+    deepDives: {
+      left: {
+        id: "cyrillic-practice",
+        title: "Letter Practice",
+        description: "Practice writing each Cyrillic letter",
+        xpReward: 30,
+        route: "/topic/cyrillic-letters",
+        type: "practice",
+      },
+      right: {
+        id: "cyrillic-challenge",
+        title: "Speed Match",
+        description: "Match letters against the clock",
+        xpReward: 50,
+        route: "/lesson/match-cyrillic",
+        type: "challenge",
+        badgeReward: "cyrillic-master",
+      },
+    },
   },
   {
     id: "cyrillic-letters",
@@ -37,6 +71,25 @@ export const lessons: Lesson[] = [
     difficulty: "beginner",
     category: "Basics",
     route: "/topic/cyrillic-letters",
+    deepDives: {
+      left: {
+        id: "letters-listen",
+        title: "Listen & Type",
+        description: "Hear the letter and type it",
+        xpReward: 40,
+        route: "/game/listening-fill",
+        type: "practice",
+      },
+      right: {
+        id: "letters-mastery",
+        title: "Mastery Test",
+        description: "Prove your letter knowledge",
+        xpReward: 60,
+        route: "/lesson/type-in",
+        type: "mastery",
+        skinReward: "raccoon-scholarly",
+      },
+    },
   },
   {
     id: "pronouns-topic",
@@ -49,6 +102,25 @@ export const lessons: Lesson[] = [
     difficulty: "beginner",
     category: "Basics",
     route: "/topic/pronouns",
+    deepDives: {
+      left: {
+        id: "pronouns-fill",
+        title: "Fill Pronouns",
+        description: "Complete sentences with correct pronouns",
+        xpReward: 35,
+        route: "/lesson/fill-blanks",
+        type: "practice",
+      },
+      right: {
+        id: "pronouns-dialogue",
+        title: "Dialogue Practice",
+        description: "Use pronouns in conversations",
+        xpReward: 55,
+        route: "/game/dialogue-battle",
+        type: "challenge",
+        badgeReward: "grammar-pro",
+      },
+    },
   },
   {
     id: "basic-greetings", 
@@ -61,6 +133,25 @@ export const lessons: Lesson[] = [
     difficulty: "beginner",
     category: "Basics",
     route: "/lesson/greetings",
+    deepDives: {
+      left: {
+        id: "greetings-listen",
+        title: "Listen & Respond",
+        description: "Hear greetings and choose responses",
+        xpReward: 35,
+        route: "/game/listening-fill",
+        type: "practice",
+      },
+      right: {
+        id: "greetings-rapid",
+        title: "Rapid Greetings",
+        description: "Speed-translate greetings",
+        xpReward: 60,
+        route: "/game/rapid-fire",
+        type: "challenge",
+        skinReward: "raccoon-curious",
+      },
+    },
   },
   {
     id: "numbers-1-20",
@@ -73,6 +164,25 @@ export const lessons: Lesson[] = [
     difficulty: "beginner",
     category: "Numbers",
     route: "/lesson/numbers",
+    deepDives: {
+      left: {
+        id: "numbers-type",
+        title: "Type Numbers",
+        description: "Type out number words",
+        xpReward: 30,
+        route: "/lesson/type-in",
+        type: "practice",
+      },
+      right: {
+        id: "numbers-math",
+        title: "Math Challenge",
+        description: "Solve math problems in Bulgarian",
+        xpReward: 50,
+        route: "/game/rapid-fire",
+        type: "challenge",
+        badgeReward: "number-ninja",
+      },
+    },
   },
   {
     id: "survival-phrases-topic",
@@ -85,6 +195,25 @@ export const lessons: Lesson[] = [
     difficulty: "beginner",
     category: "Basics",
     route: "/topic/survival-phrases",
+    deepDives: {
+      left: {
+        id: "survival-scenarios",
+        title: "Real Scenarios",
+        description: "Practice in situational contexts",
+        xpReward: 40,
+        route: "/scenarios",
+        type: "practice",
+      },
+      right: {
+        id: "survival-master",
+        title: "Survival Master",
+        description: "Test all survival phrases",
+        xpReward: 70,
+        route: "/game/cloze-combat",
+        type: "mastery",
+        skinReward: "raccoon-warrior",
+      },
+    },
   },
   {
     id: "food-drinks-starter-topic",
@@ -97,6 +226,25 @@ export const lessons: Lesson[] = [
     difficulty: "beginner",
     category: "Vocabulary",
     route: "/topic/food-drinks-starter",
+    deepDives: {
+      left: {
+        id: "food-match",
+        title: "Food Match",
+        description: "Match food words to images",
+        xpReward: 35,
+        route: "/lesson/choose-word",
+        type: "practice",
+      },
+      right: {
+        id: "food-order",
+        title: "Order Food",
+        description: "Practice ordering at a restaurant",
+        xpReward: 55,
+        route: "/topic/restaurant-ordering",
+        type: "challenge",
+        skinReward: "raccoon-chef",
+      },
+    },
   },
   {
     id: "colors-topic",
@@ -109,6 +257,25 @@ export const lessons: Lesson[] = [
     difficulty: "beginner",
     category: "Vocabulary",
     route: "/topic/colors",
+    deepDives: {
+      left: {
+        id: "colors-describe",
+        title: "Describe Objects",
+        description: "Use colors to describe things",
+        xpReward: 35,
+        route: "/lesson/fill-blanks",
+        type: "practice",
+      },
+      right: {
+        id: "colors-rapid",
+        title: "Color Blitz",
+        description: "Name colors as fast as you can",
+        xpReward: 50,
+        route: "/game/rapid-fire",
+        type: "challenge",
+        badgeReward: "color-expert",
+      },
+    },
   },
   {
     id: "shapes-topic",
@@ -121,6 +288,24 @@ export const lessons: Lesson[] = [
     difficulty: "beginner",
     category: "Vocabulary",
     route: "/topic/shapes",
+    deepDives: {
+      left: {
+        id: "shapes-identify",
+        title: "Identify Shapes",
+        description: "Pick the correct shape name",
+        xpReward: 30,
+        route: "/lesson/choose-word",
+        type: "practice",
+      },
+      right: {
+        id: "shapes-describe",
+        title: "Shape Descriptions",
+        description: "Describe objects using shapes",
+        xpReward: 45,
+        route: "/lesson/fill-blanks",
+        type: "challenge",
+      },
+    },
   },
   {
     id: "animals-topic",
@@ -133,6 +318,25 @@ export const lessons: Lesson[] = [
     difficulty: "beginner",
     category: "Vocabulary",
     route: "/topic/animals",
+    deepDives: {
+      left: {
+        id: "animals-sounds",
+        title: "Animal Sounds",
+        description: "Match animals to their sounds",
+        xpReward: 35,
+        route: "/game/listening-fill",
+        type: "practice",
+      },
+      right: {
+        id: "animals-story",
+        title: "Animal Story",
+        description: "Read a story about animals",
+        xpReward: 55,
+        route: "/stories",
+        type: "mastery",
+        skinReward: "raccoon-baby",
+      },
+    },
   },
   {
     id: "directions-beginner",
@@ -145,6 +349,25 @@ export const lessons: Lesson[] = [
     difficulty: "beginner",
     category: "Vocabulary",
     route: "/topic/directions-beginner",
+    deepDives: {
+      left: {
+        id: "directions-type",
+        title: "Type Directions",
+        description: "Type direction words",
+        xpReward: 35,
+        route: "/topic/directions-intermediate",
+        type: "practice",
+      },
+      right: {
+        id: "directions-navigate",
+        title: "City Navigator",
+        description: "Navigate using Bulgarian",
+        xpReward: 60,
+        route: "/topic/directions-advanced",
+        type: "mastery",
+        badgeReward: "explorer",
+      },
+    },
   },
   {
     id: "particles-beginner",
@@ -157,6 +380,25 @@ export const lessons: Lesson[] = [
     difficulty: "beginner",
     category: "Grammar",
     route: "/topic/particles-beginner",
+    deepDives: {
+      left: {
+        id: "particles-fill",
+        title: "Fill Particles",
+        description: "Complete sentences with particles",
+        xpReward: 40,
+        route: "/topic/particles-intermediate",
+        type: "practice",
+      },
+      right: {
+        id: "particles-verbs",
+        title: "Verb + Particle",
+        description: "Master verb-particle combos",
+        xpReward: 65,
+        route: "/topic/particles-advanced",
+        type: "mastery",
+        skinReward: "raccoon-mystic",
+      },
+    },
   },
   {
     id: "type-in-basics",
@@ -194,6 +436,25 @@ export const lessons: Lesson[] = [
     difficulty: "intermediate",
     category: "Grammar",
     route: "/topic/essential-verbs",
+    deepDives: {
+      left: {
+        id: "verbs-conjugate",
+        title: "Conjugation Drill",
+        description: "Practice verb conjugations",
+        xpReward: 45,
+        route: "/game/conjugation",
+        type: "practice",
+      },
+      right: {
+        id: "verbs-sentences",
+        title: "Verb Sentences",
+        description: "Use verbs in context",
+        xpReward: 60,
+        route: "/game/cloze-combat",
+        type: "challenge",
+        badgeReward: "verb-virtuoso",
+      },
+    },
   },
   {
     id: "numbers-topic",
@@ -206,6 +467,25 @@ export const lessons: Lesson[] = [
     difficulty: "intermediate",
     category: "Numbers",
     route: "/topic/numbers",
+    deepDives: {
+      left: {
+        id: "numbers-type-big",
+        title: "Type Big Numbers",
+        description: "Practice large number words",
+        xpReward: 40,
+        route: "/lesson/type-in",
+        type: "practice",
+      },
+      right: {
+        id: "numbers-prices",
+        title: "Price Challenge",
+        description: "Handle money and prices",
+        xpReward: 55,
+        route: "/game/rapid-fire",
+        type: "challenge",
+        skinReward: "raccoon-golden",
+      },
+    },
   },
   {
     id: "adjectives-topic",
@@ -218,6 +498,25 @@ export const lessons: Lesson[] = [
     difficulty: "intermediate",
     category: "Vocabulary",
     route: "/topic/adjectives",
+    deepDives: {
+      left: {
+        id: "adj-agreement",
+        title: "Gender Agreement",
+        description: "Match adjective forms to nouns",
+        xpReward: 40,
+        route: "/lesson/fill-blanks",
+        type: "practice",
+      },
+      right: {
+        id: "adj-describe",
+        title: "Describe Everything",
+        description: "Advanced description practice",
+        xpReward: 55,
+        route: "/topic/adjectives-2",
+        type: "mastery",
+        badgeReward: "wordsmith",
+      },
+    },
   },
   {
     id: "days-months",
@@ -230,6 +529,25 @@ export const lessons: Lesson[] = [
     difficulty: "intermediate",
     category: "Time",
     route: "/topic/weekdays",
+    deepDives: {
+      left: {
+        id: "calendar-practice",
+        title: "Calendar Practice",
+        description: "Schedule events in Bulgarian",
+        xpReward: 45,
+        route: "/lesson/fill-blanks",
+        type: "practice",
+      },
+      right: {
+        id: "time-master",
+        title: "Time Master",
+        description: "Master dates and times",
+        xpReward: 60,
+        route: "/game/rapid-fire",
+        type: "mastery",
+        skinReward: "raccoon-astronaut",
+      },
+    },
   },
   {
     id: "food-drinks",
@@ -242,6 +560,25 @@ export const lessons: Lesson[] = [
     difficulty: "intermediate",
     category: "Vocabulary",
     route: "/topic/food-drinks",
+    deepDives: {
+      left: {
+        id: "food-menu",
+        title: "Read Menus",
+        description: "Understand restaurant menus",
+        xpReward: 45,
+        route: "/scenarios",
+        type: "practice",
+      },
+      right: {
+        id: "food-chef",
+        title: "Chef Challenge",
+        description: "Recipe vocabulary mastery",
+        xpReward: 65,
+        route: "/game/cloze-combat",
+        type: "mastery",
+        skinReward: "raccoon-chef",
+      },
+    },
   },
   {
     id: "at-the-restaurant",
@@ -254,6 +591,25 @@ export const lessons: Lesson[] = [
     difficulty: "intermediate",
     category: "Conversation",
     route: "/topic/restaurant",
+    deepDives: {
+      left: {
+        id: "restaurant-listen",
+        title: "Listen & Order",
+        description: "Listen and respond to waiters",
+        xpReward: 50,
+        route: "/game/listening-fill",
+        type: "practice",
+      },
+      right: {
+        id: "restaurant-dialogue",
+        title: "Full Dialogue",
+        description: "Complete restaurant conversation",
+        xpReward: 70,
+        route: "/game/dialogue-battle",
+        type: "mastery",
+        badgeReward: "conversationalist",
+      },
+    },
   },
   {
     id: "jobs-topic",
@@ -266,6 +622,25 @@ export const lessons: Lesson[] = [
     difficulty: "intermediate",
     category: "Vocabulary",
     route: "/topic/jobs",
+    deepDives: {
+      left: {
+        id: "jobs-match",
+        title: "Job Matching",
+        description: "Match jobs to descriptions",
+        xpReward: 40,
+        route: "/lesson/choose-word",
+        type: "practice",
+      },
+      right: {
+        id: "jobs-interview",
+        title: "Job Interview",
+        description: "Practice interview dialogue",
+        xpReward: 60,
+        route: "/game/dialogue-battle",
+        type: "challenge",
+        skinReward: "raccoon-royal",
+      },
+    },
   },
   {
     id: "family-topic",
@@ -278,6 +653,25 @@ export const lessons: Lesson[] = [
     difficulty: "intermediate",
     category: "Vocabulary",
     route: "/topic/family",
+    deepDives: {
+      left: {
+        id: "family-tree",
+        title: "Family Tree",
+        description: "Build a family tree in Bulgarian",
+        xpReward: 40,
+        route: "/lesson/fill-blanks",
+        type: "practice",
+      },
+      right: {
+        id: "family-stories",
+        title: "Family Stories",
+        description: "Read about Bulgarian families",
+        xpReward: 55,
+        route: "/stories",
+        type: "mastery",
+        badgeReward: "family-friend",
+      },
+    },
   },
   {
     id: "restaurant-ordering",
@@ -327,6 +721,25 @@ export const lessons: Lesson[] = [
     difficulty: "advanced",
     category: "Vocabulary",
     route: "/topic/adjectives-2",
+    deepDives: {
+      left: {
+        id: "adj-comparative",
+        title: "Comparatives",
+        description: "Compare using adjectives",
+        xpReward: 50,
+        route: "/lesson/fill-blanks",
+        type: "practice",
+      },
+      right: {
+        id: "adj-superlative",
+        title: "Superlatives",
+        description: "Master superlative forms",
+        xpReward: 70,
+        route: "/game/cloze-combat",
+        type: "mastery",
+        skinReward: "raccoon-superhero",
+      },
+    },
   },
   {
     id: "verbs-topic",
@@ -339,6 +752,25 @@ export const lessons: Lesson[] = [
     difficulty: "advanced",
     category: "Grammar",
     route: "/topic/verbs",
+    deepDives: {
+      left: {
+        id: "verbs-aspect",
+        title: "Verb Aspects",
+        description: "Perfect vs imperfect verbs",
+        xpReward: 55,
+        route: "/game/conjugation",
+        type: "practice",
+      },
+      right: {
+        id: "verbs-advanced",
+        title: "Advanced Verbs",
+        description: "Complex verb constructions",
+        xpReward: 75,
+        route: "/game/cloze-combat",
+        type: "mastery",
+        skinReward: "raccoon-ninja",
+      },
+    },
   },
   {
     id: "directions-advanced",
@@ -375,6 +807,25 @@ export const lessons: Lesson[] = [
     difficulty: "advanced",
     category: "Conversation",
     route: "/topic/weather",
+    deepDives: {
+      left: {
+        id: "weather-vocab",
+        title: "Weather Words",
+        description: "All weather vocabulary",
+        xpReward: 45,
+        route: "/lesson/choose-word",
+        type: "practice",
+      },
+      right: {
+        id: "weather-forecast",
+        title: "Read Forecasts",
+        description: "Understand weather reports",
+        xpReward: 65,
+        route: "/scenarios",
+        type: "mastery",
+        badgeReward: "weather-watcher",
+      },
+    },
   },
   // Premium Lessons
   {
@@ -414,6 +865,25 @@ export const lessons: Lesson[] = [
     difficulty: "advanced",
     category: "Grammar",
     isPremium: true,
+    deepDives: {
+      left: {
+        id: "past-practice",
+        title: "Past Practice",
+        description: "Drill past tense forms",
+        xpReward: 60,
+        route: "/game/conjugation",
+        type: "practice",
+      },
+      right: {
+        id: "past-stories",
+        title: "Tell Stories",
+        description: "Narrate in past tense",
+        xpReward: 80,
+        route: "/stories",
+        type: "mastery",
+        skinReward: "raccoon-vampire",
+      },
+    },
   },
   {
     id: "future-tense",
@@ -426,6 +896,25 @@ export const lessons: Lesson[] = [
     difficulty: "advanced",
     category: "Grammar",
     isPremium: true,
+    deepDives: {
+      left: {
+        id: "future-practice",
+        title: "Future Drills",
+        description: "Practice future constructions",
+        xpReward: 60,
+        route: "/game/conjugation",
+        type: "practice",
+      },
+      right: {
+        id: "future-plans",
+        title: "Make Plans",
+        description: "Discuss future plans",
+        xpReward: 80,
+        route: "/game/dialogue-battle",
+        type: "mastery",
+        skinReward: "raccoon-astronaut",
+      },
+    },
   },
   {
     id: "synonyms-premium",
@@ -441,6 +930,7 @@ export const lessons: Lesson[] = [
     route: "/topic/synonyms",
   },
 ];
+
 export const getUserStats = () => ({
   streak: 0,
   hearts: 5,
