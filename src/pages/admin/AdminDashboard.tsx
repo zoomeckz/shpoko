@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { AdminLayout } from "./AdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, BookOpen, MessageSquare, Trophy, TrendingUp, Activity, Crown, Gamepad2 } from "lucide-react";
+import { Users, BookOpen, MessageSquare, Trophy, TrendingUp, Activity, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface DashboardStats {
@@ -11,7 +11,6 @@ interface DashboardStats {
   totalQuizzes: number;
   totalForumThreads: number;
   totalVocabulary: number;
-  totalAdventureNodes: number;
   totalLeagues: number;
 }
 
@@ -23,7 +22,6 @@ export default function AdminDashboard() {
     totalQuizzes: 0,
     totalForumThreads: 0,
     totalVocabulary: 0,
-    totalAdventureNodes: 0,
     totalLeagues: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -38,7 +36,6 @@ export default function AdminDashboard() {
           quizzesRes,
           threadsRes,
           vocabRes,
-          nodesRes,
           leaguesRes,
         ] = await Promise.all([
           supabase.from("profiles").select("id", { count: "exact", head: true }),
@@ -47,7 +44,6 @@ export default function AdminDashboard() {
           supabase.from("quizzes").select("id", { count: "exact", head: true }),
           supabase.from("forum_threads").select("id", { count: "exact", head: true }),
           supabase.from("user_vocabulary").select("id", { count: "exact", head: true }),
-          supabase.from("adventure_nodes").select("id", { count: "exact", head: true }),
           supabase.from("leagues").select("id", { count: "exact", head: true }),
         ]);
 
@@ -58,7 +54,6 @@ export default function AdminDashboard() {
           totalQuizzes: quizzesRes.count || 0,
           totalForumThreads: threadsRes.count || 0,
           totalVocabulary: vocabRes.count || 0,
-          totalAdventureNodes: nodesRes.count || 0,
           totalLeagues: leaguesRes.count || 0,
         });
       } catch (error) {
@@ -78,7 +73,6 @@ export default function AdminDashboard() {
     { title: "Total Quizzes", value: stats.totalQuizzes, icon: BookOpen, color: "text-purple-500" },
     { title: "Forum Threads", value: stats.totalForumThreads, icon: MessageSquare, color: "text-orange-500" },
     { title: "Vocabulary Items", value: stats.totalVocabulary, icon: TrendingUp, color: "text-pink-500" },
-    { title: "Adventure Nodes", value: stats.totalAdventureNodes, icon: Gamepad2, color: "text-cyan-500" },
     { title: "Leagues", value: stats.totalLeagues, icon: Trophy, color: "text-red-500" },
   ];
 
@@ -119,9 +113,9 @@ export default function AdminDashboard() {
                 <Users className="h-5 w-5" />
                 <span>Manage Users</span>
               </a>
-              <a href="/admin/adventure" className="flex items-center gap-2 p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors">
-                <Gamepad2 className="h-5 w-5" />
-                <span>Manage Adventure</span>
+              <a href="/admin/quizzes" className="flex items-center gap-2 p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors">
+                <BookOpen className="h-5 w-5" />
+                <span>Manage Quizzes</span>
               </a>
               <a href="/admin/forum" className="flex items-center gap-2 p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors">
                 <MessageSquare className="h-5 w-5" />

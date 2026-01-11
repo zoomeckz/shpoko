@@ -69,9 +69,7 @@ import SpanishFoodLesson from "./pages/spanish/SpanishFoodLesson";
 // Quiz
 import QuizPage from "./pages/QuizPage";
 import QuizDiscover from "./pages/QuizDiscover";
-// Adventure & Flashcards
-import Adventure from "./pages/Adventure";
-import DungeonGame from "./pages/DungeonGame";
+// Flashcards
 import Flashcards from "./pages/Flashcards";
 import FlashcardStudy from "./pages/FlashcardStudy";
 // Lesson Screen
@@ -100,7 +98,6 @@ import AdminLeagues from "./pages/admin/AdminLeagues";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminLessons from "./pages/admin/AdminLessons";
 import AdminVocabulary from "./pages/admin/AdminVocabulary";
-import AdminAdventure from "./pages/admin/AdminAdventure";
 import AdminSkins from "./pages/admin/AdminSkins";
 import AdminShop from "./pages/admin/AdminShop";
 import AdminPremium from "./pages/admin/AdminPremium";
@@ -192,9 +189,6 @@ const App = () => (
               <Route path="/spanish/food" element={<SpanishFoodLesson />} />
               {/* Quiz */}
               <Route path="/quiz" element={<QuizPage />} />
-              {/* Adventure Mode */}
-              <Route path="/adventure" element={<Adventure />} />
-              <Route path="/adventure/dungeon/:dungeonId" element={<DungeonGame />} />
               {/* Flashcards */}
               <Route path="/flashcards" element={<Flashcards />} />
               <Route path="/flashcards/:deckId" element={<FlashcardStudy />} />
@@ -222,8 +216,6 @@ const App = () => (
               <Route path="/admin/lessons" element={<AdminLessons />} />
               <Route path="/admin/quizzes" element={<AdminQuizzes />} />
               <Route path="/admin/vocabulary" element={<AdminVocabulary />} />
-              
-              <Route path="/admin/adventure" element={<AdminAdventure />} />
               <Route path="/admin/leagues" element={<AdminLeagues />} />
               <Route path="/admin/quests" element={<AdminQuests />} />
               <Route path="/admin/skins" element={<AdminSkins />} />
