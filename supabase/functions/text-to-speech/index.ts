@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,19 +8,17 @@ const corsHeaders = {
 
 interface TextToSpeechRequest {
   text: string;
-  voice?: string;
+  lang?: string;
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { text, voice = "onwK4e9ZLuTAKqWW03F9" }: TextToSpeechRequest = await req.json();
+    const { text, lang = "bg" }: TextToSpeechRequest = await req.json();
     
-    // Input validation
     if (!text || typeof text !== "string") {
       throw new Error("Text is required and must be a string");
     }
@@ -29,53 +28,32 @@ serve(async (req) => {
       throw new Error("Text cannot be empty");
     }
     
-    if (trimmedText.length > 500) {
-      throw new Error("Text must be 500 characters or less");
+    if (trimmedText.length > 200) {
+      throw new Error("Text must be 200 characters or less");
     }
 
-    const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
-    
-    if (!ELEVENLABS_API_KEY) {
-      console.error("ELEVENLABS_API_KEY is not configured");
-      throw new Error("Text-to-speech service is not configured");
-    }
+    console.log("Generating speech for:", trimmedText.substring(0, 50), "lang:", lang);
 
-    console.log("Generating speech for:", text.substring(0, 50));
+    // Use Google Translate TTS - free and excellent Bulgarian support
+    const encodedText = encodeURIComponent(trimmedText);
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodedText}`;
 
-    // Use ElevenLabs API
-    const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voice}`,
-      {
-        method: "POST",
-        headers: {
-          "Accept": "audio/mpeg",
-          "Content-Type": "application/json",
-          "xi-api-key": ELEVENLABS_API_KEY,
-        },
-        body: JSON.stringify({
-          text,
-          model_id: "eleven_multilingual_v2",
-          voice_settings: {
-            stability: 0.5,
-            similarity_boost: 0.75,
-          },
-        }),
-      }
-    );
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "Referer": "https://translate.google.com/",
+      },
+    });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("ElevenLabs API error:", response.status, errorText);
-      throw new Error(`ElevenLabs API error: ${response.status}`);
+      console.error("Google TTS error:", response.status);
+      throw new Error(`Google TTS error: ${response.status}`);
     }
 
-    // Convert audio buffer to base64
     const arrayBuffer = await response.arrayBuffer();
-    const base64Audio = btoa(
-      String.fromCharCode(...new Uint8Array(arrayBuffer))
-    );
+    const base64Audio = base64Encode(arrayBuffer);
 
-    console.log("Speech generated successfully");
+    console.log("Speech generated successfully, size:", arrayBuffer.byteLength);
 
     return new Response(
       JSON.stringify({ audioContent: base64Audio }),
