@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Header } from "@/components/Header";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProfilePicture } from "@/components/ProfilePictureSelector";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  ArrowLeft, 
   Play, 
   Star, 
   Search, 
@@ -23,10 +22,6 @@ import {
   TrendingUp,
   Sparkles,
   Filter,
-  SortAsc,
-  SortDesc,
-  Heart,
-  Flame,
   Calendar
 } from "lucide-react";
 import { toast } from "sonner";
@@ -91,9 +86,9 @@ interface TopCreator {
 }
 
 const QuizDiscover = () => {
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const { playClick, playComplete } = useDuolingoSounds();
+  const { playClick } = useDuolingoSounds();
 
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [topQuizzes, setTopQuizzes] = useState<Quiz[]>([]);
@@ -118,7 +113,6 @@ const QuizDiscover = () => {
     setLoading(true);
 
     try {
-      // Fetch all public quizzes
       const { data: publicQuizzes, error } = await supabase
         .from("quizzes")
         .select("*")
@@ -127,7 +121,6 @@ const QuizDiscover = () => {
 
       if (error) throw error;
 
-      // Get question counts
       const quizIds = (publicQuizzes || []).map(q => q.id);
       const { data: questions } = await supabase
         .from("quiz_questions")
@@ -139,7 +132,6 @@ const QuizDiscover = () => {
         questionCounts.set(q.quiz_id, (questionCounts.get(q.quiz_id) || 0) + 1);
       });
 
-      // Get play counts
       const { data: attempts } = await supabase
         .from("quiz_attempts")
         .select("quiz_id")
@@ -150,7 +142,6 @@ const QuizDiscover = () => {
         playCounts.set(a.quiz_id, (playCounts.get(a.quiz_id) || 0) + 1);
       });
 
-      // Get ratings
       const { data: ratings } = await supabase
         .from("quiz_feedback")
         .select("quiz_id, rating")
@@ -164,7 +155,6 @@ const QuizDiscover = () => {
         }
       });
 
-      // Get creator profiles
       const creatorIds = [...new Set((publicQuizzes || []).map(q => q.creator_id))];
       const { data: profiles } = await supabase
         .from("profiles")
@@ -173,7 +163,6 @@ const QuizDiscover = () => {
 
       const profileMap = new Map((profiles || []).map(p => [p.id, p]));
 
-      // Combine all data
       const enrichedQuizzes: Quiz[] = (publicQuizzes || []).map(q => {
         const ratingData = ratingMap.get(q.id);
         const creatorProfile = profileMap.get(q.creator_id);
@@ -198,7 +187,6 @@ const QuizDiscover = () => {
 
   const fetchTopQuizzes = async () => {
     try {
-      // Get this week's top rated quizzes
       const weekStart = new Date();
       weekStart.setDate(weekStart.getDate() - weekStart.getDay());
       weekStart.setHours(0, 0, 0, 0);
@@ -208,7 +196,6 @@ const QuizDiscover = () => {
         .select("quiz_id, rating")
         .gte("created_at", weekStart.toISOString());
 
-      // Calculate averages
       const quizRatings = new Map<string, { sum: number; count: number }>();
       (feedback || []).forEach(f => {
         if (f.rating) {
@@ -217,7 +204,6 @@ const QuizDiscover = () => {
         }
       });
 
-      // Get top 5 quiz IDs with at least 2 ratings
       const topQuizIds = Array.from(quizRatings.entries())
         .filter(([_, v]) => v.count >= 2)
         .sort((a, b) => (b[1].sum / b[1].count) - (a[1].sum / a[1].count))
@@ -262,24 +248,21 @@ const QuizDiscover = () => {
 
   const fetchTopCreators = async () => {
     try {
-      // Get all public quizzes with their creators
-      const { data: quizzes } = await supabase
+      const { data: quizzesData } = await supabase
         .from("quizzes")
         .select("id, creator_id")
         .eq("is_public", true);
 
-      if (!quizzes || quizzes.length === 0) return;
+      if (!quizzesData || quizzesData.length === 0) return;
 
-      // Count quizzes per creator
       const creatorStats = new Map<string, { quiz_count: number; quiz_ids: string[] }>();
-      quizzes.forEach(q => {
+      quizzesData.forEach(q => {
         const stats = creatorStats.get(q.creator_id) || { quiz_count: 0, quiz_ids: [] };
         stats.quiz_count++;
         stats.quiz_ids.push(q.id);
         creatorStats.set(q.creator_id, stats);
       });
 
-      // Get creators with at least 2 quizzes
       const topCreatorIds = Array.from(creatorStats.entries())
         .filter(([_, v]) => v.quiz_count >= 2)
         .sort((a, b) => b[1].quiz_count - a[1].quiz_count)
@@ -292,7 +275,6 @@ const QuizDiscover = () => {
           .select("id, username, profile_picture")
           .in("id", topCreatorIds);
 
-        // Get ratings for their quizzes
         const allQuizIds = topCreatorIds.flatMap(id => creatorStats.get(id)?.quiz_ids || []);
         const { data: ratings } = await supabase
           .from("quiz_feedback")
@@ -312,7 +294,6 @@ const QuizDiscover = () => {
           const profile = profiles?.find(p => p.id === id);
           const stats = creatorStats.get(id)!;
           
-          // Calculate average rating across all quizzes
           const allRatings = stats.quiz_ids.flatMap(qid => quizRatings.get(qid) || []);
           const avgRating = allRatings.length > 0 
             ? allRatings.reduce((a, b) => a + b, 0) / allRatings.length 
@@ -340,7 +321,6 @@ const QuizDiscover = () => {
     navigate(`/quiz?play=${quizId}`);
   };
 
-  // Filter and sort quizzes
   const filteredQuizzes = quizzes
     .filter(q => {
       const matchesSearch = searchQuery === "" || 
@@ -361,413 +341,288 @@ const QuizDiscover = () => {
           return b.play_count - a.play_count;
         case "popular":
         default:
-          // Combine rating and play count for popularity
           return (b.rating_count * 2 + b.play_count) - (a.rating_count * 2 + a.play_count);
       }
     });
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    navigate("/auth");
-    return null;
-  }
+  const getCategoryInfo = (cat: string | null) => CATEGORIES.find(c => c.value === cat) || CATEGORIES[1];
+  const getLanguageInfo = (lang: string) => LANGUAGES.find(l => l.value === lang) || LANGUAGES[0];
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header
-        streak={profile?.streak || 0}
-        hearts={5}
-        xp={profile?.xp || 0}
-        dailyGoalProgress={0}
-      />
+    <AppLayout backLabel="Back to Home" maxWidth="6xl">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/20 via-purple-500/10 to-pink-500/10 p-8 mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative z-10"
+        >
+          <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
+            <Sparkles className="w-10 h-10 text-primary" />
+            Discover Quizzes
+          </h1>
+          <p className="text-muted-foreground text-lg max-w-2xl">
+            Explore quizzes created by the community. Learn, play, and rate your favorites!
+          </p>
+        </motion.div>
+        
+        <motion.div
+          className="absolute top-4 right-8 text-6xl opacity-20"
+          animate={{ rotate: [0, 10, -10, 0] }}
+          transition={{ duration: 4, repeat: Infinity }}
+        >
+          🎯
+        </motion.div>
+      </div>
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        <Button variant="ghost" onClick={() => navigate("/")} className="mb-4">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
-        </Button>
-
-        {/* Hero Section */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/20 via-purple-500/10 to-pink-500/10 p-8 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative z-10"
-          >
-            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
-              <Sparkles className="w-10 h-10 text-primary" />
-              Discover Quizzes
-            </h1>
-            <p className="text-muted-foreground text-lg max-w-2xl">
-              Explore quizzes created by the community. Learn, play, and rate your favorites!
-            </p>
-          </motion.div>
-          
-          {/* Decorative elements */}
-          <motion.div
-            className="absolute top-4 right-8 text-6xl opacity-20"
-            animate={{ rotate: [0, 10, -10, 0] }}
-            transition={{ duration: 4, repeat: Infinity }}
-          >
-            🎯
-          </motion.div>
-          <motion.div
-            className="absolute bottom-4 right-24 text-4xl opacity-20"
-            animate={{ y: [0, -10, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            📚
-          </motion.div>
-        </div>
-
-        {/* Search and Filters */}
-        <div className="space-y-4 mb-6">
-          <div className="flex gap-3 flex-wrap">
-            <div className="relative flex-1 min-w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                placeholder="Search quizzes, creators..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              className="gap-2"
-            >
-              <Filter className="w-4 h-4" />
-              Filters
-              {(categoryFilter !== "all" || languageFilter !== "all") && (
-                <Badge variant="secondary" className="ml-1">
-                  {[categoryFilter !== "all", languageFilter !== "all"].filter(Boolean).length}
-                </Badge>
-              )}
-            </Button>
+      {/* Search and Filters */}
+      <div className="space-y-4 mb-6">
+        <div className="flex gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input
+              placeholder="Search quizzes, creators..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
           </div>
-
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="flex gap-3 flex-wrap p-4 bg-muted/50 rounded-lg">
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CATEGORIES.map((cat) => (
-                        <SelectItem key={cat.value} value={cat.value}>
-                          {cat.icon} {cat.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Select value={languageFilter} onValueChange={setLanguageFilter}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue placeholder="Language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LANGUAGES.map((lang) => (
-                        <SelectItem key={lang.value} value={lang.value}>
-                          {lang.flag} {lang.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SORT_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          <div className="flex items-center gap-2">
-                            <opt.icon className="w-4 h-4" />
-                            {opt.label}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  {(categoryFilter !== "all" || languageFilter !== "all") && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setCategoryFilter("all");
-                        setLanguageFilter("all");
-                      }}
-                    >
-                      Clear filters
-                    </Button>
-                  )}
-                </div>
-              </motion.div>
+          
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+            className="gap-2"
+          >
+            <Filter className="w-4 h-4" />
+            Filters
+            {(categoryFilter !== "all" || languageFilter !== "all") && (
+              <Badge variant="secondary" className="ml-1">
+                {[categoryFilter !== "all", languageFilter !== "all"].filter(Boolean).length}
+              </Badge>
             )}
-          </AnimatePresence>
+          </Button>
         </div>
 
-        <Tabs defaultValue="browse" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-3 mb-6">
-            <TabsTrigger value="browse">
-              <Search className="w-4 h-4 mr-2" />
-              Browse
-            </TabsTrigger>
-            <TabsTrigger value="trending">
-              <Flame className="w-4 h-4 mr-2" />
-              Trending
-            </TabsTrigger>
-            <TabsTrigger value="creators">
-              <Trophy className="w-4 h-4 mr-2" />
-              Top Creators
-            </TabsTrigger>
-          </TabsList>
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="flex gap-3 flex-wrap p-4 bg-muted/50 rounded-lg">
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map((cat) => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.icon} {cat.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-          <TabsContent value="browse">
-            {loading ? (
-              <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <Select value={languageFilter} onValueChange={setLanguageFilter}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LANGUAGES.map((lang) => (
+                      <SelectItem key={lang.value} value={lang.value}>
+                        {lang.flag} {lang.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SORT_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            ) : filteredQuizzes.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center text-muted-foreground">
-                  <p className="text-lg mb-2">No quizzes found</p>
-                  <p className="text-sm">Try adjusting your filters or search query</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredQuizzes.map((quiz, index) => (
-                  <motion.div
-                    key={quiz.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <Card className="h-full hover:shadow-lg transition-all hover:scale-[1.02] group">
-                      <CardContent className="p-5">
-                        {/* Creator info */}
-                        <div className="flex items-center gap-2 mb-3">
-                          <ProfilePicture pictureId={quiz.creator_picture} size="xs" />
-                          <span className="text-sm text-muted-foreground">
-                            {quiz.creator_username}
-                          </span>
-                        </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
-                        {/* Quiz title and description */}
-                        <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors line-clamp-1">
-                          {quiz.title}
-                        </h3>
-                        {quiz.description && (
-                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                            {quiz.description}
-                          </p>
-                        )}
+      {/* Tabs for different views */}
+      <Tabs defaultValue="browse" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="browse">Browse All</TabsTrigger>
+          <TabsTrigger value="top">Top This Week</TabsTrigger>
+          <TabsTrigger value="creators">Top Creators</TabsTrigger>
+        </TabsList>
 
-                        {/* Badges */}
-                        <div className="flex gap-1 flex-wrap mb-3">
-                          {quiz.category && quiz.category !== "general" && (
-                            <Badge variant="outline" className="text-xs capitalize">
-                              {CATEGORIES.find(c => c.value === quiz.category)?.icon} {quiz.category}
-                            </Badge>
-                          )}
-                          <Badge variant="secondary" className="text-xs">
-                            {LANGUAGES.find(l => l.value === quiz.language)?.flag || "🌍"} {quiz.language}
+        <TabsContent value="browse" className="space-y-4">
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : filteredQuizzes.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                No quizzes found matching your criteria.
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {filteredQuizzes.map((quiz, index) => (
+                <motion.div
+                  key={quiz.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handlePlayQuiz(quiz.id)}>
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="font-semibold line-clamp-2">{quiz.title}</h3>
+                        {quiz.is_timed && (
+                          <Badge variant="secondary" className="shrink-0">
+                            <Clock className="w-3 h-3 mr-1" />
+                            Timed
                           </Badge>
-                          {quiz.is_timed && (
-                            <Badge variant="outline" className="text-xs">
-                              <Clock className="w-3 h-3 mr-1" />
-                              {quiz.time_limit_seconds}s
-                            </Badge>
-                          )}
+                        )}
+                      </div>
+
+                      {quiz.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {quiz.description}
+                        </p>
+                      )}
+
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="outline">
+                          {getCategoryInfo(quiz.category).icon} {getCategoryInfo(quiz.category).label}
+                        </Badge>
+                        <Badge variant="outline">
+                          {getLanguageInfo(quiz.language).flag}
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-1">
+                          <ProfilePicture pictureId={quiz.creator_picture} size="xs" />
+                          <span className="text-muted-foreground">{quiz.creator_username}</span>
                         </div>
-
-                        {/* Stats */}
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                          {quiz.rating_count > 0 && (
-                            <span className="flex items-center gap-1">
-                              <Star className="w-4 h-4 text-yellow-500" fill="currentColor" />
-                              {quiz.avg_rating.toFixed(1)}
-                              <span className="text-xs">({quiz.rating_count})</span>
-                            </span>
+                        <div className="flex items-center gap-2">
+                          {quiz.avg_rating > 0 && (
+                            <div className="flex items-center gap-1 text-yellow-500">
+                              <Star className="w-4 h-4 fill-current" />
+                              <span>{quiz.avg_rating.toFixed(1)}</span>
+                            </div>
                           )}
-                          {quiz.play_count > 0 && (
-                            <span className="flex items-center gap-1">
-                              <Users className="w-4 h-4" />
-                              {quiz.play_count}
-                            </span>
-                          )}
-                          {quiz.question_count > 0 && (
-                            <span className="text-xs">
-                              {quiz.question_count} questions
-                            </span>
-                          )}
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Users className="w-4 h-4" />
+                            <span>{quiz.play_count}</span>
+                          </div>
                         </div>
+                      </div>
 
-                        {/* Play button */}
-                        <Button 
-                          onClick={() => handlePlayQuiz(quiz.id)} 
-                          className="w-full gap-2"
-                        >
-                          <Play className="w-4 h-4" />
-                          Play Quiz
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="trending">
-            <div className="space-y-6">
-              {/* Weekly Top Quiz */}
-              <Card className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border-yellow-500/20">
-                <CardContent className="py-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Trophy className="w-8 h-8 text-yellow-500" />
-                    <div>
-                      <h3 className="font-bold text-lg">🔥 This Week's Top Quizzes</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Top creators earn 500 XP bonus!
-                      </p>
-                    </div>
-                  </div>
-
-                  {topQuizzes.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-4">
-                      No quizzes with enough ratings this week yet. Be the first!
-                    </p>
-                  ) : (
-                    <div className="space-y-3">
-                      {topQuizzes.map((quiz, index) => (
-                        <motion.div
-                          key={quiz.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                          className={`flex items-center gap-4 p-4 rounded-lg ${
-                            index === 0 
-                              ? "bg-yellow-500/20 border border-yellow-500/30" 
-                              : "bg-muted/50"
-                          }`}
-                        >
-                          <div className={`text-3xl font-bold ${
-                            index === 0 ? "text-yellow-500" : "text-muted-foreground"
-                          }`}>
-                            #{index + 1}
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-bold">{quiz.title}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              by {quiz.creator_username}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Star className="w-5 h-5 text-yellow-500" fill="currentColor" />
-                            <span className="font-bold">{quiz.avg_rating.toFixed(1)}</span>
-                            <span className="text-sm text-muted-foreground">
-                              ({quiz.rating_count})
-                            </span>
-                          </div>
-                          <Button 
-                            size="sm" 
-                            onClick={() => handlePlayQuiz(quiz.id)}
-                          >
-                            <Play className="w-4 h-4" />
-                          </Button>
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                      <Button className="w-full" size="sm">
+                        <Play className="w-4 h-4 mr-2" />
+                        Play Quiz
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
             </div>
-          </TabsContent>
+          )}
+        </TabsContent>
 
-          <TabsContent value="creators">
-            <div className="space-y-4">
-              <Card className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/20">
-                <CardContent className="py-4">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Heart className="w-5 h-5 text-pink-500" />
-                    <span>
-                      Create amazing quizzes to join the top creators!
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {topCreators.length === 0 ? (
-                <Card>
-                  <CardContent className="py-12 text-center text-muted-foreground">
-                    <p>No top creators yet. Create quizzes to be featured!</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {topCreators.map((creator, index) => (
-                    <motion.div
-                      key={creator.user_id}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <Card className={`${index === 0 ? "border-yellow-500/50" : ""}`}>
-                        <CardContent className="p-5">
-                          <div className="flex items-center gap-4">
-                            <div className="relative">
-                              <ProfilePicture pictureId={creator.profile_picture} size="md" />
-                              {index < 3 && (
-                                <div className="absolute -top-1 -right-1 text-lg">
-                                  {index === 0 && "🥇"}
-                                  {index === 1 && "🥈"}
-                                  {index === 2 && "🥉"}
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-bold text-lg">{creator.username}</h4>
-                              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                                <span>{creator.quiz_count} quizzes</span>
-                                {creator.avg_rating > 0 && (
-                                  <span className="flex items-center gap-1">
-                                    <Star className="w-3 h-3 text-yellow-500" fill="currentColor" />
-                                    {creator.avg_rating.toFixed(1)}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
+        <TabsContent value="top" className="space-y-4">
+          {topQuizzes.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                <Trophy className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>No top quizzes yet this week.</p>
+                <p className="text-sm">Quizzes need at least 2 ratings to appear here.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {topQuizzes.map((quiz, index) => (
+                <motion.div
+                  key={quiz.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handlePlayQuiz(quiz.id)}>
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <div className="text-3xl font-bold text-primary">#{index + 1}</div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{quiz.title}</h3>
+                        <p className="text-sm text-muted-foreground">by {quiz.creator_username}</p>
+                      </div>
+                      <div className="flex items-center gap-1 text-yellow-500">
+                        <Star className="w-5 h-5 fill-current" />
+                        <span className="font-semibold">{quiz.avg_rating.toFixed(1)}</span>
+                      </div>
+                      <Button size="sm">
+                        <Play className="w-4 h-4 mr-1" />
+                        Play
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
             </div>
-          </TabsContent>
-        </Tabs>
-      </main>
-    </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="creators" className="space-y-4">
+          {topCreators.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>No top creators yet.</p>
+                <p className="text-sm">Creators need at least 2 public quizzes to appear here.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {topCreators.map((creator, index) => (
+                <motion.div
+                  key={creator.user_id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card>
+                    <CardContent className="p-4 text-center space-y-3">
+                      <ProfilePicture pictureId={creator.profile_picture} size="lg" />
+                      <div>
+                        <h3 className="font-semibold">{creator.username}</h3>
+                        <p className="text-sm text-muted-foreground">{creator.quiz_count} quizzes</p>
+                      </div>
+                      {creator.avg_rating > 0 && (
+                        <div className="flex items-center justify-center gap-1 text-yellow-500">
+                          <Star className="w-4 h-4 fill-current" />
+                          <span>{creator.avg_rating.toFixed(1)} avg rating</span>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+    </AppLayout>
   );
 };
 
