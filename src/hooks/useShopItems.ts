@@ -2,6 +2,19 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
+// Import raccoon skin images
+import raccoonBandit from "@/assets/skins/raccoon-bandit.png";
+import raccoonSleepy from "@/assets/skins/raccoon-sleepy.png";
+import raccoonBaby from "@/assets/skins/raccoon-baby.png";
+import raccoonChubby from "@/assets/skins/raccoon-chubby.png";
+import raccoonCurious from "@/assets/skins/raccoon-curious.png";
+import raccoonMischief from "@/assets/skins/raccoon-mischief.png";
+import raccoonScholarly from "@/assets/skins/raccoon-scholarly.png";
+import raccoonWarrior from "@/assets/skins/raccoon-warrior.png";
+import raccoonRoyal from "@/assets/skins/raccoon-royal.png";
+import raccoonMystic from "@/assets/skins/raccoon-mystic.png";
+import raccoonGolden from "@/assets/skins/raccoon-golden.png";
+
 export interface ShopItem {
   id: string;
   name: string;
@@ -9,6 +22,7 @@ export interface ShopItem {
   type: "xp_booster" | "badge" | "raccoon_skin" | "streak_freeze";
   cost: number;
   icon: string;
+  image?: string; // For raccoon skins with actual images
   duration_hours?: number;
   rarity?: "common" | "rare" | "epic" | "legendary";
   effect?: string;
@@ -105,7 +119,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     icon: "💎",
     rarity: "legendary",
   },
-  // Raccoon Skins - All use raccoon emoji 🦝
+  // Raccoon Skins - With actual images
   {
     id: "skin_bandit",
     name: "Bandit Shpoko",
@@ -113,6 +127,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     type: "raccoon_skin",
     cost: 100,
     icon: "🦝",
+    image: raccoonBandit,
     rarity: "common",
   },
   {
@@ -122,6 +137,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     type: "raccoon_skin",
     cost: 150,
     icon: "🦝",
+    image: raccoonSleepy,
     rarity: "common",
   },
   {
@@ -131,6 +147,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     type: "raccoon_skin",
     cost: 200,
     icon: "🦝",
+    image: raccoonBaby,
     rarity: "common",
   },
   {
@@ -140,6 +157,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     type: "raccoon_skin",
     cost: 250,
     icon: "🦝",
+    image: raccoonChubby,
     rarity: "rare",
   },
   {
@@ -149,6 +167,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     type: "raccoon_skin",
     cost: 300,
     icon: "🦝",
+    image: raccoonCurious,
     rarity: "rare",
   },
   {
@@ -158,6 +177,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     type: "raccoon_skin",
     cost: 400,
     icon: "🦝",
+    image: raccoonMischief,
     rarity: "rare",
   },
   {
@@ -167,6 +187,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     type: "raccoon_skin",
     cost: 500,
     icon: "🦝",
+    image: raccoonScholarly,
     rarity: "epic",
   },
   {
@@ -176,6 +197,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     type: "raccoon_skin",
     cost: 600,
     icon: "🦝",
+    image: raccoonWarrior,
     rarity: "epic",
   },
   {
@@ -185,6 +207,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     type: "raccoon_skin",
     cost: 800,
     icon: "🦝",
+    image: raccoonRoyal,
     rarity: "epic",
   },
   {
@@ -194,6 +217,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     type: "raccoon_skin",
     cost: 1200,
     icon: "🦝",
+    image: raccoonMystic,
     rarity: "legendary",
   },
   {
@@ -203,6 +227,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     type: "raccoon_skin",
     cost: 2000,
     icon: "🦝",
+    image: raccoonGolden,
     rarity: "legendary",
   },
 ];

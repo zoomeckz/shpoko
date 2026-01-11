@@ -342,7 +342,17 @@ const Shop = () => {
                               equipped && "ring-2 ring-primary"
                             )}>
                               <CardContent className="p-4 text-center">
-                                <div className="text-5xl mb-2">{item.icon}</div>
+                                {item.image ? (
+                                  <div className="w-24 h-24 mx-auto mb-2 rounded-lg overflow-hidden bg-accent/50">
+                                    <img 
+                                      src={item.image} 
+                                      alt={item.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="text-5xl mb-2">{item.icon}</div>
+                                )}
                                 <h3 className="font-bold text-sm">{item.name}</h3>
                                 <Badge className={cn("text-xs mt-1 mb-2", getRarityBadge(item.rarity))}>
                                   {item.rarity}
