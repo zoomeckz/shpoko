@@ -4,10 +4,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuests } from "@/hooks/useQuests";
 import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { LeagueCard } from "@/components/league/LeagueCard";
-import { useState, useEffect } from "react";
 import { useDuolingoSounds } from "@/hooks/useDuolingoSounds";
+import { WordOfTheDay } from "@/components/WordOfTheDay";
 
 interface RightSidebarProps {
   className?: string;
@@ -47,75 +47,17 @@ export function RightSidebar({ className }: RightSidebarProps) {
   const { profile } = useAuth();
   const { dailyQuests, loading: questsLoading } = useQuests();
   const { playStreak, playXP } = useDuolingoSounds();
-  const [showMascotMessage, setShowMascotMessage] = useState(false);
-  const [mascotEmoji, setMascotEmoji] = useState("🦝");
 
   // Show first 3 daily quests
   const displayQuests = dailyQuests.slice(0, 3);
-
-  // Mascot messages based on time of day and streak
-  const getMascotMessage = () => {
-    const hour = new Date().getHours();
-    const streak = profile?.streak || 0;
-    
-    if (streak >= 30) return "Legendary streak! 🔥";
-    if (streak >= 7) return "Amazing consistency!";
-    if (hour < 12) return "Good morning! Ready to learn?";
-    if (hour < 18) return "Keep it up! You're doing great!";
-    return "Evening study session! 🌙";
-  };
-
-  // Animate mascot based on XP milestones
-  useEffect(() => {
-    const xp = profile?.xp || 0;
-    if (xp > 0 && xp % 100 === 0) {
-      setMascotEmoji("🎉");
-      setTimeout(() => setMascotEmoji("🦝"), 2000);
-    }
-  }, [profile?.xp]);
 
   return (
     <aside className={cn(
       "hidden xl:flex flex-col w-80 h-screen sticky top-0 bg-card border-l border-border p-4 gap-4 overflow-y-auto",
       className
     )}>
-      {/* Mascot greeting */}
-      <motion.div 
-        className="bg-gradient-to-br from-accent to-accent/50 rounded-2xl p-4 cursor-pointer"
-        whileHover={{ scale: 1.02 }}
-        onClick={() => setShowMascotMessage(!showMascotMessage)}
-      >
-        <div className="flex items-center gap-3">
-          <motion.span
-            animate={{ 
-              y: [0, -5, 0],
-              rotate: [0, 5, -5, 0]
-            }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="text-5xl"
-          >
-            {mascotEmoji}
-          </motion.span>
-          <div>
-            <p className="font-bold text-sm">{getMascotMessage()}</p>
-            <p className="text-xs text-muted-foreground">You're doing great today</p>
-          </div>
-        </div>
-        <AnimatePresence>
-          {showMascotMessage && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-3 pt-3 border-t border-border/50"
-            >
-              <p className="text-xs text-muted-foreground">
-                Tip: Complete daily quests to earn bonus XP! 🎯
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
+      {/* Word of the Day */}
+      <WordOfTheDay />
 
       {/* Stats cards with SFX */}
       <div className="grid grid-cols-2 gap-3">
