@@ -105,44 +105,7 @@ export const SHOP_ITEMS: ShopItem[] = [
     icon: "💎",
     rarity: "legendary",
   },
-  // Raccoon Skins
-  {
-    id: "skin_ninja",
-    name: "Ninja Shpoko",
-    description: "Stealth mode activated!",
-    type: "raccoon_skin",
-    cost: 300,
-    icon: "🥷",
-    rarity: "rare",
-  },
-  {
-    id: "skin_astronaut",
-    name: "Astro Shpoko",
-    description: "Learning among the stars!",
-    type: "raccoon_skin",
-    cost: 500,
-    icon: "🧑‍🚀",
-    rarity: "epic",
-  },
-  {
-    id: "skin_wizard",
-    name: "Wizard Shpoko",
-    description: "Master of language magic!",
-    type: "raccoon_skin",
-    cost: 750,
-    icon: "🧙",
-    rarity: "epic",
-  },
-  {
-    id: "skin_golden",
-    name: "Golden Shpoko",
-    description: "The legendary golden raccoon!",
-    type: "raccoon_skin",
-    cost: 2500,
-    icon: "👑",
-    rarity: "legendary",
-  },
-  // Raccoon Skins - All use raccoon emoji 🦝 with theme indicator
+  // Raccoon Skins - All use raccoon emoji 🦝
   {
     id: "skin_bandit",
     name: "Bandit Shpoko",
