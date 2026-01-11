@@ -100,7 +100,7 @@ export function SelectableText({ content }: SelectableTextProps) {
     return tokens;
   }, []);
 
-  const handleWordClick = async (word: string, e: React.MouseEvent) => {
+  const handleWordClick = async (word: string, index: number, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -109,35 +109,44 @@ export function SelectableText({ content }: SelectableTextProps) {
     const cleanWord = word.toLowerCase().replace(/[.,!?;:'"]/g, "");
     if (cleanWord.length < 2) return;
 
+    const uniqueKey = `${cleanWord}-${index}`;
     const isCyrillic = isCyrillicWord(cleanWord);
     
     // Close if clicking same word
-    if (openPopoverWord === cleanWord) {
+    if (openPopoverWord === uniqueKey) {
       setOpenPopoverWord(null);
       setSelectedWord(null);
       return;
     }
 
-    setOpenPopoverWord(cleanWord);
-    setSelectedWord({
-      word: cleanWord,
-      isOpen: true,
-      translation: "",
-      romanization: "",
-      isCyrillic,
-      suggestions: [],
-      isLoadingSuggestions: !isCyrillic // Only load suggestions for English words
-    });
+    // Close any existing popover first
+    setOpenPopoverWord(null);
+    setSelectedWord(null);
 
-    // If it's an English word, fetch Bulgarian translation suggestions
-    if (!isCyrillic) {
-      const suggestions = await fetchTranslationSuggestions(cleanWord);
-      setSelectedWord(prev => prev ? {
-        ...prev,
-        suggestions,
-        isLoadingSuggestions: false
-      } : null);
-    }
+    // Small delay to ensure previous popover closes
+    setTimeout(() => {
+      setOpenPopoverWord(uniqueKey);
+      setSelectedWord({
+        word: cleanWord,
+        isOpen: true,
+        translation: "",
+        romanization: "",
+        isCyrillic,
+        suggestions: [],
+        isLoadingSuggestions: !isCyrillic
+      });
+
+      // If it's an English word, fetch Bulgarian translation suggestions
+      if (!isCyrillic) {
+        fetchTranslationSuggestions(cleanWord).then(suggestions => {
+          setSelectedWord(prev => prev && prev.word === cleanWord ? {
+            ...prev,
+            suggestions,
+            isLoadingSuggestions: false
+          } : prev);
+        });
+      }
+    }, 10);
   };
 
   const handleSelectSuggestion = (suggestion: TranslationSuggestion, e: React.MouseEvent) => {
@@ -202,26 +211,26 @@ export function SelectableText({ content }: SelectableTextProps) {
           }
 
           const cleanWord = token.value.toLowerCase().replace(/[.,!?;:'"]/g, "");
+          const uniqueKey = `${cleanWord}-${index}`;
           const wordStatus = getWordStatus(token.value);
           const statusColor = wordStatus ? STATUS_COLORS[wordStatus.status as keyof typeof STATUS_COLORS] : undefined;
           const isInVocab = !!wordStatus;
-          const isThisPopoverOpen = openPopoverWord === cleanWord;
+          const isThisPopoverOpen = openPopoverWord === uniqueKey;
 
           return (
             <Popover 
               key={index}
               open={isThisPopoverOpen}
               onOpenChange={(open) => {
-                if (!open) {
+                if (!open && openPopoverWord === uniqueKey) {
                   handleClosePopover();
                 }
               }}
+              modal={true}
             >
               <PopoverTrigger asChild>
-                <motion.span
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={(e) => handleWordClick(token.value, e)}
+                <span
+                  onClick={(e) => handleWordClick(token.value, index, e)}
                   className={cn(
                     "cursor-pointer rounded px-0.5 transition-all hover:bg-primary/20 inline",
                     isInVocab && statusColor,
@@ -231,12 +240,14 @@ export function SelectableText({ content }: SelectableTextProps) {
                   title={isInVocab ? `${STATUS_LABELS[wordStatus.status as keyof typeof STATUS_LABELS]}: ${wordStatus.translation || 'No translation'}` : 'Click to add to vocabulary'}
                 >
                   {token.value}
-                </motion.span>
+                </span>
               </PopoverTrigger>
               
               <PopoverContent 
-                className="w-80 p-4 z-50 bg-popover border shadow-lg" 
-                align="start"
+                className="w-80 max-w-[90vw] p-4 z-[100] bg-popover border shadow-xl overflow-visible" 
+                align="center"
+                side="top"
+                sideOffset={8}
                 onOpenAutoFocus={(e) => e.preventDefault()}
                 onCloseAutoFocus={(e) => e.preventDefault()}
               >
@@ -302,20 +313,20 @@ export function SelectableText({ content }: SelectableTextProps) {
                                   <span className="ml-2 text-sm text-muted-foreground">Finding translations...</span>
                                 </div>
                               ) : selectedWord.suggestions.length > 0 ? (
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-col gap-1.5 max-h-[200px] overflow-y-auto">
                                   {selectedWord.suggestions.map((suggestion, idx) => (
                                     <Button
                                       key={idx}
                                       type="button"
-                                      variant={selectedWord.translation === suggestion.translation ? "default" : "outline"}
+                                      variant={selectedWord.translation === suggestion.translation ? "default" : "ghost"}
                                       size="sm"
                                       onClick={(e) => handleSelectSuggestion(suggestion, e)}
-                                      className="text-sm"
+                                      className="justify-start text-left h-auto py-2 px-3 whitespace-normal"
                                       title={suggestion.context ? `Context: ${suggestion.context}` : undefined}
                                     >
-                                      {suggestion.translation}
+                                      <span className="font-medium">{suggestion.translation}</span>
                                       {suggestion.context && (
-                                        <span className="ml-1 text-xs opacity-70">({suggestion.context})</span>
+                                        <span className="ml-2 text-xs opacity-60">({suggestion.context})</span>
                                       )}
                                     </Button>
                                   ))}
