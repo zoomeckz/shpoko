@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Trophy, ArrowLeft, Lock } from "lucide-react";
+import { ArrowLeft, Brain, Trophy, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { cn } from "@/lib/utils";
+import { useLeague } from "@/hooks/useLeague";
+
 
 interface WordData {
   word: string;
@@ -120,6 +122,7 @@ const ContextoGame = () => {
   const location = useLocation();
   const { updateXP } = useAuth();
   const { playCorrect, playComplete, playIncorrect } = useSoundEffects();
+  const { addWeeklyXP } = useLeague();
   
   const [gameState, setGameState] = useState<"setup" | "playing" | "won">("setup");
   const [tier, setTier] = useState<Tier>("beginner");
@@ -202,6 +205,7 @@ const ContextoGame = () => {
       if (tier === "advanced") xpReward = Math.floor(xpReward * 1.5);
       
       updateXP(xpReward);
+      addWeeklyXP(xpReward);
     } else {
       if (rank <= 5) {
         playCorrect();

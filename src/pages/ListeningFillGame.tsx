@@ -11,6 +11,8 @@ import { useInputMode } from "@/contexts/InputModeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDailyGameXP } from "@/hooks/useDailyGameXP";
 import { useToast } from "@/hooks/use-toast";
+import { useLeague } from "@/hooks/useLeague";
+
 
 type Difficulty = "beginner" | "intermediate" | "advanced";
 
@@ -90,6 +92,7 @@ const ListeningFillGame = () => {
   const { user, updateXP } = useAuth();
   const { toast } = useToast();
   const { hasEarnedToday, markAsEarned, canEarnXP } = useDailyGameXP("listening-fill");
+  const { addWeeklyXP } = useLeague();
   
   const [selectedTier, setSelectedTier] = useState<Difficulty | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -194,6 +197,7 @@ const ListeningFillGame = () => {
           if (user?.id && canEarnXP) {
             const xpEarned = Math.floor(score / 2) + pts / 2;
             await updateXP(Math.floor(xpEarned));
+            await addWeeklyXP(Math.floor(xpEarned));
             markAsEarned();
             setXpAwarded(Math.floor(xpEarned));
             toast({

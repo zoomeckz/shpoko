@@ -9,7 +9,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { useDailyGameXP } from "@/hooks/useDailyGameXP";
+import { useLeague } from "@/hooks/useLeague";
 import { useLessonKeyboardNavigation } from "@/hooks/useLessonKeyboardNavigation";
+
 
 interface MistakeSentence {
   words: string[];
@@ -141,6 +143,7 @@ const FixMyBulgarianGame = () => {
   const { user, updateXP } = useAuth();
   const { playCorrect, playIncorrect } = useSoundEffects();
   const { hasEarnedToday, markAsEarned, canEarnXP } = useDailyGameXP("fix-my-bulgarian");
+  const { addWeeklyXP } = useLeague();
   
   const [gameState, setGameState] = useState<"ready" | "playing" | "finished">("ready");
   const [currentRound, setCurrentRound] = useState(0);
@@ -196,6 +199,7 @@ const FixMyBulgarianGame = () => {
     if (user?.id && score > 0 && canEarnXP) {
       const xpEarned = Math.floor(score / 2);
       await updateXP(xpEarned);
+      await addWeeklyXP(xpEarned);
       markAsEarned();
       setXpAwarded(xpEarned);
       toast({
