@@ -9,7 +9,7 @@ export interface Achievement {
   name: string;
   description: string;
   icon: string;
-  category: "lessons" | "streaks" | "xp" | "games" | "social";
+  category: "lessons" | "streaks" | "xp" | "games" | "social" | "deepdives";
   requirement: number;
   xpReward: number;
 }
@@ -40,6 +40,13 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: "game_first", name: "Game On", description: "Play your first mini-game", icon: "🎮", category: "games", requirement: 1, xpReward: 10 },
   { id: "games_10", name: "Gamer", description: "Play 10 mini-games", icon: "🕹️", category: "games", requirement: 10, xpReward: 50 },
   { id: "games_50", name: "Pro Gamer", description: "Play 50 mini-games", icon: "👾", category: "games", requirement: 50, xpReward: 150 },
+
+  // Deep Dives
+  { id: "deepdive_1", name: "Deep Diver", description: "Complete your first deep-dive", icon: "🤿", category: "deepdives", requirement: 1, xpReward: 20 },
+  { id: "deepdive_5", name: "Ocean Bound", description: "Complete 5 deep-dives", icon: "🌊", category: "deepdives", requirement: 5, xpReward: 50 },
+  { id: "deepdive_15", name: "Treasure Hunter", description: "Complete 15 deep-dives", icon: "💎", category: "deepdives", requirement: 15, xpReward: 100 },
+  { id: "deepdive_30", name: "Abyss Explorer", description: "Complete 30 deep-dives", icon: "🏊", category: "deepdives", requirement: 30, xpReward: 200 },
+  { id: "deepdive_50", name: "Mariana Master", description: "Complete 50 deep-dives", icon: "👑", category: "deepdives", requirement: 50, xpReward: 500 },
 
   // Social
   { id: "level_5", name: "Rising Star", description: "Reach level 5", icon: "⭐", category: "social", requirement: 5, xpReward: 50 },
@@ -103,6 +110,12 @@ export const useAchievements = (): UseAchievementsResult => {
       .eq("user_id", user.id)
       .eq("completed", true);
 
+    // Fetch deep-dive count
+    const { count: deepDiveCount } = await supabase
+      .from("deep_dive_progress")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id);
+
     // Fetch game count (approximation from localStorage)
     const gameKeys = Object.keys(localStorage).filter(k => k.startsWith("daily_game_xp_"));
     const gameCount = gameKeys.length;
@@ -128,6 +141,10 @@ export const useAchievements = (): UseAchievementsResult => {
           break;
         case "games":
           currentValue = gameCount;
+          isUnlocked = currentValue >= achievement.requirement;
+          break;
+        case "deepdives":
+          currentValue = deepDiveCount || 0;
           isUnlocked = currentValue >= achievement.requirement;
           break;
         case "social":

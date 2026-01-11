@@ -10,6 +10,7 @@ import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePict
 import { ChangeUsernameDialog } from "@/components/ChangeUsernameDialog";
 import { Achievements } from "@/components/Achievements";
 import { SkinShowcase } from "@/components/profile/SkinShowcase";
+import { BadgeGallery } from "@/components/profile/BadgeGallery";
 import { useSoundSettings } from "@/contexts/SoundSettingsContext";
 import { Switch } from "@/components/ui/switch";
 import { 
@@ -198,6 +199,16 @@ const Profile = () => {
               className="mb-6"
             >
               <SkinShowcase />
+            </motion.div>
+
+            {/* Badge Gallery */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="mb-6"
+            >
+              <BadgeGallery />
             </motion.div>
 
             {/* Achievements */}
