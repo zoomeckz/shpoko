@@ -1110,6 +1110,45 @@ export type Database = {
           },
         ]
       }
+      skin_trades: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          recipient_id: string
+          recipient_skin_id: string | null
+          responded_at: string | null
+          sender_id: string
+          sender_skin_id: string | null
+          status: string
+          trade_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          recipient_id: string
+          recipient_skin_id?: string | null
+          responded_at?: string | null
+          sender_id: string
+          sender_skin_id?: string | null
+          status?: string
+          trade_type?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          recipient_id?: string
+          recipient_skin_id?: string | null
+          responded_at?: string | null
+          sender_id?: string
+          sender_skin_id?: string | null
+          status?: string
+          trade_type?: string
+        }
+        Relationships: []
+      }
       streak_freeze_transactions: {
         Row: {
           amount: number
@@ -1311,6 +1350,36 @@ export type Database = {
         Update: {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_skins: {
+        Row: {
+          acquired_at: string
+          acquired_from: string | null
+          equipped: boolean
+          gifted_by: string | null
+          id: string
+          skin_id: string
+          user_id: string
+        }
+        Insert: {
+          acquired_at?: string
+          acquired_from?: string | null
+          equipped?: boolean
+          gifted_by?: string | null
+          id?: string
+          skin_id: string
+          user_id: string
+        }
+        Update: {
+          acquired_at?: string
+          acquired_from?: string | null
+          equipped?: boolean
+          gifted_by?: string | null
+          id?: string
+          skin_id?: string
           user_id?: string
         }
         Relationships: []
