@@ -8,8 +8,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Gift, ArrowLeftRight, Users, Send, Check, X, 
-  ChevronRight, Sparkles, Clock, UserCircle 
+  ChevronRight, Sparkles, Clock, UserCircle, History 
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useSkinTrading, type FriendWithSkins, type SkinTrade } from "@/hooks/useSkinTrading";
 import { useShopItems, type ShopItem } from "@/hooks/useShopItems";
@@ -260,8 +261,16 @@ export const SkinTradingPanel = ({ isOpen, onClose }: SkinTradingPanelProps) => 
             <ArrowLeftRight className="w-5 h-5 text-primary" />
             Skin Trading
           </DialogTitle>
-          <DialogDescription>
-            Gift skins to friends or propose trades
+          <DialogDescription className="flex items-center justify-between">
+            <span>Gift skins to friends or propose trades</span>
+            <Link 
+              to="/trade-history" 
+              onClick={onClose}
+              className="text-xs text-primary hover:underline flex items-center gap-1"
+            >
+              <History className="w-3 h-3" />
+              View History
+            </Link>
           </DialogDescription>
         </DialogHeader>
 
@@ -271,9 +280,13 @@ export const SkinTradingPanel = ({ isOpen, onClose }: SkinTradingPanelProps) => 
               <Clock className="w-4 h-4 mr-1" />
               Pending
               {incomingTrades.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] rounded-full flex items-center justify-center">
+                <motion.span 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold"
+                >
                   {incomingTrades.length}
-                </span>
+                </motion.span>
               )}
             </TabsTrigger>
             <TabsTrigger value="gift">

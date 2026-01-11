@@ -42,6 +42,7 @@ export const useSkinTrading = () => {
   const [pendingTrades, setPendingTrades] = useState<SkinTrade[]>([]);
   const [friendsWithSkins, setFriendsWithSkins] = useState<FriendWithSkins[]>([]);
   const [loading, setLoading] = useState(false);
+  const [incomingTradeCount, setIncomingTradeCount] = useState(0);
 
   // Fetch user's skins from database
   const fetchUserSkins = useCallback(async () => {
@@ -97,8 +98,11 @@ export const useSkinTrading = () => {
       }));
 
       setPendingTrades(tradesWithProfiles);
+      // Count incoming trades (where user is recipient)
+      setIncomingTradeCount(tradesWithProfiles.filter(t => t.recipient_id === user.id).length);
     } else {
       setPendingTrades([]);
+      setIncomingTradeCount(0);
     }
   }, [user]);
 
@@ -410,6 +414,7 @@ export const useSkinTrading = () => {
     pendingTrades,
     friendsWithSkins,
     loading,
+    incomingTradeCount,
     sendGift,
     proposeTrade,
     acceptTrade,
