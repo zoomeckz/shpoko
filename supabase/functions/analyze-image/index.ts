@@ -11,11 +11,14 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, analysisType } = await req.json();
+    const { imageBase64, analysisType, customPrompt } = await req.json();
 
-    if (!imageBase64) {
+    // Check if this is a text-only request (like translations)
+    const isTextOnly = customPrompt && !imageBase64;
+
+    if (!imageBase64 && !customPrompt) {
       return new Response(
-        JSON.stringify({ error: "No image provided" }),
+        JSON.stringify({ error: "No image or prompt provided" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -28,29 +31,30 @@ serve(async (req) => {
       );
     }
 
-    // Build the prompt based on analysis type
-    let prompt = "";
-    switch (analysisType) {
-      case "ocr":
-        prompt = `Please extract ALL text visible in this image. Be thorough and include:
+    // Build the prompt based on analysis type or use custom prompt
+    let prompt = customPrompt || "";
+    if (!customPrompt) {
+      switch (analysisType) {
+        case "ocr":
+          prompt = `Please extract ALL text visible in this image. Be thorough and include:
 - All written text, signs, labels
 - Any handwritten text
 - Text in any language
 - Numbers and symbols
 
 Format the extracted text clearly, preserving the general layout if possible. If no text is found, say "No text detected in this image."`;
-        break;
-      case "describe":
-        prompt = `Please describe this image in detail. Include:
+          break;
+        case "describe":
+          prompt = `Please describe this image in detail. Include:
 - What objects, people, or scenes are visible
 - Colors, compositions, and visual elements
 - Any notable details or context
 - The overall mood or setting
 
 Be descriptive but concise.`;
-        break;
-      case "bulgarian":
-        prompt = `Analyze this image for Bulgarian language learning purposes:
+          break;
+        case "bulgarian":
+          prompt = `Analyze this image for Bulgarian language learning purposes:
 
 1. **Text Extraction**: Extract any Bulgarian text visible in the image
 2. **Romanization**: Provide the romanized (Latin alphabet) pronunciation
@@ -60,9 +64,9 @@ Be descriptive but concise.`;
 
 If the image contains English or other text, provide the Bulgarian translation with pronunciation.
 If no text is found, describe what you see and teach relevant Bulgarian vocabulary for the objects/scene.`;
-        break;
-      default: // "all" or any other value
-        prompt = `Please analyze this image comprehensively:
+          break;
+        default: // "all" or any other value
+          prompt = `Please analyze this image comprehensively:
 
 1. **Description**: Describe what you see in the image (objects, people, scenes, colors)
 2. **Text Extraction (OCR)**: Extract any visible text, signs, labels, or writing
@@ -70,12 +74,30 @@ If no text is found, describe what you see and teach relevant Bulgarian vocabula
 4. **Details**: Note any interesting or notable elements
 
 Be thorough but well-organized in your response.`;
+      }
     }
 
-    // Ensure proper base64 format
-    const imageUrl = imageBase64.startsWith("data:") 
-      ? imageBase64 
-      : `data:image/jpeg;base64,${imageBase64}`;
+    // Build message content based on whether we have an image
+    let messageContent;
+    if (isTextOnly) {
+      // Text-only request (e.g., translations)
+      messageContent = prompt;
+    } else {
+      // Image analysis request
+      const imageUrl = imageBase64.startsWith("data:") 
+        ? imageBase64 
+        : `data:image/jpeg;base64,${imageBase64}`;
+      
+      messageContent = [
+        { type: "text", text: prompt },
+        {
+          type: "image_url",
+          image_url: {
+            url: imageUrl
+          }
+        }
+      ];
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -88,15 +110,7 @@ Be thorough but well-organized in your response.`;
         messages: [
           {
             role: "user",
-            content: [
-              { type: "text", text: prompt },
-              {
-                type: "image_url",
-                image_url: {
-                  url: imageUrl
-                }
-              }
-            ]
+            content: messageContent
           }
         ]
       })
@@ -124,14 +138,14 @@ Be thorough but well-organized in your response.`;
     }
 
     const data = await response.json();
-    const analysis = data.choices?.[0]?.message?.content || "Unable to analyze the image.";
+    const analysis = data.choices?.[0]?.message?.content || "Unable to process request.";
 
     return new Response(
       JSON.stringify({ analysis, model: "google/gemini-2.5-flash" }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("Image analysis error:", error);
+    console.error("Request error:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error occurred" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
