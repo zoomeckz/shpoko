@@ -55,6 +55,7 @@ export const SentencePlayer = ({
           size="icon"
           onClick={onPlayAudio}
           className="h-12 w-12 rounded-full"
+          title="Play sentence (Space)"
         >
           <Volume2 className={`h-6 w-6 ${isPlaying ? "animate-pulse" : ""}`} />
         </Button>
