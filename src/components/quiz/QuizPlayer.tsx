@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Check, X, Clock, Star, MessageSquare } from "lucide-react";
+import { ArrowLeft, Check, X, Clock, Star, MessageSquare, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
+import { useAchievements } from "@/hooks/useAchievements";
+import { useLeague } from "@/hooks/useLeague";
 
 interface Question {
   id: string;
@@ -34,7 +36,9 @@ interface QuizPlayerProps {
 }
 
 export const QuizPlayer = ({ quizId, onBack }: QuizPlayerProps) => {
-  const { user } = useAuth();
+  const { user, updateXP } = useAuth();
+  const { checkAndUnlock } = useAchievements();
+  const { addWeeklyXP } = useLeague();
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -48,6 +52,7 @@ export const QuizPlayer = ({ quizId, onBack }: QuizPlayerProps) => {
   const [feedbackComment, setFeedbackComment] = useState("");
   const [canRateThisWeek, setCanRateThisWeek] = useState(true);
   const [existingFeedbackId, setExistingFeedbackId] = useState<string | null>(null);
+  const [xpAwarded, setXpAwarded] = useState(0);
 
   useEffect(() => {
     fetchQuiz();
@@ -189,12 +194,28 @@ export const QuizPlayer = ({ quizId, onBack }: QuizPlayerProps) => {
     if (!user) return;
 
     try {
+      // Save quiz attempt
       await supabase.from("quiz_attempts").insert({
         quiz_id: quizId,
         user_id: user.id,
         score,
         total_questions: questions.length,
       });
+
+      // Calculate XP: base XP + bonus for correct answers
+      const baseXP = 10;
+      const correctBonus = score * 5;
+      const totalXP = baseXP + correctBonus;
+      
+      // Award XP
+      await updateXP(totalXP);
+      await addWeeklyXP(totalXP);
+      setXpAwarded(totalXP);
+      
+      // Check for new achievements
+      await checkAndUnlock();
+      
+      toast.success(`+${totalXP} XP earned!`);
     } catch (error) {
       console.error("Failed to save attempt:", error);
     }
@@ -251,6 +272,13 @@ export const QuizPlayer = ({ quizId, onBack }: QuizPlayerProps) => {
               <span className="font-bold">{questions.length}</span>
             </p>
             <p className="text-3xl font-bold text-primary">{percentage}%</p>
+            
+            {xpAwarded > 0 && (
+              <div className="flex items-center justify-center gap-2 text-primary font-semibold">
+                <Zap className="w-5 h-5" />
+                <span>+{xpAwarded} XP earned!</span>
+              </div>
+            )}
             
             <div className="flex gap-2 justify-center flex-wrap">
               <Button onClick={onBack}>Back to Quizzes</Button>

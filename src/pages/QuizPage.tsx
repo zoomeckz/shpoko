@@ -1,13 +1,10 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { Header } from "@/components/Header";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { QuizList } from "@/components/quiz/QuizList";
 import { QuizCreator } from "@/components/quiz/QuizCreator";
 import { QuizPlayer } from "@/components/quiz/QuizPlayer";
 import { QuizFeedbackView } from "@/components/quiz/QuizFeedbackView";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 
 type ViewState = 
   | { type: "list" }
@@ -17,22 +14,16 @@ type ViewState =
   | { type: "feedback"; quizId: string };
 
 const QuizPage = () => {
-  const { user, profile, loading } = useAuth();
-  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [view, setView] = useState<ViewState>({ type: "list" });
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    navigate("/auth");
-    return null;
-  }
+  // Handle URL params for playing quiz directly
+  useEffect(() => {
+    const playId = searchParams.get("play");
+    if (playId) {
+      setView({ type: "play", quizId: playId });
+    }
+  }, [searchParams]);
 
   const renderContent = () => {
     switch (view.type) {
@@ -57,24 +48,13 @@ const QuizPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header
-        streak={profile?.streak || 0}
-        hearts={5}
-        xp={profile?.xp || 0}
-        dailyGoalProgress={0}
-      />
-
-      <main className="max-w-2xl mx-auto px-4 py-6">
-        {view.type === "list" && (
-          <Button variant="ghost" onClick={() => navigate("/")} className="mb-4">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Button>
-        )}
-        {renderContent()}
-      </main>
-    </div>
+    <AppLayout 
+      showBackButton={view.type === "list"} 
+      backLabel="Back to Home"
+      maxWidth="2xl"
+    >
+      {renderContent()}
+    </AppLayout>
   );
 };
 
