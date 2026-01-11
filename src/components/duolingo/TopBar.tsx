@@ -1,11 +1,13 @@
 import { cn } from "@/lib/utils";
-import { Flame, Heart, Zap, Crown, Menu, X, Home, Trophy, Target, User, LogOut, Gamepad2, Apple, Swords, Dices, BookOpen, BookMarked, Users, ShoppingBag } from "lucide-react";
+import { Flame, Heart, Zap, Crown, Menu, X, Home, Trophy, Target, User, LogOut, Gamepad2, Apple, Swords, Dices, BookOpen, BookMarked, Users, ShoppingBag, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { motion, AnimatePresence } from "framer-motion";
 import { Separator } from "@/components/ui/separator";
+import { supabase } from "@/integrations/supabase/client";
+import { isAdminEmail } from "@/hooks/useAdminAuth";
 
 interface TopBarProps {
   className?: string;
@@ -29,8 +31,37 @@ const gameItems = [
 export const TopBar = ({ className }: TopBarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile, signOut } = useAuth();
+  const { profile, user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+
+      // Check email first
+      if (isAdminEmail(user.email)) {
+        setIsAdmin(true);
+        return;
+      }
+
+      // Check user_roles table
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      setIsAdmin(!!data);
+    };
+
+    checkAdminStatus();
+  }, [user]);
 
   const handleLogout = async () => {
     await signOut();
@@ -236,6 +267,28 @@ export const TopBar = ({ className }: TopBarProps) => {
                   <Crown className="w-6 h-6" />
                   <span>Super SHPOKO</span>
                 </Link>
+
+                {/* Admin Panel Link - Only visible for admins */}
+                {isAdmin && (
+                  <>
+                    <div className="py-3">
+                      <Separator />
+                    </div>
+                    <Link
+                      to="/admin"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        "flex items-center gap-4 px-4 py-3 rounded-xl font-bold transition-colors",
+                        location.pathname.startsWith("/admin")
+                          ? "bg-red-500/10 text-red-500" 
+                          : "text-red-500/70 hover:bg-red-500/10"
+                      )}
+                    >
+                      <Shield className="w-6 h-6" />
+                      <span>Admin Panel</span>
+                    </Link>
+                  </>
+                )}
               </div>
 
               {/* Footer actions */}

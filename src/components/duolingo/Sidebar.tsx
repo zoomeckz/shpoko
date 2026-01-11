@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Trophy, Target, User, BookOpen, BookMarked, Flame, Crown, Zap, Gamepad2, Swords, Apple, Dices, Users, ShoppingBag, ChevronDown, Headphones, PenLine, ListChecks, GraduationCap, Bell, ScanEye } from "lucide-react";
+import { Home, Trophy, Target, User, BookOpen, BookMarked, Flame, Crown, Zap, Gamepad2, Swords, Apple, Dices, Users, ShoppingBag, ChevronDown, Headphones, PenLine, ListChecks, GraduationCap, Bell, ScanEye, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { isAdminEmail } from "@/hooks/useAdminAuth";
 
 interface SidebarProps {
   className?: string;
@@ -50,6 +51,35 @@ export const Sidebar = ({ className }: SidebarProps) => {
   const [gamesOpen, setGamesOpen] = useState(false);
   const [quizzesOpen, setQuizzesOpen] = useState(false);
   const [pendingTradeCount, setPendingTradeCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+
+      // Check email first
+      if (isAdminEmail(user.email)) {
+        setIsAdmin(true);
+        return;
+      }
+
+      // Check user_roles table
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      setIsAdmin(!!data);
+    };
+
+    checkAdminStatus();
+  }, [user]);
 
   // Check if any game or quiz is active
   const isGameActive = gameItems.some(item => location.pathname === item.path);
@@ -279,6 +309,27 @@ export const Sidebar = ({ className }: SidebarProps) => {
             </span>
           )}
         </Link>
+
+        {/* Admin Panel Link - Only visible for admins */}
+        {isAdmin && (
+          <>
+            <div className="py-3">
+              <Separator />
+            </div>
+            <Link
+              to="/admin"
+              className={cn(
+                "flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-base",
+                location.pathname.startsWith("/admin")
+                  ? "bg-gradient-to-r from-red-500/20 to-orange-500/20 text-red-500 border-2 border-red-500"
+                  : "text-red-500/70 hover:bg-red-500/10 border-2 border-transparent"
+              )}
+            >
+              <Shield className="w-6 h-6" />
+              <span>Admin Panel</span>
+            </Link>
+          </>
+        )}
       </nav>
 
       {/* Premium banner */}
