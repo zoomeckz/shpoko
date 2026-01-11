@@ -163,7 +163,7 @@ export default function AdminVocabulary() {
   };
 
   return (
-    <AdminLayout>
+    <AdminLayout title="Vocabulary Management">
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Vocabulary Management</h1>

@@ -81,7 +81,7 @@ export default function AdminAdventure() {
   });
 
   return (
-    <AdminLayout>
+    <AdminLayout title="Adventure Management">
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Adventure Mode Management</h1>

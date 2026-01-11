@@ -75,11 +75,10 @@ import Flashcards from "./pages/Flashcards";
 import FlashcardStudy from "./pages/FlashcardStudy";
 // Lesson Screen
 import LessonScreen from "./pages/LessonScreen";
-// Forum & Roguelike
+// Forum
 import Forum from "./pages/Forum";
 import ForumCategory from "./pages/ForumCategory";
 import ForumThread from "./pages/ForumThread";
-import RoguelikeMap from "./pages/RoguelikeMap";
 // Mini Games
 import ShpokoFruitGame from "./pages/ShpokoFruitGame";
 import RapidFireGame from "./pages/RapidFireGame";
@@ -94,7 +93,7 @@ import ImageAnalyzer from "./pages/ImageAnalyzer";
 // Admin
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
-import AdminRoguelike from "./pages/admin/AdminRoguelike";
+
 import AdminForum from "./pages/admin/AdminForum";
 import AdminQuizzes from "./pages/admin/AdminQuizzes";
 import AdminLeagues from "./pages/admin/AdminLeagues";
@@ -204,8 +203,6 @@ const App = () => (
               <Route path="/forum" element={<Forum />} />
               <Route path="/forum/:categoryId" element={<ForumCategory />} />
               <Route path="/forum/thread/:threadId" element={<ForumThread />} />
-{/* Roguelike */}
-              <Route path="/roguelike" element={<RoguelikeMap />} />
               {/* Mini Games */}
               <Route path="/game/fruit-slicer" element={<ShpokoFruitGame />} />
               {/* Profile & Quests */}
@@ -223,7 +220,7 @@ const App = () => (
               <Route path="/admin/lessons" element={<AdminLessons />} />
               <Route path="/admin/quizzes" element={<AdminQuizzes />} />
               <Route path="/admin/vocabulary" element={<AdminVocabulary />} />
-              <Route path="/admin/roguelike" element={<AdminRoguelike />} />
+              
               <Route path="/admin/adventure" element={<AdminAdventure />} />
               <Route path="/admin/leagues" element={<AdminLeagues />} />
               <Route path="/admin/skins" element={<AdminSkins />} />
