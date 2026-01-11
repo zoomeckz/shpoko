@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageTransition } from "@/components/PageTransition";
+import { SkinPreviewModal } from "@/components/shop/SkinPreviewModal";
 import {
   Snowflake,
   Zap,
@@ -45,6 +46,24 @@ const buttonPop: Variants = {
   hover: { scale: 1.05 },
   tap: { scale: 0.95 },
 };
+
+const skinCardHover: Variants = {
+  initial: { y: 0 },
+  hover: { y: -5, transition: { type: "spring", stiffness: 400 } },
+};
+
+const skinImageHover: Variants = {
+  initial: { scale: 1, rotate: 0 },
+  hover: { 
+    scale: 1.1, 
+    rotate: [0, -5, 5, -5, 0],
+    transition: { 
+      rotate: { duration: 0.5, ease: "easeInOut" },
+      scale: { duration: 0.2 }
+    }
+  },
+};
+
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 const Shop = () => {
@@ -78,6 +97,7 @@ const Shop = () => {
 
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("boosters");
+  const [previewSkin, setPreviewSkin] = useState<ShopItem | null>(null);
 
   const handlePurchaseFreeze = async () => {
     setPurchasing("freeze");
@@ -326,7 +346,7 @@ const Shop = () => {
                   {/* Raccoon Skins Tab */}
                   <TabsContent value="skins">
                     <motion.div 
-                      className="grid grid-cols-2 gap-4"
+                      className="grid grid-cols-2 sm:grid-cols-3 gap-4"
                       variants={staggerContainer}
                       initial="initial"
                       animate="animate"
@@ -335,54 +355,64 @@ const Shop = () => {
                         const owned = ownedItems.includes(item.id);
                         const equipped = equippedSkin === item.id;
                         return (
-                          <motion.div key={item.id} variants={staggerItem}>
-                            <Card className={cn(
-                              "border-2 overflow-hidden transition-all",
-                              getRarityColor(item.rarity),
-                              equipped && "ring-2 ring-primary"
-                            )}>
-                              <CardContent className="p-4 text-center">
-                                {item.image ? (
-                                  <div className="w-24 h-24 mx-auto mb-2 rounded-lg overflow-hidden bg-accent/50">
-                                    <img 
-                                      src={item.image} 
-                                      alt={item.name}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  </div>
-                                ) : (
-                                  <div className="text-5xl mb-2">{item.icon}</div>
+                          <motion.div 
+                            key={item.id} 
+                            variants={staggerItem}
+                            whileHover="hover"
+                            initial="initial"
+                          >
+                            <motion.div variants={skinCardHover}>
+                              <Card 
+                                className={cn(
+                                  "border-2 overflow-hidden transition-all cursor-pointer",
+                                  getRarityColor(item.rarity),
+                                  equipped && "ring-2 ring-primary"
                                 )}
-                                <h3 className="font-bold text-sm">{item.name}</h3>
-                                <Badge className={cn("text-xs mt-1 mb-2", getRarityBadge(item.rarity))}>
-                                  {item.rarity}
-                                </Badge>
-                                <p className="text-xs text-muted-foreground mb-3">{item.description}</p>
-                                {owned ? (
-                                  <Button
-                                    onClick={() => equipSkin(item.id)}
-                                    variant={equipped ? "default" : "outline"}
-                                    size="sm"
-                                    className="w-full gap-1"
-                                  >
-                                    {equipped ? <Check className="w-3 h-3" /> : null}
-                                    {equipped ? "Equipped" : "Equip"}
-                                  </Button>
-                                ) : (
-                                  <motion.div whileHover="hover" whileTap="tap" variants={buttonPop}>
-                                    <Button
-                                      onClick={() => handlePurchaseItem(item)}
-                                      disabled={purchasing === item.id || (profile?.xp || 0) < item.cost}
-                                      size="sm"
-                                      className="w-full gap-1"
+                                onClick={() => setPreviewSkin(item)}
+                              >
+                                <CardContent className="p-4 text-center">
+                                  {item.image ? (
+                                    <motion.div 
+                                      className="w-20 h-20 mx-auto mb-2 rounded-lg overflow-hidden bg-accent/50"
+                                      variants={skinImageHover}
                                     >
-                                      <Zap className="w-3 h-3" />
-                                      {item.cost}
-                                    </Button>
-                                  </motion.div>
-                                )}
-                              </CardContent>
-                            </Card>
+                                      <img 
+                                        src={item.image} 
+                                        alt={item.name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </motion.div>
+                                  ) : (
+                                    <motion.div 
+                                      className="text-5xl mb-2"
+                                      variants={skinImageHover}
+                                    >
+                                      {item.icon}
+                                    </motion.div>
+                                  )}
+                                  <h3 className="font-bold text-sm truncate">{item.name}</h3>
+                                  <Badge className={cn("text-xs mt-1 mb-2", getRarityBadge(item.rarity))}>
+                                    {item.rarity}
+                                  </Badge>
+                                  <div className="flex items-center justify-center gap-1 text-sm">
+                                    {owned ? (
+                                      equipped ? (
+                                        <span className="text-primary flex items-center gap-1">
+                                          <Check className="w-3 h-3" /> Equipped
+                                        </span>
+                                      ) : (
+                                        <span className="text-muted-foreground">Owned</span>
+                                      )
+                                    ) : (
+                                      <span className="flex items-center gap-1 font-bold">
+                                        <Zap className="w-3 h-3 text-primary" />
+                                        {item.cost}
+                                      </span>
+                                    )}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </motion.div>
                           </motion.div>
                         );
                       })}
@@ -627,6 +657,29 @@ const Shop = () => {
           </main>
         </div>
       </div>
+
+      {/* Skin Preview Modal */}
+      <SkinPreviewModal
+        skin={previewSkin}
+        isOpen={!!previewSkin}
+        onClose={() => setPreviewSkin(null)}
+        owned={previewSkin ? ownedItems.includes(previewSkin.id) : false}
+        equipped={previewSkin ? equippedSkin === previewSkin.id : false}
+        canAfford={previewSkin ? (profile?.xp || 0) >= previewSkin.cost : false}
+        onPurchase={() => {
+          if (previewSkin) {
+            handlePurchaseItem(previewSkin);
+            setPreviewSkin(null);
+          }
+        }}
+        onEquip={() => {
+          if (previewSkin) {
+            equipSkin(previewSkin.id);
+            setPreviewSkin(null);
+          }
+        }}
+        getRarityBadge={getRarityBadge}
+      />
     </PageTransition>
   );
 };

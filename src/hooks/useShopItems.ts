@@ -14,6 +14,14 @@ import raccoonWarrior from "@/assets/skins/raccoon-warrior.png";
 import raccoonRoyal from "@/assets/skins/raccoon-royal.png";
 import raccoonMystic from "@/assets/skins/raccoon-mystic.png";
 import raccoonGolden from "@/assets/skins/raccoon-golden.png";
+import raccoonPirate from "@/assets/skins/raccoon-pirate.png";
+import raccoonNinja from "@/assets/skins/raccoon-ninja.png";
+import raccoonChef from "@/assets/skins/raccoon-chef.png";
+import raccoonAstronaut from "@/assets/skins/raccoon-astronaut.png";
+import raccoonVampire from "@/assets/skins/raccoon-vampire.png";
+import raccoonAngel from "@/assets/skins/raccoon-angel.png";
+import raccoonSuperhero from "@/assets/skins/raccoon-superhero.png";
+import raccoonRobot from "@/assets/skins/raccoon-robot.png";
 
 export interface ShopItem {
   id: string;
@@ -228,6 +236,87 @@ export const SHOP_ITEMS: ShopItem[] = [
     cost: 2000,
     icon: "🦝",
     image: raccoonGolden,
+    rarity: "legendary",
+  },
+  // New costume skins
+  {
+    id: "skin_pirate",
+    name: "Pirate Shpoko",
+    description: "Arrr! Treasure hunting for vocabulary!",
+    type: "raccoon_skin",
+    cost: 450,
+    icon: "🦝",
+    image: raccoonPirate,
+    rarity: "rare",
+  },
+  {
+    id: "skin_ninja",
+    name: "Ninja Shpoko",
+    description: "Silent and deadly at learning!",
+    type: "raccoon_skin",
+    cost: 550,
+    icon: "🦝",
+    image: raccoonNinja,
+    rarity: "epic",
+  },
+  {
+    id: "skin_chef",
+    name: "Chef Shpoko",
+    description: "Cooking up some knowledge!",
+    type: "raccoon_skin",
+    cost: 350,
+    icon: "🦝",
+    image: raccoonChef,
+    rarity: "rare",
+  },
+  {
+    id: "skin_astronaut",
+    name: "Astro Shpoko",
+    description: "Learning among the stars!",
+    type: "raccoon_skin",
+    cost: 900,
+    icon: "🦝",
+    image: raccoonAstronaut,
+    rarity: "epic",
+  },
+  {
+    id: "skin_vampire",
+    name: "Vampire Shpoko",
+    description: "Learning by moonlight!",
+    type: "raccoon_skin",
+    cost: 700,
+    icon: "🦝",
+    image: raccoonVampire,
+    rarity: "epic",
+  },
+  {
+    id: "skin_angel",
+    name: "Angel Shpoko",
+    description: "A heavenly learner with pure heart!",
+    type: "raccoon_skin",
+    cost: 1000,
+    icon: "🦝",
+    image: raccoonAngel,
+    rarity: "epic",
+  },
+  {
+    id: "skin_superhero",
+    name: "Super Shpoko",
+    description: "Your friendly neighborhood raccoon hero!",
+    type: "raccoon_skin",
+    cost: 850,
+    icon: "🦝",
+    image: raccoonSuperhero,
+    rarity: "epic",
+  },
+  {
+    id: "skin_robot",
+    name: "Robo Shpoko",
+    description: "Beep boop, learning computed!",
+    type: "raccoon_skin",
+    cost: 1500,
+    icon: "🦝",
+    image: raccoonRobot,
     rarity: "legendary",
   },
 ];
