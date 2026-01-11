@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Trophy, Target, User, BookOpen, BookMarked, Flame, Crown, Zap, Gamepad2, Swords, Apple, Dices, Users, ShoppingBag, ChevronDown, Headphones, PenLine, ListChecks, GraduationCap } from "lucide-react";
+import { Home, Trophy, Target, User, BookOpen, BookMarked, Flame, Crown, Zap, Gamepad2, Swords, Apple, Dices, Users, ShoppingBag, ChevronDown, Headphones, PenLine, ListChecks, GraduationCap, Bell } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SidebarProps {
   className?: string;
@@ -44,13 +45,54 @@ const bottomNavItems = [
 
 export const Sidebar = ({ className }: SidebarProps) => {
   const location = useLocation();
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const [gamesOpen, setGamesOpen] = useState(false);
   const [quizzesOpen, setQuizzesOpen] = useState(false);
+  const [pendingTradeCount, setPendingTradeCount] = useState(0);
 
   // Check if any game or quiz is active
   const isGameActive = gameItems.some(item => location.pathname === item.path);
   const isQuizActive = quizItems.some(item => location.pathname === item.path);
+
+  // Fetch pending incoming trades count
+  useEffect(() => {
+    const fetchPendingTrades = async () => {
+      if (!user) {
+        setPendingTradeCount(0);
+        return;
+      }
+
+      const { count } = await supabase
+        .from("skin_trades")
+        .select("*", { count: "exact", head: true })
+        .eq("recipient_id", user.id)
+        .eq("status", "pending");
+
+      setPendingTradeCount(count || 0);
+    };
+
+    fetchPendingTrades();
+
+    // Subscribe to changes
+    const channel = supabase
+      .channel("sidebar-trades")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "skin_trades",
+        },
+        () => {
+          fetchPendingTrades();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   // Collapsible section renderer
   const renderCollapsibleSection = (
@@ -197,19 +239,40 @@ export const Sidebar = ({ className }: SidebarProps) => {
           );
         })}
 
-        {/* Shop - Special styling */}
+        {/* Shop - Special styling with notification badge */}
         <Link
           to="/shop"
           className={cn(
-            "flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-base",
-            location.pathname === "/shop"
+            "flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-base relative",
+            location.pathname === "/shop" || location.pathname === "/trade-history"
               ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-500 border-2 border-purple-500"
               : "text-muted-foreground hover:bg-accent border-2 border-transparent"
           )}
         >
-          <ShoppingBag className="w-6 h-6" />
+          <div className="relative">
+            <ShoppingBag className="w-6 h-6" />
+            {pendingTradeCount > 0 && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center"
+              >
+                <span className="text-xs font-bold text-white">{pendingTradeCount}</span>
+              </motion.div>
+            )}
+          </div>
           <span>Shop</span>
-          {profile && (profile.xp || 0) >= 100 && (
+          {pendingTradeCount > 0 && (
+            <motion.span 
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="ml-auto text-xs bg-red-500/20 text-red-500 px-2 py-0.5 rounded-full font-medium flex items-center gap-1"
+            >
+              <Bell className="w-3 h-3" />
+              {pendingTradeCount} pending
+            </motion.span>
+          )}
+          {!pendingTradeCount && profile && (profile.xp || 0) >= 100 && (
             <span className="ml-auto text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-medium">
               {profile.xp} XP
             </span>

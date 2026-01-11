@@ -357,18 +357,26 @@ const Shop = () => {
 
                   {/* Raccoon Skins Tab */}
                   <TabsContent value="skins">
-                    {/* Trade Button */}
+                    {/* Trade Actions */}
                     <motion.div
                       variants={staggerItem}
-                      className="mb-4"
+                      className="mb-4 flex gap-2"
                     >
                       <Button
                         variant="outline"
                         onClick={() => setShowTradingPanel(true)}
-                        className="w-full gap-2 border-dashed"
+                        className="flex-1 gap-2 border-dashed"
                       >
                         <ArrowLeftRight className="w-4 h-4" />
-                        Trade or Gift Skins with Friends
+                        Trade or Gift Skins
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => navigate("/trade-history")}
+                        className="gap-2"
+                      >
+                        <History className="w-4 h-4" />
+                        History
                       </Button>
                     </motion.div>
 

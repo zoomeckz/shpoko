@@ -89,6 +89,7 @@ import Quests from "./pages/Quests";
 import AchievementsPage from "./pages/AchievementsPage";
 import Friends from "./pages/Friends";
 import Shop from "./pages/Shop";
+import TradeHistory from "./pages/TradeHistory";
 
 const queryClient = new QueryClient();
 
@@ -196,6 +197,7 @@ const App = () => (
               <Route path="/achievements" element={<AchievementsPage />} />
               <Route path="/friends" element={<Friends />} />
               <Route path="/shop" element={<Shop />} />
+              <Route path="/trade-history" element={<TradeHistory />} />
               <Route path="*" element={<NotFound />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
