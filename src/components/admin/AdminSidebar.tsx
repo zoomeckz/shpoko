@@ -7,7 +7,6 @@ import {
   BarChart3, 
   Home,
   Settings,
-  Map,
   Trophy,
   Scroll,
   Crown,
@@ -40,7 +39,6 @@ const contentItems = [
 ];
 
 const gameItems = [
-  { title: "Roguelike", url: "/admin/roguelike", icon: Map },
   { title: "Adventure", url: "/admin/adventure", icon: Gamepad2 },
   { title: "Leagues", url: "/admin/leagues", icon: Trophy },
 ];

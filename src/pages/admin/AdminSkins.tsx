@@ -139,7 +139,7 @@ export default function AdminSkins() {
   });
 
   return (
-    <AdminLayout>
+    <AdminLayout title="Skins Management">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>

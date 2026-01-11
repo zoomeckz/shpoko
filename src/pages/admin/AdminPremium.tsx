@@ -126,7 +126,7 @@ export default function AdminPremium() {
   };
 
   return (
-    <AdminLayout>
+    <AdminLayout title="Premium Management">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
