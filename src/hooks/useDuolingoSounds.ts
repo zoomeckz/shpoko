@@ -112,6 +112,56 @@ export const useDuolingoSounds = () => {
     playTone(350, 0.08, "triangle", 0.1, 0.05);
   }, []);
 
+  // Promotion celebration - epic fanfare
+  const playPromotion = useCallback(() => {
+    if (!enabledRef.current) return;
+    playTone(523.25, 0.1, "sine", 0.25); // C5
+    playTone(659.25, 0.1, "sine", 0.25, 0.1); // E5
+    playTone(783.99, 0.1, "sine", 0.3, 0.2); // G5
+    playTone(1046.50, 0.2, "sine", 0.35, 0.3); // C6
+    playTone(1318.51, 0.15, "sine", 0.3, 0.45); // E6
+    playTone(1567.98, 0.3, "sine", 0.35, 0.55); // G6
+    playTone(2093.00, 0.5, "sine", 0.4, 0.7); // C7
+  }, []);
+
+  // Demotion sad sound
+  const playDemotion = useCallback(() => {
+    if (!enabledRef.current) return;
+    playTone(392, 0.2, "sine", 0.2); // G4
+    playTone(349.23, 0.2, "sine", 0.18, 0.15); // F4
+    playTone(311.13, 0.25, "sine", 0.15, 0.3); // Eb4
+    playTone(293.66, 0.4, "sine", 0.12, 0.45); // D4
+  }, []);
+
+  // Achievement unlock - magical chime
+  const playAchievement = useCallback(() => {
+    if (!enabledRef.current) return;
+    playTone(659.25, 0.1, "sine", 0.2); // E5
+    playTone(783.99, 0.1, "sine", 0.25, 0.08); // G5
+    playTone(987.77, 0.1, "sine", 0.3, 0.16); // B5
+    playTone(1174.66, 0.15, "sine", 0.35, 0.24); // D6
+    playTone(1318.51, 0.2, "sine", 0.3, 0.35); // E6
+    playTone(1567.98, 0.25, "sine", 0.35, 0.45); // G6
+  }, []);
+
+  // Level up sound
+  const playLevelUp = useCallback(() => {
+    if (!enabledRef.current) return;
+    playTone(440, 0.08, "sine", 0.2); // A4
+    playTone(554.37, 0.08, "sine", 0.25, 0.06); // C#5
+    playTone(659.25, 0.08, "sine", 0.3, 0.12); // E5
+    playTone(880, 0.15, "sine", 0.35, 0.18); // A5
+    playTone(1108.73, 0.2, "sine", 0.3, 0.28); // C#6
+    playTone(1318.51, 0.3, "sine", 0.35, 0.38); // E6
+  }, []);
+
+  // Coin/reward sound
+  const playCoin = useCallback(() => {
+    if (!enabledRef.current) return;
+    playTone(1318.51, 0.06, "sine", 0.2); // E6
+    playTone(1567.98, 0.08, "sine", 0.25, 0.05); // G6
+  }, []);
+
   return {
     playCorrect,
     playIncorrect,
@@ -121,6 +171,11 @@ export const useDuolingoSounds = () => {
     playXP,
     playHeartLost,
     playSkip,
+    playPromotion,
+    playDemotion,
+    playAchievement,
+    playLevelUp,
+    playCoin,
     setEnabled,
   };
 };
