@@ -45,6 +45,7 @@ export const Achievements = ({ compact = false, showUnlockPopup = true }: Achiev
   const categories = [
     { id: "all", label: "All" },
     { id: "lessons", label: "Lessons" },
+    { id: "deepdives", label: "Deep Dives" },
     { id: "streaks", label: "Streaks" },
     { id: "xp", label: "XP" },
     { id: "games", label: "Games" },

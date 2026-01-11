@@ -44,6 +44,42 @@ export type Database = {
         }
         Relationships: []
       }
+      deep_dive_progress: {
+        Row: {
+          badge_earned: string | null
+          completed_at: string
+          created_at: string
+          deep_dive_id: string
+          id: string
+          lesson_id: string
+          skin_earned: string | null
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          badge_earned?: string | null
+          completed_at?: string
+          created_at?: string
+          deep_dive_id: string
+          id?: string
+          lesson_id: string
+          skin_earned?: string | null
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          badge_earned?: string | null
+          completed_at?: string
+          created_at?: string
+          deep_dive_id?: string
+          id?: string
+          lesson_id?: string
+          skin_earned?: string | null
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: []
+      }
       flashcard_decks: {
         Row: {
           created_at: string
@@ -787,6 +823,30 @@ export type Database = {
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          source: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          source?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          source?: string
           user_id?: string
         }
         Relationships: []
