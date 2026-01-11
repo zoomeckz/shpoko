@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useInputMode } from "@/contexts/InputModeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDailyGameXP } from "@/hooks/useDailyGameXP";
+import { useLeague } from "@/hooks/useLeague";
 import { supabase } from "@/integrations/supabase/client";
 
 type Scenario = "restaurant" | "compliments" | "directions";
@@ -142,6 +143,7 @@ export default function DialogueBattleGame() {
   const { inputMode } = useInputMode();
   const { user, updateXP } = useAuth();
   const { hasEarnedToday, markAsEarned, canEarnXP } = useDailyGameXP("dialogue-battle");
+  const { addWeeklyXP } = useLeague();
 
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
   const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
@@ -284,6 +286,7 @@ export default function DialogueBattleGame() {
     
     if (user?.id && canEarnXP) {
       updateXP(baseXP);
+      addWeeklyXP(baseXP);
       markAsEarned();
       setXpAwarded(baseXP);
       toast({

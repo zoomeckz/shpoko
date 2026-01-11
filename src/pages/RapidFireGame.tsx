@@ -9,6 +9,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { useDailyGameXP } from "@/hooks/useDailyGameXP";
+import { useLeague } from "@/hooks/useLeague";
+
 
 interface WordPair {
   bulgarian: string;
@@ -59,6 +61,7 @@ const RapidFireGame = () => {
   const { user, updateXP } = useAuth();
   const { playCorrect, playIncorrect } = useSoundEffects();
   const { hasEarnedToday, markAsEarned, canEarnXP } = useDailyGameXP("rapid-fire");
+  const { addWeeklyXP } = useLeague();
   
   const [gameState, setGameState] = useState<"ready" | "playing" | "finished">("ready");
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -151,6 +154,7 @@ const RapidFireGame = () => {
     if (user?.id && score > 0 && canEarnXP) {
       const xpEarned = Math.floor(score / 2);
       await updateXP(xpEarned);
+      await addWeeklyXP(xpEarned);
       markAsEarned();
       setXpAwarded(xpEarned);
       toast({

@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { useDailyGameXP } from "@/hooks/useDailyGameXP";
+import { useLeague } from "@/hooks/useLeague";
 
 interface VerbConjugation {
   infinitive: string;
@@ -93,6 +94,7 @@ const ConjugationGame = () => {
   const { user, updateXP } = useAuth();
   const { playCorrect, playIncorrect } = useSoundEffects();
   const { hasEarnedToday, markAsEarned, canEarnXP } = useDailyGameXP("conjugation");
+  const { addWeeklyXP } = useLeague();
   
   const [gameMode, setGameMode] = useState<GameMode | null>(null);
   const [gameState, setGameState] = useState<"menu" | "playing" | "finished">("menu");
@@ -225,6 +227,7 @@ const ConjugationGame = () => {
     if (user?.id && score > 0 && canEarnXP) {
       const xpEarned = Math.floor(score / 2);
       await updateXP(xpEarned);
+      await addWeeklyXP(xpEarned);
       markAsEarned();
       setXpAwarded(xpEarned);
       toast({
