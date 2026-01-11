@@ -91,6 +91,14 @@ import Friends from "./pages/Friends";
 import Shop from "./pages/Shop";
 import TradeHistory from "./pages/TradeHistory";
 import ImageAnalyzer from "./pages/ImageAnalyzer";
+// Admin
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminRoguelike from "./pages/admin/AdminRoguelike";
+import AdminForum from "./pages/admin/AdminForum";
+import AdminQuizzes from "./pages/admin/AdminQuizzes";
+import AdminLeagues from "./pages/admin/AdminLeagues";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
 
 const queryClient = new QueryClient();
 
