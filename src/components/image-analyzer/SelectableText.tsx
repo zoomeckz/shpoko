@@ -46,7 +46,6 @@ export function SelectableText({ content }: SelectableTextProps) {
     try {
       const { data, error } = await supabase.functions.invoke('analyze-image', {
         body: {
-          image: '', // Empty image
           customPrompt: `Translate the English word "${word}" to Bulgarian. Provide 2-4 different translations if the word has multiple meanings in different contexts. Format your response as a JSON array of objects with "translation" (Bulgarian word in Cyrillic) and "context" (short English description of when to use this translation). Example: [{"translation":"кола","context":"vehicle"},{"translation":"вагон","context":"train car"}]. Only output valid JSON, no other text.`
         }
       });
