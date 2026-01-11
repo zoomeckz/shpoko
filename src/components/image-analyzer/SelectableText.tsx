@@ -140,7 +140,9 @@ export function SelectableText({ content }: SelectableTextProps) {
     }
   };
 
-  const handleSelectSuggestion = (suggestion: TranslationSuggestion) => {
+  const handleSelectSuggestion = (suggestion: TranslationSuggestion, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setSelectedWord(prev => prev ? {
       ...prev,
       translation: suggestion.translation
@@ -304,9 +306,10 @@ export function SelectableText({ content }: SelectableTextProps) {
                                   {selectedWord.suggestions.map((suggestion, idx) => (
                                     <Button
                                       key={idx}
+                                      type="button"
                                       variant={selectedWord.translation === suggestion.translation ? "default" : "outline"}
                                       size="sm"
-                                      onClick={() => handleSelectSuggestion(suggestion)}
+                                      onClick={(e) => handleSelectSuggestion(suggestion, e)}
                                       className="text-sm"
                                       title={suggestion.context ? `Context: ${suggestion.context}` : undefined}
                                     >
