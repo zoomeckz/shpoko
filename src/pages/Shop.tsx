@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageTransition } from "@/components/PageTransition";
 import { SkinPreviewModal } from "@/components/shop/SkinPreviewModal";
 import { SkinUnlockCelebration } from "@/components/shop/SkinUnlockCelebration";
+import { SkinTradingPanel } from "@/components/shop/SkinTradingPanel";
 import {
   Snowflake,
   Zap,
@@ -28,6 +29,7 @@ import {
   Timer,
   Check,
   Star,
+  ArrowLeftRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -100,6 +102,7 @@ const Shop = () => {
   const [activeTab, setActiveTab] = useState("boosters");
   const [previewSkin, setPreviewSkin] = useState<ShopItem | null>(null);
   const [celebratingSkin, setCelebratingSkin] = useState<ShopItem | null>(null);
+  const [showTradingPanel, setShowTradingPanel] = useState(false);
 
   const handlePurchaseFreeze = async () => {
     setPurchasing("freeze");
@@ -354,6 +357,21 @@ const Shop = () => {
 
                   {/* Raccoon Skins Tab */}
                   <TabsContent value="skins">
+                    {/* Trade Button */}
+                    <motion.div
+                      variants={staggerItem}
+                      className="mb-4"
+                    >
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowTradingPanel(true)}
+                        className="w-full gap-2 border-dashed"
+                      >
+                        <ArrowLeftRight className="w-4 h-4" />
+                        Trade or Gift Skins with Friends
+                      </Button>
+                    </motion.div>
+
                     <motion.div 
                       className="grid grid-cols-2 sm:grid-cols-3 gap-4"
                       variants={staggerContainer}
@@ -695,6 +713,12 @@ const Shop = () => {
         isOpen={!!celebratingSkin}
         onClose={() => setCelebratingSkin(null)}
         getRarityBadge={getRarityBadge}
+      />
+
+      {/* Skin Trading Panel */}
+      <SkinTradingPanel
+        isOpen={showTradingPanel}
+        onClose={() => setShowTradingPanel(false)}
       />
     </PageTransition>
   );
