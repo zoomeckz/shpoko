@@ -10,7 +10,8 @@ import {
   Trophy,
   Scroll,
   Crown,
-  Image
+  Image,
+  Target
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
@@ -41,6 +42,7 @@ const contentItems = [
 const gameItems = [
   { title: "Adventure", url: "/admin/adventure", icon: Gamepad2 },
   { title: "Leagues", url: "/admin/leagues", icon: Trophy },
+  { title: "Quests", url: "/admin/quests", icon: Target },
 ];
 
 const shopItems = [
