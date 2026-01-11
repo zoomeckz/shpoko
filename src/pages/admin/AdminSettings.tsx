@@ -25,8 +25,6 @@ export default function AdminSettings() {
         "user_progress",
         "user_skins",
         "skin_trades",
-        "dungeon_runs",
-        "adventure_progress",
         "quiz_attempts",
         "quiz_feedback",
         "forum_threads",
@@ -63,13 +61,6 @@ export default function AdminSettings() {
         .delete()
         .lt("created_at", cutoffStr);
 
-      // Clear old dungeon runs
-      await supabase
-        .from("dungeon_runs")
-        .delete()
-        .lt("created_at", cutoffStr)
-        .eq("completed", true);
-
       return { cutoffDate: cutoffStr };
     },
     onSuccess: () => {
@@ -90,8 +81,6 @@ export default function AdminSettings() {
 
       // Clear progress
       await supabase.from("user_progress").delete().eq("user_id", userId);
-      await supabase.from("adventure_progress").delete().eq("user_id", userId);
-      await supabase.from("dungeon_runs").delete().eq("user_id", userId);
     },
     onSuccess: () => {
       toast.success("User progress reset");
@@ -164,26 +153,6 @@ export default function AdminSettings() {
                 onClick={() => {
                   if (confirm("Clear messages older than 30 days?")) {
                     clearOldDataMutation.mutate(30);
-                  }
-                }}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Clear
-              </Button>
-            </div>
-
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <h3 className="font-medium">Clear Old Dungeon Runs</h3>
-                <p className="text-sm text-muted-foreground">
-                  Remove completed dungeon runs older than 90 days
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  if (confirm("Clear dungeon runs older than 90 days?")) {
-                    clearOldDataMutation.mutate(90);
                   }
                 }}
               >

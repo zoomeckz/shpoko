@@ -1,7 +1,6 @@
 import { 
   Users, 
   BookOpen, 
-  Gamepad2, 
   ShoppingBag, 
   MessageSquare, 
   BarChart3, 
@@ -40,7 +39,6 @@ const contentItems = [
 ];
 
 const gameItems = [
-  { title: "Adventure", url: "/admin/adventure", icon: Gamepad2 },
   { title: "Leagues", url: "/admin/leagues", icon: Trophy },
   { title: "Quests", url: "/admin/quests", icon: Target },
 ];
