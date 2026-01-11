@@ -53,7 +53,7 @@ export const AchievementBadges = ({ compact = false, showUnlockAnimation = true 
     checkAndUnlock,
     loading 
   } = useAchievements();
-  const { playComplete } = useDuolingoSounds();
+  const { playAchievement } = useDuolingoSounds();
   const [newlyUnlocked, setNewlyUnlocked] = useState<Achievement[]>([]);
   const [showUnlockDialog, setShowUnlockDialog] = useState(false);
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
@@ -65,7 +65,7 @@ export const AchievementBadges = ({ compact = false, showUnlockAnimation = true 
       if (unlocked.length > 0 && showUnlockAnimation) {
         setNewlyUnlocked(unlocked);
         setShowUnlockDialog(true);
-        playComplete();
+        playAchievement();
         
         unlocked.forEach(a => {
           toast.success(`🏆 Achievement Unlocked: ${a.name}!`, {

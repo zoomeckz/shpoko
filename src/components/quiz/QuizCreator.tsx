@@ -4,12 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Save, ArrowLeft } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Plus, Trash2, Save, ArrowLeft, BookOpen, Shuffle, Keyboard, MousePointer, ListChecks } from "lucide-react";
 import { toast } from "sonner";
+import { VocabularyBrowser } from "./VocabularyBrowser";
+import { VocabWord } from "@/data/vocabularyList";
+import { motion, AnimatePresence } from "framer-motion";
 
 const CATEGORIES = [
   { value: "general", label: "General" },
@@ -33,6 +39,12 @@ const LANGUAGES = [
   { value: "polish", label: "Polski", flag: "🇵🇱" },
 ];
 
+const ANSWER_MODES = [
+  { value: "choose", label: "Multiple Choice", icon: MousePointer, description: "Select from options" },
+  { value: "type", label: "Type Answer", icon: Keyboard, description: "Type the answer" },
+  { value: "random", label: "Random Mix", icon: Shuffle, description: "Mix of both styles" },
+];
+
 interface Question {
   id?: string;
   question_text: string;
@@ -52,13 +64,19 @@ export const QuizCreator = ({ onBack, editQuizId }: QuizCreatorProps) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("general");
-  const [language, setLanguage] = useState("english");
+  const [language, setLanguage] = useState("bulgarian");
   const [isPublic, setIsPublic] = useState(false);
   const [isTimed, setIsTimed] = useState(false);
   const [timeLimit, setTimeLimit] = useState(60);
+  const [answerMode, setAnswerMode] = useState<"choose" | "type" | "random">("random");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!!editQuizId);
+  
+  // Vocabulary browser state
+  const [selectedWords, setSelectedWords] = useState<VocabWord[]>([]);
+  const [creationMode, setCreationMode] = useState<"vocab" | "manual">("vocab");
+  const [customWordIdCounter, setCustomWordIdCounter] = useState(1000);
 
   useEffect(() => {
     if (editQuizId) {
@@ -83,6 +101,7 @@ export const QuizCreator = ({ onBack, editQuizId }: QuizCreatorProps) => {
       setIsPublic(quiz.is_public);
       setIsTimed(quiz.is_timed);
       setTimeLimit(quiz.time_limit_seconds || 60);
+      setCreationMode("manual");
 
       const { data: questionsData, error: questionsError } = await supabase
         .from("quiz_questions")
@@ -100,12 +119,77 @@ export const QuizCreator = ({ onBack, editQuizId }: QuizCreatorProps) => {
     }
   };
 
+  // Generate questions from selected vocabulary
+  const generateQuestionsFromVocab = () => {
+    if (selectedWords.length === 0) {
+      toast.error("Please select at least one word");
+      return;
+    }
+
+    const newQuestions: Question[] = selectedWords.map((word, index) => {
+      // Determine question type based on answer mode
+      let questionType: "choose_word" | "fill_blank";
+      if (answerMode === "type") {
+        questionType = "fill_blank";
+      } else if (answerMode === "choose") {
+        questionType = "choose_word";
+      } else {
+        questionType = Math.random() > 0.5 ? "choose_word" : "fill_blank";
+      }
+
+      // Generate distractors for multiple choice
+      const otherWords = selectedWords.filter(w => w.id !== word.id);
+      const distractors = otherWords
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 3)
+        .map(w => w.translation);
+      
+      // Add correct answer and shuffle options
+      const options = [...distractors, word.translation].sort(() => Math.random() - 0.5);
+
+      return {
+        question_text: `What does "${word.word}" (${word.romanization}) mean? ${word.emoji}`,
+        question_type: questionType,
+        correct_answer: word.translation,
+        options: questionType === "choose_word" ? options : [],
+        order_index: index,
+      };
+    });
+
+    setQuestions(newQuestions);
+    setCreationMode("manual");
+    toast.success(`Generated ${newQuestions.length} questions from vocabulary`);
+  };
+
+  const handleWordSelect = (word: VocabWord) => {
+    setSelectedWords(prev => [...prev, word]);
+  };
+
+  const handleWordRemove = (wordId: string) => {
+    setSelectedWords(prev => prev.filter(w => w.id !== wordId));
+  };
+
+  const handleAddCustomWord = (word: Omit<VocabWord, "id">) => {
+    const newWord: VocabWord = {
+      ...word,
+      id: `custom_${customWordIdCounter}`,
+    };
+    setCustomWordIdCounter(prev => prev + 1);
+    setSelectedWords(prev => [...prev, newWord]);
+  };
+
   const addQuestion = () => {
+    const questionType = answerMode === "type" 
+      ? "fill_blank" 
+      : answerMode === "choose" 
+        ? "choose_word" 
+        : Math.random() > 0.5 ? "choose_word" : "fill_blank";
+
     setQuestions([
       ...questions,
       {
         question_text: "",
-        question_type: "choose_word",
+        question_type: questionType,
         correct_answer: "",
         options: ["", "", "", ""],
         order_index: questions.length,
@@ -249,13 +333,6 @@ export const QuizCreator = ({ onBack, editQuizId }: QuizCreatorProps) => {
     );
   }
 
-  const AddQuestionButton = () => (
-    <Button onClick={addQuestion} variant="outline" className="w-full">
-      <Plus className="w-4 h-4 mr-2" />
-      Add Question
-    </Button>
-  );
-
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -265,9 +342,27 @@ export const QuizCreator = ({ onBack, editQuizId }: QuizCreatorProps) => {
         <h2 className="text-2xl font-bold">{editQuizId ? "Edit Quiz" : "Create Quiz"}</h2>
       </div>
 
+      {/* Creation Mode Tabs */}
+      {!editQuizId && (
+        <Tabs value={creationMode} onValueChange={(v) => setCreationMode(v as any)}>
+          <TabsList className="grid grid-cols-2 w-full">
+            <TabsTrigger value="vocab" className="gap-2">
+              <BookOpen className="w-4 h-4" />
+              From Vocabulary
+            </TabsTrigger>
+            <TabsTrigger value="manual" className="gap-2">
+              <ListChecks className="w-4 h-4" />
+              Manual Entry
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      )}
+
+      {/* Quiz Settings */}
       <Card>
         <CardHeader>
           <CardTitle>Quiz Settings</CardTitle>
+          <CardDescription>Configure how your quiz will work</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -290,39 +385,70 @@ export const QuizCreator = ({ onBack, editQuizId }: QuizCreatorProps) => {
             />
           </div>
 
-          <div>
-            <Label htmlFor="category">Category</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map((cat) => (
-                  <SelectItem key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="category">Category</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="language">Quiz Language</Label>
+              <Select value={language} onValueChange={setLanguage}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {LANGUAGES.map((lang) => (
+                    <SelectItem key={lang.value} value={lang.value}>
+                      {lang.flag} {lang.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div>
-            <Label htmlFor="language">Quiz Language</Label>
-            <p className="text-sm text-muted-foreground mb-2">
-              Which language are the quiz prompts/questions written in?
-            </p>
-            <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {LANGUAGES.map((lang) => (
-                  <SelectItem key={lang.value} value={lang.value}>
-                    {lang.flag} {lang.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Answer Mode Selection */}
+          <div className="space-y-3">
+            <Label>Answer Mode</Label>
+            <RadioGroup
+              value={answerMode}
+              onValueChange={(v) => setAnswerMode(v as any)}
+              className="grid grid-cols-1 sm:grid-cols-3 gap-3"
+            >
+              {ANSWER_MODES.map((mode) => (
+                <motion.div
+                  key={mode.value}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Label
+                    htmlFor={mode.value}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      answerMode === mode.value
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <RadioGroupItem value={mode.value} id={mode.value} className="sr-only" />
+                    <mode.icon className={`w-6 h-6 ${answerMode === mode.value ? "text-primary" : "text-muted-foreground"}`} />
+                    <span className="font-medium text-sm">{mode.label}</span>
+                    <span className="text-xs text-muted-foreground text-center">{mode.description}</span>
+                  </Label>
+                </motion.div>
+              ))}
+            </RadioGroup>
           </div>
 
           <div className="flex items-center justify-between">
@@ -357,116 +483,181 @@ export const QuizCreator = ({ onBack, editQuizId }: QuizCreatorProps) => {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Questions ({questions.length})</CardTitle>
-          <Button onClick={addQuestion} size="sm">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Question
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {questions.length === 0 ? (
-            <div className="text-center py-8 space-y-4">
-              <p className="text-muted-foreground">
-                No questions yet. Click "Add Question" to start.
-              </p>
-              <AddQuestionButton />
-            </div>
-          ) : (
-            <>
-              {questions.map((question, qIndex) => (
-                <Card key={qIndex} className="border-2">
-                  <CardContent className="pt-4 space-y-4">
-                    <div className="flex items-start justify-between">
-                      <span className="font-bold text-lg">Q{qIndex + 1}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeQuestion(qIndex)}
-                        className="text-destructive"
+      {/* Vocabulary Browser or Manual Questions */}
+      <AnimatePresence mode="wait">
+        {creationMode === "vocab" && !editQuizId ? (
+          <motion.div
+            key="vocab"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="space-y-4"
+          >
+            <VocabularyBrowser
+              selectedWords={selectedWords}
+              onWordSelect={handleWordSelect}
+              onWordRemove={handleWordRemove}
+              onAddCustomWord={handleAddCustomWord}
+              maxWords={50}
+            />
+            
+            {selectedWords.length > 0 && (
+              <Button 
+                onClick={generateQuestionsFromVocab} 
+                className="w-full" 
+                size="lg"
+              >
+                <Shuffle className="w-4 h-4 mr-2" />
+                Generate {selectedWords.length} Questions
+              </Button>
+            )}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="manual"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+          >
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Questions ({questions.length})</CardTitle>
+                  <CardDescription>Add and customize your quiz questions</CardDescription>
+                </div>
+                <Button onClick={addQuestion} size="sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Question
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {questions.length === 0 ? (
+                  <div className="text-center py-8 space-y-4">
+                    <p className="text-muted-foreground">
+                      No questions yet. Click "Add Question" to start or switch to vocabulary mode.
+                    </p>
+                    <Button onClick={addQuestion} variant="outline" className="w-full">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Question
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    {questions.map((question, qIndex) => (
+                      <motion.div
+                        key={qIndex}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: qIndex * 0.05 }}
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                        <Card className="border-2">
+                          <CardContent className="pt-4 space-y-4">
+                            <div className="flex items-start justify-between">
+                              <Badge variant="secondary" className="text-lg px-3 py-1">
+                                Q{qIndex + 1}
+                              </Badge>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removeQuestion(qIndex)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
 
-                    <div>
-                      <Label>Question Type</Label>
-                      <Select
-                        value={question.question_type}
-                        onValueChange={(v) => updateQuestion(qIndex, "question_type", v)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="choose_word">Choose the correct word</SelectItem>
-                          <SelectItem value="fill_blank">Fill in the blank</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                            <div>
+                              <Label>Question Type</Label>
+                              <Select
+                                value={question.question_type}
+                                onValueChange={(v) => updateQuestion(qIndex, "question_type", v)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="choose_word">
+                                    <div className="flex items-center gap-2">
+                                      <MousePointer className="w-4 h-4" />
+                                      Choose the correct word
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="fill_blank">
+                                    <div className="flex items-center gap-2">
+                                      <Keyboard className="w-4 h-4" />
+                                      Type the answer
+                                    </div>
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
 
-                    <div>
-                      <Label>Question Text</Label>
-                      {question.question_type === "fill_blank" && (
-                        <p className="text-xs text-muted-foreground mb-1">
-                          Use <code className="bg-muted px-1 rounded">x</code> to mark blanks. 
-                          Example: "I x to the store" or "x x nice day" for consecutive blanks.
-                        </p>
-                      )}
-                      <Input
-                        value={question.question_text}
-                        onChange={(e) => updateQuestion(qIndex, "question_text", e.target.value)}
-                        placeholder={
-                          question.question_type === "fill_blank" 
-                            ? "Enter sentence with x for blanks..."
-                            : "Enter your question..."
-                        }
-                      />
-                    </div>
+                            <div>
+                              <Label>Question Text</Label>
+                              {question.question_type === "fill_blank" && (
+                                <p className="text-xs text-muted-foreground mb-1">
+                                  Use <code className="bg-muted px-1 rounded">x</code> to mark blanks.
+                                </p>
+                              )}
+                              <Input
+                                value={question.question_text}
+                                onChange={(e) => updateQuestion(qIndex, "question_text", e.target.value)}
+                                placeholder={
+                                  question.question_type === "fill_blank"
+                                    ? "Enter sentence with x for blanks..."
+                                    : "Enter your question..."
+                                }
+                              />
+                            </div>
 
-                    <div>
-                      <Label>Correct Answer</Label>
-                      {question.question_type === "fill_blank" && (
-                        <p className="text-xs text-muted-foreground mb-1">
-                          For multiple blanks, separate answers with commas (e.g., "went, a")
-                        </p>
-                      )}
-                      <Input
-                        value={question.correct_answer}
-                        onChange={(e) => updateQuestion(qIndex, "correct_answer", e.target.value)}
-                        placeholder="Enter the correct answer..."
-                      />
-                    </div>
+                            <div>
+                              <Label>Correct Answer</Label>
+                              <Input
+                                value={question.correct_answer}
+                                onChange={(e) => updateQuestion(qIndex, "correct_answer", e.target.value)}
+                                placeholder="Enter the correct answer..."
+                              />
+                            </div>
 
-                    {question.question_type === "choose_word" && (
-                      <div className="space-y-2">
-                        <Label>Options (include the correct answer)</Label>
-                        {question.options.map((option, oIndex) => (
-                          <Input
-                            key={oIndex}
-                            value={option}
-                            onChange={(e) => updateOption(qIndex, oIndex, e.target.value)}
-                            placeholder={`Option ${oIndex + 1}`}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-              
-              {/* Add Question button at the bottom */}
-              <AddQuestionButton />
-            </>
-          )}
-        </CardContent>
-      </Card>
+                            {question.question_type === "choose_word" && (
+                              <div className="space-y-2">
+                                <Label>Options (include the correct answer)</Label>
+                                <div className="grid grid-cols-2 gap-2">
+                                  {question.options.map((option, oIndex) => (
+                                    <Input
+                                      key={oIndex}
+                                      value={option}
+                                      onChange={(e) => updateOption(qIndex, oIndex, e.target.value)}
+                                      placeholder={`Option ${oIndex + 1}`}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    ))}
 
-      <Button onClick={saveQuiz} disabled={saving} className="w-full" size="lg">
-        <Save className="w-4 h-4 mr-2" />
-        {saving ? "Saving..." : editQuizId ? "Update Quiz" : "Save Quiz"}
-      </Button>
+                    <Button onClick={addQuestion} variant="outline" className="w-full">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Question
+                    </Button>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Save Button */}
+      {(creationMode === "manual" || editQuizId || questions.length > 0) && (
+        <Button onClick={saveQuiz} disabled={saving} className="w-full" size="lg">
+          <Save className="w-4 h-4 mr-2" />
+          {saving ? "Saving..." : editQuizId ? "Update Quiz" : "Save Quiz"}
+        </Button>
+      )}
     </div>
   );
 };

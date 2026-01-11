@@ -1,10 +1,13 @@
 import { cn } from "@/lib/utils";
-import { Flame, Trophy, Target, Zap, Crown, Heart, BookOpen, Gift } from "lucide-react";
+import { Flame, Trophy, Target, Zap, Crown, Heart, BookOpen, Gift, Award, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuests } from "@/hooks/useQuests";
 import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { LeagueCard } from "@/components/league/LeagueCard";
+import { useState, useEffect } from "react";
+import { useDuolingoSounds } from "@/hooks/useDuolingoSounds";
 
 interface RightSidebarProps {
   className?: string;
@@ -43,46 +46,110 @@ const getQuestColor = (actionType: string) => {
 export function RightSidebar({ className }: RightSidebarProps) {
   const { profile } = useAuth();
   const { dailyQuests, loading: questsLoading } = useQuests();
+  const { playStreak, playXP } = useDuolingoSounds();
+  const [showMascotMessage, setShowMascotMessage] = useState(false);
+  const [mascotEmoji, setMascotEmoji] = useState("🦝");
 
   // Show first 3 daily quests
   const displayQuests = dailyQuests.slice(0, 3);
 
+  // Mascot messages based on time of day and streak
+  const getMascotMessage = () => {
+    const hour = new Date().getHours();
+    const streak = profile?.streak || 0;
+    
+    if (streak >= 30) return "Legendary streak! 🔥";
+    if (streak >= 7) return "Amazing consistency!";
+    if (hour < 12) return "Good morning! Ready to learn?";
+    if (hour < 18) return "Keep it up! You're doing great!";
+    return "Evening study session! 🌙";
+  };
+
+  // Animate mascot based on XP milestones
+  useEffect(() => {
+    const xp = profile?.xp || 0;
+    if (xp > 0 && xp % 100 === 0) {
+      setMascotEmoji("🎉");
+      setTimeout(() => setMascotEmoji("🦝"), 2000);
+    }
+  }, [profile?.xp]);
+
   return (
     <aside className={cn(
-      "hidden xl:flex flex-col w-80 h-screen sticky top-0 bg-card border-l border-border p-4 gap-4",
+      "hidden xl:flex flex-col w-80 h-screen sticky top-0 bg-card border-l border-border p-4 gap-4 overflow-y-auto",
       className
     )}>
       {/* Mascot greeting */}
-      <div className="bg-accent rounded-2xl p-4">
+      <motion.div 
+        className="bg-gradient-to-br from-accent to-accent/50 rounded-2xl p-4 cursor-pointer"
+        whileHover={{ scale: 1.02 }}
+        onClick={() => setShowMascotMessage(!showMascotMessage)}
+      >
         <div className="flex items-center gap-3">
           <motion.span
-            animate={{ y: [0, -5, 0] }}
+            animate={{ 
+              y: [0, -5, 0],
+              rotate: [0, 5, -5, 0]
+            }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             className="text-5xl"
           >
-            🦝
+            {mascotEmoji}
           </motion.span>
           <div>
-            <p className="font-bold text-sm">Keep it up!</p>
+            <p className="font-bold text-sm">{getMascotMessage()}</p>
             <p className="text-xs text-muted-foreground">You're doing great today</p>
           </div>
         </div>
-      </div>
+        <AnimatePresence>
+          {showMascotMessage && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-3 pt-3 border-t border-border/50"
+            >
+              <p className="text-xs text-muted-foreground">
+                Tip: Complete daily quests to earn bonus XP! 🎯
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
-      {/* Stats cards */}
+      {/* Stats cards with SFX */}
       <div className="grid grid-cols-2 gap-3">
         <motion.div
-          whileHover={{ scale: 1.02 }}
-          className="bg-accent rounded-xl p-4 flex flex-col items-center gap-2 cursor-pointer"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => playStreak()}
+          className="bg-gradient-to-br from-warning/20 to-warning/5 rounded-xl p-4 flex flex-col items-center gap-2 cursor-pointer border border-warning/20"
         >
-          <Flame className="w-8 h-8 text-warning" />
+          <motion.div
+            animate={{ 
+              scale: [1, 1.2, 1],
+            }}
+            transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
+          >
+            <Flame className="w-8 h-8 text-warning" />
+          </motion.div>
           <span className="text-2xl font-bold">{profile?.streak || 0}</span>
           <span className="text-xs text-muted-foreground font-semibold">Day streak</span>
+          {(profile?.streak || 0) >= 7 && (
+            <motion.div
+              animate={{ rotate: [0, 15, -15, 0] }}
+              transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 3 }}
+            >
+              <Sparkles className="w-4 h-4 text-warning" />
+            </motion.div>
+          )}
         </motion.div>
         
         <motion.div
-          whileHover={{ scale: 1.02 }}
-          className="bg-accent rounded-xl p-4 flex flex-col items-center gap-2 cursor-pointer"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => playXP()}
+          className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl p-4 flex flex-col items-center gap-2 cursor-pointer border border-primary/20"
         >
           <Zap className="w-8 h-8 text-primary" />
           <span className="text-2xl font-bold">{profile?.xp || 0}</span>
@@ -98,15 +165,36 @@ export function RightSidebar({ className }: RightSidebarProps) {
         </div>
         <div className="flex gap-1">
           {[1, 2, 3, 4, 5].map((i) => (
-            <Heart key={i} className="w-6 h-6 text-error fill-error" />
+            <motion.div
+              key={i}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: i * 0.1 }}
+            >
+              <Heart className="w-6 h-6 text-error fill-error" />
+            </motion.div>
           ))}
+          {profile?.is_premium && (
+            <motion.div
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <span className="text-xl ml-1">∞</span>
+            </motion.div>
+          )}
         </div>
       </div>
+
+      {/* League Card - Compact Version */}
+      <LeagueCard compact />
 
       {/* Daily Quests */}
       <div className="bg-accent rounded-xl p-4 flex-1">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-sm">Daily Quests</h3>
+          <h3 className="font-bold text-sm flex items-center gap-2">
+            <Target className="w-4 h-4 text-primary" />
+            Daily Quests
+          </h3>
           <Link to="/quests" className="text-xs text-primary hover:underline">View all</Link>
         </div>
         <div className="space-y-4">
@@ -119,21 +207,31 @@ export function RightSidebar({ className }: RightSidebarProps) {
               No quests available
             </div>
           ) : (
-            displayQuests.map((userQuest) => {
+            displayQuests.map((userQuest, index) => {
               const Icon = getQuestIcon(userQuest.quest.action_type);
               const colorClass = getQuestColor(userQuest.quest.action_type);
               const progress = Math.min(100, (userQuest.current_count / userQuest.quest.target_count) * 100);
               const isComplete = userQuest.completed;
               
               return (
-                <div key={userQuest.id} className="space-y-2">
+                <motion.div 
+                  key={userQuest.id} 
+                  className="space-y-2"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
                   <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center",
-                      isComplete ? "bg-success/20" : "bg-card"
-                    )}>
+                    <motion.div 
+                      className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
+                        isComplete ? "bg-success/20" : "bg-card"
+                      )}
+                      animate={isComplete ? { scale: [1, 1.1, 1] } : {}}
+                      transition={{ duration: 0.3 }}
+                    >
                       <Icon className={cn("w-5 h-5", isComplete ? "text-success" : colorClass)} />
-                    </div>
+                    </motion.div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate">{userQuest.quest.title}</p>
                       <p className="text-xs text-muted-foreground">
@@ -141,7 +239,14 @@ export function RightSidebar({ className }: RightSidebarProps) {
                       </p>
                     </div>
                     {isComplete ? (
-                      <span className="text-success text-lg">✓</span>
+                      <motion.span 
+                        className="text-success text-lg"
+                        initial={{ scale: 0, rotate: -180 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ type: "spring", stiffness: 200 }}
+                      >
+                        ✓
+                      </motion.span>
                     ) : (
                       <div className="flex items-center gap-1 text-xs text-primary font-medium">
                         <Gift className="w-3 h-3" />
@@ -150,25 +255,50 @@ export function RightSidebar({ className }: RightSidebarProps) {
                     )}
                   </div>
                   <Progress value={progress} className="h-2" />
-                </div>
+                </motion.div>
               );
             })
           )}
         </div>
       </div>
 
+      {/* Achievements Quick View */}
+      <Link to="/achievements">
+        <motion.div 
+          className="bg-gradient-to-br from-purple-500/20 to-purple-500/5 rounded-xl p-4 border border-purple-500/20 cursor-pointer"
+          whileHover={{ scale: 1.02 }}
+        >
+          <div className="flex items-center gap-3">
+            <Award className="w-8 h-8 text-purple-500" />
+            <div>
+              <p className="font-bold text-sm">Achievements</p>
+              <p className="text-xs text-muted-foreground">View your badges</p>
+            </div>
+          </div>
+        </motion.div>
+      </Link>
+
       {/* Premium upsell */}
       {!profile?.is_premium && (
         <Link to="/premium">
-          <div className="bg-gradient-to-r from-warning/20 to-warning/10 rounded-xl p-4 border-2 border-warning/30 hover:border-warning transition-colors">
+          <motion.div 
+            className="bg-gradient-to-r from-warning/20 to-warning/10 rounded-xl p-4 border-2 border-warning/30"
+            whileHover={{ scale: 1.02, borderColor: "hsl(var(--warning))" }}
+            transition={{ duration: 0.2 }}
+          >
             <div className="flex items-center gap-3">
-              <Crown className="w-8 h-8 text-warning" />
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+              >
+                <Crown className="w-8 h-8 text-warning" />
+              </motion.div>
               <div>
                 <p className="font-bold text-sm">Try Super SHPOKO</p>
                 <p className="text-xs text-muted-foreground">No ads & unlimited hearts</p>
               </div>
             </div>
-          </div>
+          </motion.div>
         </Link>
       )}
     </aside>
