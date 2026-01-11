@@ -2,9 +2,10 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { SelectableText } from "@/components/image-analyzer/SelectableText";
 import { 
   Upload, 
   Camera, 
@@ -17,7 +18,8 @@ import {
   X,
   Copy,
   Check,
-  ArrowLeft
+  ArrowLeft,
+  BookOpen
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -316,9 +318,7 @@ export default function ImageAnalyzer() {
                       animate={{ opacity: 1, y: 0 }}
                       className="prose prose-sm dark:prose-invert max-w-none"
                     >
-                      <div className="bg-muted/50 rounded-xl p-4 max-h-[400px] overflow-y-auto whitespace-pre-wrap">
-                        {result.content}
-                      </div>
+                      <SelectableText content={result.content} />
                     </motion.div>
                   ) : (
                     <motion.div
