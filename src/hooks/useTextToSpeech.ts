@@ -1,39 +1,33 @@
 import { useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useTextToSpeech = () => {
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const playPronunciation = useCallback(async (text: string, lang: string = "bg-BG") => {
-    if (isPlaying) {
-      window.speechSynthesis.cancel();
+  const playPronunciation = useCallback(async (text: string, lang: string = "bg") => {
+    if (isPlaying) return;
+    
+    setIsPlaying(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("text-to-speech", {
+        body: { text, lang },
+      });
+
+      if (error) throw error;
+      if (!data?.audioContent) throw new Error("No audio received");
+
+      // Use data URI for proper decoding
+      const audioUrl = `data:audio/mpeg;base64,${data.audioContent}`;
+      const audio = new Audio(audioUrl);
+
+      audio.onended = () => setIsPlaying(false);
+      audio.onerror = () => setIsPlaying(false);
+
+      await audio.play();
+    } catch (error) {
+      console.error("Pronunciation error:", error);
       setIsPlaying(false);
-      return;
     }
-
-    if (!window.speechSynthesis) {
-      console.error("Speech synthesis not supported");
-      return;
-    }
-
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = lang;
-    utterance.rate = 0.85;
-    utterance.pitch = 1;
-    utterance.volume = 1;
-
-    const voices = window.speechSynthesis.getVoices();
-    const langVoice = voices.find(v => v.lang.startsWith(lang.split('-')[0]));
-    if (langVoice) {
-      utterance.voice = langVoice;
-    }
-
-    utterance.onstart = () => setIsPlaying(true);
-    utterance.onend = () => setIsPlaying(false);
-    utterance.onerror = () => setIsPlaying(false);
-
-    window.speechSynthesis.speak(utterance);
   }, [isPlaying]);
 
   return { isPlaying, playPronunciation };
