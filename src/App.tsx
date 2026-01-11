@@ -67,6 +67,7 @@ import SpanishFamilyLesson from "./pages/spanish/SpanishFamilyLesson";
 import SpanishFoodLesson from "./pages/spanish/SpanishFoodLesson";
 // Quiz
 import QuizPage from "./pages/QuizPage";
+import QuizDiscover from "./pages/QuizDiscover";
 // Adventure & Flashcards
 import Adventure from "./pages/Adventure";
 import DungeonGame from "./pages/DungeonGame";
@@ -107,6 +108,7 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/premium" element={<Premium />} />
+              <Route path="/quiz-discover" element={<QuizDiscover />} />
               <Route path="/contexto" element={<ContextoGame />} />
               <Route path="/assessment/:tier" element={<TierAssessment />} />
               <Route path="/game/rapid-fire" element={<RapidFireGame />} />
