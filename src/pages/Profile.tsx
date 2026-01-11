@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePictureSelector";
 import { ChangeUsernameDialog } from "@/components/ChangeUsernameDialog";
 import { Achievements } from "@/components/Achievements";
+import { SkinShowcase } from "@/components/profile/SkinShowcase";
 import { 
   Flame, Trophy, Zap, Crown, Calendar, Target, BookOpen, 
   Settings, LogOut, Edit, Award, TrendingUp
@@ -186,11 +187,21 @@ const Profile = () => {
               </Card>
             </motion.div>
 
-            {/* Achievements */}
+            {/* Skin Collection Showcase */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
+              className="mb-6"
+            >
+              <SkinShowcase />
+            </motion.div>
+
+            {/* Achievements */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
             >
               <Card className="border-2 mb-6">
                 <CardHeader>
@@ -209,7 +220,7 @@ const Profile = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
+              transition={{ delay: 0.4 }}
               className="space-y-3"
             >
               {!profile.is_premium && (

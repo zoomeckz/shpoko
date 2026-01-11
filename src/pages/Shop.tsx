@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageTransition } from "@/components/PageTransition";
 import { SkinPreviewModal } from "@/components/shop/SkinPreviewModal";
+import { SkinUnlockCelebration } from "@/components/shop/SkinUnlockCelebration";
 import {
   Snowflake,
   Zap,
@@ -98,6 +99,7 @@ const Shop = () => {
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("boosters");
   const [previewSkin, setPreviewSkin] = useState<ShopItem | null>(null);
+  const [celebratingSkin, setCelebratingSkin] = useState<ShopItem | null>(null);
 
   const handlePurchaseFreeze = async () => {
     setPurchasing("freeze");
@@ -123,7 +125,7 @@ const Shop = () => {
     setPurchasing(null);
   };
 
-  const handlePurchaseItem = async (item: ShopItem) => {
+  const handlePurchaseItem = async (item: ShopItem, showCelebration = false) => {
     setPurchasing(item.id);
     playClick();
 
@@ -131,12 +133,19 @@ const Shop = () => {
 
     if (result.success) {
       playComplete();
-      toast({
-        title: `${item.name} Purchased! ${item.icon}`,
-        description: item.type === "xp_booster" 
-          ? `Your XP boost is now active!` 
-          : `${item.name} has been added to your collection!`,
-      });
+      
+      // Show celebration modal for skin purchases
+      if (item.type === "raccoon_skin" && showCelebration) {
+        setPreviewSkin(null);
+        setCelebratingSkin(item);
+      } else {
+        toast({
+          title: `${item.name} Purchased! ${item.icon}`,
+          description: item.type === "xp_booster" 
+            ? `Your XP boost is now active!` 
+            : `${item.name} has been added to your collection!`,
+        });
+      }
     } else {
       playIncorrect();
       toast({
@@ -668,8 +677,7 @@ const Shop = () => {
         canAfford={previewSkin ? (profile?.xp || 0) >= previewSkin.cost : false}
         onPurchase={() => {
           if (previewSkin) {
-            handlePurchaseItem(previewSkin);
-            setPreviewSkin(null);
+            handlePurchaseItem(previewSkin, true);
           }
         }}
         onEquip={() => {
@@ -678,6 +686,14 @@ const Shop = () => {
             setPreviewSkin(null);
           }
         }}
+        getRarityBadge={getRarityBadge}
+      />
+
+      {/* Skin Unlock Celebration */}
+      <SkinUnlockCelebration
+        skin={celebratingSkin}
+        isOpen={!!celebratingSkin}
+        onClose={() => setCelebratingSkin(null)}
         getRarityBadge={getRarityBadge}
       />
     </PageTransition>
