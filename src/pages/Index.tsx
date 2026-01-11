@@ -4,10 +4,13 @@ import { TopBar } from "@/components/duolingo/TopBar";
 import { LessonPath } from "@/components/duolingo/LessonPath";
 import { RightSidebar } from "@/components/duolingo/RightSidebar";
 import { DailyLoginBonus } from "@/components/DailyLoginBonus";
+import { LeagueCelebration, LeagueDemotion } from "@/components/league/LeagueCelebration";
+import { useLeagueReset } from "@/hooks/useLeagueReset";
 import Landing from "@/pages/Landing";
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { resetResult, showCelebration, dismissCelebration } = useLeagueReset();
 
   if (loading) {
     return (
@@ -24,6 +27,27 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* League Celebration/Demotion Modals */}
+      {resetResult?.promoted && (
+        <LeagueCelebration
+          isOpen={showCelebration}
+          onClose={dismissCelebration}
+          previousLeague={resetResult.previousLeague}
+          newLeague={resetResult.newLeague}
+          finalPosition={resetResult.finalPosition}
+          weeklyXP={resetResult.weeklyXP}
+        />
+      )}
+      {resetResult?.demoted && (
+        <LeagueDemotion
+          isOpen={showCelebration}
+          onClose={dismissCelebration}
+          previousLeague={resetResult.previousLeague}
+          newLeague={resetResult.newLeague}
+          finalPosition={resetResult.finalPosition}
+        />
+      )}
+
       {/* Daily Login Bonus Modal */}
       <DailyLoginBonus />
       

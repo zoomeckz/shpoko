@@ -17,7 +17,8 @@ const navItems = [
   { icon: Target, label: "Quests", path: "/quests" },
   { icon: BookOpen, label: "Scenarios", path: "/scenarios" },
   { icon: BookMarked, label: "Stories", path: "/stories" },
-  { icon: ListChecks, label: "Quizzes", path: "/quiz" },
+  { icon: ListChecks, label: "My Quizzes", path: "/quiz" },
+  { icon: Dices, label: "Discover Quizzes", path: "/quiz-discover" },
   { icon: Users, label: "Friends", path: "/friends" },
   { icon: User, label: "Profile", path: "/profile" },
 ];
