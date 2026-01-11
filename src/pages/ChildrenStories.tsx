@@ -12,6 +12,7 @@ import {
   ChevronRight,
   ChevronLeft,
   BookOpen,
+  Volume2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +22,7 @@ import { useUserProgress } from "@/hooks/useUserProgress";
 import { PageTransition, AnimatedItem } from "@/components/PageTransition";
 import { LingqWord } from "@/components/lingq/LingqWord";
 import { useLingqVocabulary } from "@/hooks/useLingqVocabulary";
+import { useTextToSpeechCached } from "@/hooks/useTextToSpeechCached";
 
 interface StoryPart {
   id: string;
@@ -347,6 +349,7 @@ const ChildrenStories = () => {
   const { toast } = useToast();
   const { isLessonCompleted, refetch: refetchProgress } = useUserProgress();
   const { vocabulary, saveWord, updateWordStatus, markAsKnown, deleteWord } = useLingqVocabulary();
+  const { playPronunciation: speak, playSequence, isPlaying: isTTSPlaying, stop: stopTTS, preload, preloadProgress } = useTextToSpeechCached();
 
   const [selectedStory, setSelectedStory] = useState<ChildrenStory | null>(null);
   const [selectedPart, setSelectedPart] = useState<StoryPart | null>(null);
@@ -359,7 +362,12 @@ const ChildrenStories = () => {
         setSelectedStory(story);
         if (partId) {
           const part = story.parts.find(p => p.id === partId);
-          if (part) setSelectedPart(part);
+          if (part) {
+            setSelectedPart(part);
+            // Preload audio for all sentences in this part
+            const sentences = part.sentences.map(s => s.bulgarian);
+            preload(sentences, "bg");
+          }
         } else {
           setSelectedPart(null);
         }
@@ -368,7 +376,23 @@ const ChildrenStories = () => {
       setSelectedStory(null);
       setSelectedPart(null);
     }
-  }, [storyId, partId]);
+  }, [storyId, partId, preload]);
+
+  // Play sentence audio
+  const handlePlaySentence = useCallback((text: string) => {
+    speak(text, "bg");
+  }, [speak]);
+
+  // Play entire part
+  const handlePlayEntirePart = useCallback(() => {
+    if (!selectedPart) return;
+    if (isTTSPlaying) {
+      stopTTS();
+      return;
+    }
+    const sentences = selectedPart.sentences.map(s => s.bulgarian);
+    playSequence(sentences, "bg");
+  }, [selectedPart, isTTSPlaying, stopTTS, playSequence]);
 
   const handleStorySelect = (story: ChildrenStory) => {
     navigate(`/stories/${story.id}`);
@@ -439,6 +463,7 @@ const ChildrenStories = () => {
           onUpdateStatus={updateWordStatus}
           onMarkKnown={markAsKnown}
           onDelete={deleteWord}
+          onPlayAudio={(text) => speak(text, "bg")}
         />
         {punctuation}{" "}
       </span>
@@ -665,14 +690,43 @@ const ChildrenStories = () => {
             </div>
           </Card>
 
+          {/* Read entire part button */}
+          <div className="mb-4 flex items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={handlePlayEntirePart}
+              className="gap-2"
+            >
+              <Volume2 className={cn("w-4 h-4", isTTSPlaying && "animate-pulse text-primary")} />
+              {isTTSPlaying ? "Спри четенето" : "Прочети част"}
+            </Button>
+            {preloadProgress.total > 0 && preloadProgress.loaded < preloadProgress.total && (
+              <span className="text-xs text-muted-foreground">
+                Зареждане на аудио... {preloadProgress.loaded}/{preloadProgress.total}
+              </span>
+            )}
+          </div>
+
           <Card className="p-6 mb-6">
             <div className="space-y-8">
               {selectedPart.sentences.map((sentence, idx) => (
                 <div key={idx} className="space-y-2">
-                  <p className="text-lg leading-relaxed">
-                    {sentence.bulgarian.split(/\s+/).map((word) => renderWord(word, sentence.wordTranslations))}
-                  </p>
-                  <p className="text-sm text-muted-foreground italic">{sentence.english}</p>
+                  <div className="flex items-start gap-3">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 mt-1"
+                      onClick={() => handlePlaySentence(sentence.bulgarian)}
+                    >
+                      <Volume2 className="w-4 h-4" />
+                    </Button>
+                    <div className="flex-1">
+                      <p className="text-lg leading-relaxed">
+                        {sentence.bulgarian.split(/\s+/).map((word) => renderWord(word, sentence.wordTranslations))}
+                      </p>
+                      <p className="text-sm text-muted-foreground italic mt-1">{sentence.english}</p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -692,7 +746,7 @@ const ChildrenStories = () => {
               </Button>
             )}
           </div>
-          <p className="mt-6 text-center text-sm text-muted-foreground">💡 Щракнете върху дума за превод</p>
+          <p className="mt-6 text-center text-sm text-muted-foreground">💡 Щракнете върху дума за превод и аудио • 🔊 Натиснете иконата за произношение</p>
         </div>
       </div>
     </PageTransition>

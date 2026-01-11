@@ -428,7 +428,7 @@ const LingqReader = () => {
   const { profile, user, updateXP } = useAuth();
   const { toast } = useToast();
   const { isLessonCompleted, refetch: refetchProgress } = useUserProgress();
-  const { playPronunciation: speak } = useTextToSpeechCached();
+  const { playPronunciation: speak, playSequence, preload, preloadProgress, isPlaying: isTTSPlaying, stop: stopTTS } = useTextToSpeechCached();
   const {
     vocabulary,
     getWordStatus,
@@ -456,7 +456,7 @@ const LingqReader = () => {
   const [showVocabLimitDialog, setShowVocabLimitDialog] = useState(false);
   const [showVocabReview, setShowVocabReview] = useState(false);
 
-  // Load story from URL
+  // Load story from URL and preload audio
   useEffect(() => {
     if (storyId) {
       const story = stories.find(s => s.id === storyId);
@@ -464,9 +464,13 @@ const LingqReader = () => {
         setSelectedStory(story);
         setCurrentSentenceIndex(0);
         setIsCompleted(false);
+        
+        // Preload all sentence audio in background
+        const sentences = story.sentences.map(s => s.map(w => w.bulgarian).join(" "));
+        preload(sentences, "bg");
       }
     }
-  }, [storyId]);
+  }, [storyId, preload]);
 
   // Calculate word statistics for current story
   const storyWordStats = useMemo(() => {
@@ -506,6 +510,17 @@ const LingqReader = () => {
   const handlePlayWord = useCallback((word: string) => {
     speak(word);
   }, [speak]);
+
+  // Play entire story
+  const handlePlayEntireStory = useCallback(() => {
+    if (!selectedStory) return;
+    if (isTTSPlaying) {
+      stopTTS();
+      return;
+    }
+    const sentences = selectedStory.sentences.map(s => s.map(w => w.bulgarian).join(" "));
+    playSequence(sentences, "bg");
+  }, [selectedStory, isTTSPlaying, stopTTS, playSequence]);
 
   const handleNextSentence = useCallback(() => {
     if (selectedStory && currentSentenceIndex < selectedStory.sentences.length - 1) {
@@ -998,7 +1013,26 @@ const LingqReader = () => {
                     onPrevious={handlePrevSentence}
                     onNext={handleNextSentence}
                     onPlayAudio={handlePlaySentence}
+                    isPlaying={isTTSPlaying}
                   />
+
+                  {/* Read entire story button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePlayEntireStory}
+                    className="w-full mt-3 gap-2"
+                  >
+                    <Volume2 className={cn("w-4 h-4", isTTSPlaying && "animate-pulse text-primary")} />
+                    {isTTSPlaying ? "Stop Reading" : "Read Entire Story"}
+                  </Button>
+
+                  {/* Preload progress */}
+                  {preloadProgress.total > 0 && preloadProgress.loaded < preloadProgress.total && (
+                    <div className="text-xs text-muted-foreground text-center mt-2">
+                      Preloading audio... {preloadProgress.loaded}/{preloadProgress.total}
+                    </div>
+                  )}
 
                   {/* Instructions with keyboard shortcuts */}
                   <div className="text-center text-sm text-muted-foreground mt-4 space-y-1">
