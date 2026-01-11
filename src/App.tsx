@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { InputModeProvider } from "@/contexts/InputModeContext";
 import { LanguageModeProvider } from "@/contexts/LanguageModeContext";
+import { SoundSettingsProvider } from "@/contexts/SoundSettingsContext";
 import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -117,6 +118,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
+            <SoundSettingsProvider>
             <InputModeProvider>
             <LanguageModeProvider>
             <Routes>
@@ -234,6 +236,7 @@ const App = () => (
             </Routes>
             </LanguageModeProvider>
             </InputModeProvider>
+            </SoundSettingsProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>

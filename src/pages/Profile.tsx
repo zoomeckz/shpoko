@@ -10,9 +10,11 @@ import { ProfilePicture, ProfilePictureSelector } from "@/components/ProfilePict
 import { ChangeUsernameDialog } from "@/components/ChangeUsernameDialog";
 import { Achievements } from "@/components/Achievements";
 import { SkinShowcase } from "@/components/profile/SkinShowcase";
+import { useSoundSettings } from "@/contexts/SoundSettingsContext";
+import { Switch } from "@/components/ui/switch";
 import { 
   Flame, Trophy, Zap, Crown, Calendar, Target, BookOpen, 
-  Settings, LogOut, Edit, Award, TrendingUp
+  Settings, LogOut, Edit, Award, TrendingUp, Volume2, VolumeX
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { calculateLevelProgress, getXPForNextLevel } from "@/lib/levelUtils";
@@ -20,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Profile = () => {
   const { user, profile, loading, signOut, refreshProfile } = useAuth();
+  const { soundEnabled, toggleSound } = useSoundSettings();
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalLessons: 0,
@@ -212,6 +215,43 @@ const Profile = () => {
                 </CardHeader>
                 <CardContent>
                   <Achievements compact showUnlockPopup={false} />
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Settings Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+            >
+              <Card className="border-2 mb-6">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Settings className="w-5 h-5" />
+                    Settings
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {soundEnabled ? (
+                        <Volume2 className="w-5 h-5 text-primary" />
+                      ) : (
+                        <VolumeX className="w-5 h-5 text-muted-foreground" />
+                      )}
+                      <div>
+                        <p className="font-medium">Sound Effects</p>
+                        <p className="text-sm text-muted-foreground">
+                          Enable game sounds and feedback
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={soundEnabled}
+                      onCheckedChange={toggleSound}
+                    />
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
