@@ -427,25 +427,26 @@ export const CyrillicLesson = () => {
                     </div>
                     
                     {/* Add to vocabulary button */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-2"
-                      onClick={() => handleAddToVocabulary(currentLetter)}
-                      disabled={savedWords.has(currentLetter.exampleWord)}
-                    >
-                      {savedWords.has(currentLetter.exampleWord) ? (
-                        <>
-                          <Check className="w-4 h-4 mr-2" />
-                          Saved!
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add to Vocabulary ({getRemainingSlots()} slots left)
-                        </>
-                      )}
-                    </Button>
+                    <div className="flex justify-center mt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAddToVocabulary(currentLetter)}
+                        disabled={savedWords.has(currentLetter.exampleWord)}
+                      >
+                        {savedWords.has(currentLetter.exampleWord) ? (
+                          <>
+                            <Check className="w-4 h-4 mr-2" />
+                            Saved!
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add to Vocabulary ({getRemainingSlots()} slots left)
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Navigation */}
