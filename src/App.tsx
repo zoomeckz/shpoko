@@ -90,6 +90,7 @@ import AchievementsPage from "./pages/AchievementsPage";
 import Friends from "./pages/Friends";
 import Shop from "./pages/Shop";
 import TradeHistory from "./pages/TradeHistory";
+import ImageAnalyzer from "./pages/ImageAnalyzer";
 
 const queryClient = new QueryClient();
 
@@ -198,7 +199,7 @@ const App = () => (
               <Route path="/friends" element={<Friends />} />
               <Route path="/shop" element={<Shop />} />
               <Route path="/trade-history" element={<TradeHistory />} />
-              <Route path="*" element={<NotFound />} />
+              <Route path="/image-analyzer" element={<ImageAnalyzer />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             </LanguageModeProvider>
