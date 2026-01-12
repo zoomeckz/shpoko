@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAchievements, Achievement, ACHIEVEMENTS } from "@/hooks/useAchievements";
 import { useDuolingoSounds } from "@/hooks/useDuolingoSounds";
+import { SHOP_ITEMS } from "@/hooks/useShopItems";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -9,17 +10,33 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy, Lock, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { SkinUnlockCelebration } from "@/components/shop/SkinUnlockCelebration";
+import type { ShopItem } from "@/hooks/useShopItems";
 
 interface AchievementsProps {
   compact?: boolean;
   showUnlockPopup?: boolean;
 }
 
+const getRarityBadge = (rarity?: string) => {
+  switch (rarity) {
+    case "legendary":
+      return "bg-gradient-to-r from-yellow-500 to-orange-500 text-white";
+    case "epic":
+      return "bg-gradient-to-r from-purple-500 to-pink-500 text-white";
+    case "rare":
+      return "bg-gradient-to-r from-blue-500 to-cyan-500 text-white";
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+};
+
 export const Achievements = ({ compact = false, showUnlockPopup = true }: AchievementsProps) => {
   const { unlockedAchievements, lockedAchievements, progress, checkAndUnlock, loading } = useAchievements();
   const { playComplete, playStreak } = useDuolingoSounds();
   const [newUnlocks, setNewUnlocks] = useState<Achievement[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [celebratingSkin, setCelebratingSkin] = useState<ShopItem | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -28,19 +45,23 @@ export const Achievements = ({ compact = false, showUnlockPopup = true }: Achiev
       if (result.achievements.length > 0 && showUnlockPopup) {
         setNewUnlocks(result.achievements);
         setShowConfetti(true);
-        playComplete(); // Play achievement sound
-        setTimeout(() => playStreak(), 300); // Play streak sound for extra celebration
+        playComplete();
+        setTimeout(() => playStreak(), 300);
         result.achievements.forEach(a => {
           toast({
             title: `🏆 Achievement Unlocked!`,
             description: `${a.name} - +${a.xpReward} XP${a.skinReward ? ' + Skin!' : ''}`,
           });
         });
+        
+        // Show skin celebration for unlocked skins
         if (result.skins.length > 0) {
-          toast({
-            title: `🦝 New Skin Unlocked!`,
-            description: `You earned ${result.skins.length} new raccoon skin(s)!`,
-          });
+          const firstSkinId = result.skins[0];
+          const skin = SHOP_ITEMS.find(s => s.id === firstSkinId);
+          if (skin) {
+            // Delay the skin celebration slightly for better UX
+            setTimeout(() => setCelebratingSkin(skin), 500);
+          }
         }
         setTimeout(() => setShowConfetti(false), 3000);
       }
@@ -207,6 +228,14 @@ export const Achievements = ({ compact = false, showUnlockPopup = true }: Achiev
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Skin Unlock Celebration */}
+      <SkinUnlockCelebration
+        skin={celebratingSkin}
+        isOpen={!!celebratingSkin}
+        onClose={() => setCelebratingSkin(null)}
+        getRarityBadge={getRarityBadge}
+      />
     </div>
   );
 };
