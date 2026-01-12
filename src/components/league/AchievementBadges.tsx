@@ -61,17 +61,23 @@ export const AchievementBadges = ({ compact = false, showUnlockAnimation = true 
   // Check for new achievements on mount
   useEffect(() => {
     const checkAchievements = async () => {
-      const unlocked = await checkAndUnlock();
-      if (unlocked.length > 0 && showUnlockAnimation) {
-        setNewlyUnlocked(unlocked);
+      const result = await checkAndUnlock();
+      if (result.achievements.length > 0 && showUnlockAnimation) {
+        setNewlyUnlocked(result.achievements);
         setShowUnlockDialog(true);
         playAchievement();
         
-        unlocked.forEach(a => {
+        result.achievements.forEach(a => {
           toast.success(`🏆 Achievement Unlocked: ${a.name}!`, {
-            description: `+${a.xpReward} XP bonus!`,
+            description: `+${a.xpReward} XP bonus!${a.skinReward ? ' + New Skin!' : ''}`,
           });
         });
+        
+        if (result.skins.length > 0) {
+          toast.success(`🦝 New Skin Unlocked!`, {
+            description: `You earned ${result.skins.length} new raccoon skin(s)!`,
+          });
+        }
       }
     };
     

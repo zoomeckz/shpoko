@@ -24,18 +24,24 @@ export const Achievements = ({ compact = false, showUnlockPopup = true }: Achiev
 
   useEffect(() => {
     const check = async () => {
-      const unlocked = await checkAndUnlock();
-      if (unlocked.length > 0 && showUnlockPopup) {
-        setNewUnlocks(unlocked);
+      const result = await checkAndUnlock();
+      if (result.achievements.length > 0 && showUnlockPopup) {
+        setNewUnlocks(result.achievements);
         setShowConfetti(true);
         playComplete(); // Play achievement sound
         setTimeout(() => playStreak(), 300); // Play streak sound for extra celebration
-        unlocked.forEach(a => {
+        result.achievements.forEach(a => {
           toast({
             title: `🏆 Achievement Unlocked!`,
-            description: `${a.name} - +${a.xpReward} XP`,
+            description: `${a.name} - +${a.xpReward} XP${a.skinReward ? ' + Skin!' : ''}`,
           });
         });
+        if (result.skins.length > 0) {
+          toast({
+            title: `🦝 New Skin Unlocked!`,
+            description: `You earned ${result.skins.length} new raccoon skin(s)!`,
+          });
+        }
         setTimeout(() => setShowConfetti(false), 3000);
       }
     };

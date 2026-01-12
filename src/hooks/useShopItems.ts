@@ -22,6 +22,15 @@ import raccoonVampire from "@/assets/skins/raccoon-vampire.png";
 import raccoonAngel from "@/assets/skins/raccoon-angel.png";
 import raccoonSuperhero from "@/assets/skins/raccoon-superhero.png";
 import raccoonRobot from "@/assets/skins/raccoon-robot.png";
+// New reward skins
+import raccoonTrashPanda from "@/assets/skins/raccoon-trash-panda.png";
+import raccoonSlingshot from "@/assets/skins/raccoon-slingshot.png";
+import raccoonStinkBomber from "@/assets/skins/raccoon-stink-bomber.png";
+import raccoonFirefighter from "@/assets/skins/raccoon-firefighter.png";
+import raccoonShadowNinja from "@/assets/skins/raccoon-shadow-ninja.png";
+import raccoonWizard from "@/assets/skins/raccoon-wizard.png";
+import raccoonMech from "@/assets/skins/raccoon-mech.png";
+import raccoonKing from "@/assets/skins/raccoon-king.png";
 
 export interface ShopItem {
   id: string;
@@ -34,6 +43,8 @@ export interface ShopItem {
   duration_hours?: number;
   rarity?: "common" | "rare" | "epic" | "legendary";
   effect?: string;
+  unlockCondition?: string; // For reward-only skins
+  tags?: string[]; // Descriptive tags for the skin
 }
 
 export interface UserItem {
@@ -318,6 +329,103 @@ export const SHOP_ITEMS: ShopItem[] = [
     icon: "🦝",
     image: raccoonRobot,
     rarity: "legendary",
+  },
+  // === REWARD-ONLY SKINS (Unlocked via achievements, not purchasable) ===
+  {
+    id: "skin_trash_panda",
+    name: "Trash Panda Shpoko",
+    description: "🗑️ The OG dumpster diver! Unlocked by completing your first lesson.",
+    type: "raccoon_skin",
+    cost: 0,
+    icon: "🦝",
+    image: raccoonTrashPanda,
+    rarity: "common",
+    unlockCondition: "first_lesson",
+    tags: ["starter", "classic", "mischief", "garbage"],
+  },
+  {
+    id: "skin_slingshot",
+    name: "Slingshot Scout Shpoko",
+    description: "🎯 Ready, aim, learn! Unlocked by playing 10 daily games.",
+    type: "raccoon_skin",
+    cost: 0,
+    icon: "🦝",
+    image: raccoonSlingshot,
+    rarity: "rare",
+    unlockCondition: "daily_games_10",
+    tags: ["playful", "outdoor", "adventurous", "acorns"],
+  },
+  {
+    id: "skin_stink_bomber",
+    name: "Stink Bomber Shpoko",
+    description: "💣 Chemical warfare expert! Unlocked by completing 5 challenge deep-dives.",
+    type: "raccoon_skin",
+    cost: 0,
+    icon: "🦝",
+    image: raccoonStinkBomber,
+    rarity: "epic",
+    unlockCondition: "challenge_deepdives_5",
+    tags: ["military", "mischief", "stinky", "gas"],
+  },
+  {
+    id: "skin_firefighter",
+    name: "Firefighter Shpoko",
+    description: "🚒 Saving streaks daily! Unlocked by reaching a 30-day streak.",
+    type: "raccoon_skin",
+    cost: 0,
+    icon: "🦝",
+    image: raccoonFirefighter,
+    rarity: "rare",
+    unlockCondition: "streak_30",
+    tags: ["heroic", "water", "helper", "goggles"],
+  },
+  {
+    id: "skin_shadow_ninja",
+    name: "Shadow Ninja Shpoko",
+    description: "🥷 Master of stealth learning! Unlocked by completing 25 deep-dives.",
+    type: "raccoon_skin",
+    cost: 0,
+    icon: "🦝",
+    image: raccoonShadowNinja,
+    rarity: "epic",
+    unlockCondition: "deepdives_25",
+    tags: ["stealth", "ninja", "shuriken", "masked"],
+  },
+  {
+    id: "skin_wizard",
+    name: "Wizard Shpoko",
+    description: "🧙 Master of magical vocabulary! Unlocked by learning 500 words.",
+    type: "raccoon_skin",
+    cost: 0,
+    icon: "🦝",
+    image: raccoonWizard,
+    rarity: "epic",
+    unlockCondition: "vocabulary_500",
+    tags: ["magical", "mystical", "staff", "purple"],
+  },
+  {
+    id: "skin_mech",
+    name: "Mech Warrior Shpoko",
+    description: "🤖 Ultimate learning machine! Unlocked by earning 50,000 XP.",
+    type: "raccoon_skin",
+    cost: 0,
+    icon: "🦝",
+    image: raccoonMech,
+    rarity: "legendary",
+    unlockCondition: "xp_50000",
+    tags: ["powerful", "technology", "rockets", "armor"],
+  },
+  {
+    id: "skin_king",
+    name: "King Shpoko",
+    description: "👑 Ruler of the leaderboard! Unlocked by reaching #1 in weekly league.",
+    type: "raccoon_skin",
+    cost: 0,
+    icon: "🦝",
+    image: raccoonKing,
+    rarity: "legendary",
+    unlockCondition: "leaderboard_first",
+    tags: ["royalty", "prestigious", "crown", "scepter"],
   },
 ];
 
