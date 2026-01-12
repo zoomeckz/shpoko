@@ -1,79 +1,58 @@
 import { motion } from "framer-motion";
-import { Zap, Trophy, Brain, Gamepad2, BarChart3, Users } from "lucide-react";
+import { BookOpen, Gamepad2, Headphones, Trophy } from "lucide-react";
 
 const features = [
   {
-    icon: Zap,
-    title: "Effective and Efficient",
-    description: "Our courses effectively teach reading, listening, and speaking skills. Check out our latest research!"
+    icon: BookOpen,
+    title: "Bite-sized Lessons",
+    description: "Master Bulgarian vocabulary and grammar through quick, interactive exercises."
   },
   {
     icon: Gamepad2,
-    title: "Gamified Learning",
-    description: "Make fast progress with bite-sized lessons, fun games, and rewards that keep you motivated."
+    title: "Fun Games",
+    description: "Practice with word games, quizzes, and challenges that make learning addictive."
   },
   {
-    icon: Brain,
-    title: "Personalized Learning",
-    description: "Combining the best of AI and language science, lessons are tailored to help you learn at just the right level and pace."
+    icon: Headphones,
+    title: "Stories & Reading",
+    description: "Read Bulgarian stories with audio pronunciation and vocabulary tools."
   },
   {
     icon: Trophy,
-    title: "Stay Motivated",
-    description: "We make it easy to form a habit of language learning with game-like features, fun challenges, and reminders."
-  },
-  {
-    icon: BarChart3,
-    title: "Track Your Progress",
-    description: "See your improvement over time with detailed stats on your learning journey, streaks, and achievements."
-  },
-  {
-    icon: Users,
-    title: "Join Millions",
-    description: "Connect with a global community of learners. Compete in weekly leaderboards and share your progress."
+    title: "Track Progress",
+    description: "Earn XP, maintain streaks, and compete on leaderboards with other learners."
   }
 ];
 
 export function FeaturesSection() {
   return (
-    <section className="py-20 bg-card">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
+    <section className="py-12 px-4 bg-card">
+      <div className="max-w-md mx-auto">
+        <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-2xl font-extrabold text-foreground text-center mb-8"
         >
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground">
-            Why learners love SHPOKO
-          </h2>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            The world's most popular way to learn languages online. 
-            Learn anytime, anywhere with our free app.
-          </p>
-        </motion.div>
+          Why learn with SHPOKO?
+        </motion.h2>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="space-y-4">
           {features.map((feature, index) => (
             <motion.div
               key={feature.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="relative group"
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+              className="flex items-start gap-4 p-4 bg-background rounded-xl border border-border"
             >
-              <div className="bg-background rounded-2xl p-6 border-2 border-border shadow-[0_4px_0_0_hsl(var(--border))] hover:shadow-[0_6px_0_0_hsl(var(--border))] hover:-translate-y-1 transition-all duration-200">
-                <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                  <feature.icon className="w-7 h-7 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold text-foreground mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-muted-foreground">
-                  {feature.description}
-                </p>
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                <feature.icon className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-bold text-foreground">{feature.title}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{feature.description}</p>
               </div>
             </motion.div>
           ))}

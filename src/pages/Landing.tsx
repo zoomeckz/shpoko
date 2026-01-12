@@ -1,16 +1,16 @@
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
-import { LanguageGrid } from "@/components/landing/LanguageGrid";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <LandingHeader />
-      <HeroSection />
-      <FeaturesSection />
-      <LanguageGrid />
+      <main className="flex-1">
+        <HeroSection />
+        <FeaturesSection />
+      </main>
       <LandingFooter />
     </div>
   );
