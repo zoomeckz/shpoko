@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStreakFreeze } from "@/hooks/useStreakFreeze";
 import { useShopItems, SHOP_ITEMS, ShopItem } from "@/hooks/useShopItems";
+import { useAchievements } from "@/hooks/useAchievements";
 import { useDuolingoSounds } from "@/hooks/useDuolingoSounds";
 import { Sidebar } from "@/components/duolingo/Sidebar";
 import { TopBar } from "@/components/duolingo/TopBar";
@@ -16,6 +17,7 @@ import { PageTransition } from "@/components/PageTransition";
 import { SkinPreviewModal } from "@/components/shop/SkinPreviewModal";
 import { SkinUnlockCelebration } from "@/components/shop/SkinUnlockCelebration";
 import { SkinTradingPanel } from "@/components/shop/SkinTradingPanel";
+import { SkinUnlockProgress } from "@/components/shop/SkinUnlockProgress";
 import {
   Snowflake,
   Zap,
@@ -30,6 +32,7 @@ import {
   Check,
   Star,
   ArrowLeftRight,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -98,11 +101,18 @@ const Shop = () => {
     getRarityBadge,
   } = useShopItems();
 
+  const { progress: achievementProgress, checkAndUnlock } = useAchievements();
+
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("boosters");
   const [previewSkin, setPreviewSkin] = useState<ShopItem | null>(null);
   const [celebratingSkin, setCelebratingSkin] = useState<ShopItem | null>(null);
   const [showTradingPanel, setShowTradingPanel] = useState(false);
+
+  // Refresh achievement progress when shop loads
+  useEffect(() => {
+    checkAndUnlock();
+  }, []);
 
   const handlePurchaseFreeze = async () => {
     setPurchasing("freeze");
@@ -438,6 +448,12 @@ const Shop = () => {
                                       ) : (
                                         <span className="text-muted-foreground">Owned</span>
                                       )
+                                    ) : item.unlockCondition ? (
+                                      <SkinUnlockProgress
+                                        skinId={item.id}
+                                        progress={achievementProgress}
+                                        compact
+                                      />
                                     ) : (
                                       <span className="flex items-center gap-1 font-bold">
                                         <Zap className="w-3 h-3 text-primary" />
@@ -713,6 +729,7 @@ const Shop = () => {
           }
         }}
         getRarityBadge={getRarityBadge}
+        achievementProgress={achievementProgress}
       />
 
       {/* Skin Unlock Celebration */}

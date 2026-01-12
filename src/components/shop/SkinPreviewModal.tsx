@@ -1,10 +1,11 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Zap, Check, Sparkles, Star } from "lucide-react";
+import { Zap, Check, Sparkles, Star, Lock, Trophy } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { ShopItem } from "@/hooks/useShopItems";
+import { SkinUnlockProgress } from "./SkinUnlockProgress";
 
 interface SkinPreviewModalProps {
   skin: ShopItem | null;
@@ -16,6 +17,7 @@ interface SkinPreviewModalProps {
   onPurchase: () => void;
   onEquip: () => void;
   getRarityBadge: (rarity?: string) => string;
+  achievementProgress?: Record<string, number>;
 }
 
 const rarityBackgrounds: Record<string, string> = {
@@ -42,8 +44,11 @@ export const SkinPreviewModal = ({
   onPurchase,
   onEquip,
   getRarityBadge,
+  achievementProgress = {},
 }: SkinPreviewModalProps) => {
   if (!skin) return null;
+
+  const isRewardSkin = !!skin.unlockCondition;
 
   const bgGradient = rarityBackgrounds[skin.rarity || "common"];
   const glow = rarityGlow[skin.rarity || "common"];
@@ -184,6 +189,22 @@ export const SkinPreviewModal = ({
                 {equipped ? <Check className="w-5 h-5" /> : null}
                 {equipped ? "Currently Equipped" : "Equip This Skin"}
               </Button>
+            ) : isRewardSkin ? (
+              <div className="space-y-3">
+                <SkinUnlockProgress
+                  skinId={skin.id}
+                  progress={achievementProgress}
+                />
+                <Button
+                  disabled
+                  size="lg"
+                  variant="outline"
+                  className="w-full gap-2 text-lg"
+                >
+                  <Lock className="w-5 h-5" />
+                  Unlock via Achievement
+                </Button>
+              </div>
             ) : (
               <Button
                 onClick={onPurchase}
