@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import shpokoHappy from "@/assets/shpoko-happy.png";
+import shpokoMascot from "@/assets/shpoko-mascot-new.png";
 
 export function HeroSection() {
   return (
@@ -15,9 +15,9 @@ export function HeroSection() {
           className="relative mb-6"
         >
           <motion.img
-            src={shpokoHappy}
-            alt="Shpoko mascot"
-            className="w-32 h-32 sm:w-40 sm:h-40 object-contain"
+            src={shpokoMascot}
+            alt="SHPOKO mascot"
+            className="w-40 h-40 sm:w-52 sm:h-52 object-contain drop-shadow-lg"
             animate={{ y: [0, -8, 0] }}
             transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
           />
@@ -40,7 +40,7 @@ export function HeroSection() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mt-4 text-muted-foreground text-base sm:text-lg"
         >
-          Free lessons, games, and stories. Practice reading, listening, and speaking Bulgarian with Shpoko.
+          Free lessons, games, and stories. Practice reading, listening, and speaking Bulgarian with SHPOKO.
         </motion.p>
 
         {/* Language badge */}
