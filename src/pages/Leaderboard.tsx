@@ -110,12 +110,12 @@ const Leaderboard = () => {
           </div>
         </div>
 
-        {/* Add padding-top to account for fixed header */}
-        <main className="max-w-2xl mx-auto p-4 pb-24 pt-20">
+        {/* Add padding-top to account for fixed header + crown on 1st place */}
+        <main className="max-w-2xl mx-auto p-4 pb-24 pt-24">
           {/* Top 3 Podium */}
           {!loading && entries.length >= 3 && (
             <motion.div 
-              className="flex items-end justify-center gap-3 mb-8 mt-4"
+              className="flex items-end justify-center gap-3 mb-8 mt-8"
               variants={staggerContainer}
               initial="initial"
               animate="animate"
