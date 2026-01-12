@@ -33,6 +33,7 @@ import {
   Star,
   ArrowLeftRight,
   Lock,
+  Trophy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -177,7 +178,8 @@ const Shop = () => {
 
   const boosters = shopItems.filter((i) => i.type === "xp_booster");
   const badges = shopItems.filter((i) => i.type === "badge");
-  const skins = shopItems.filter((i) => i.type === "raccoon_skin");
+  const purchasableSkins = shopItems.filter((i) => i.type === "raccoon_skin" && !i.unlockCondition);
+  const rewardSkins = shopItems.filter((i) => i.type === "raccoon_skin" && i.unlockCondition);
 
   return (
     <PageTransition>
@@ -240,7 +242,7 @@ const Shop = () => {
               {/* Shop Tabs */}
               <motion.div variants={staggerItem}>
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-                  <TabsList className="grid w-full grid-cols-4 h-12">
+                  <TabsList className="grid w-full grid-cols-5 h-12">
                     <TabsTrigger value="boosters" className="gap-1">
                       <Zap className="w-4 h-4" />
                       <span className="hidden sm:inline">Boosters</span>
@@ -252,6 +254,10 @@ const Shop = () => {
                     <TabsTrigger value="skins" className="gap-1">
                       <Sparkles className="w-4 h-4" />
                       <span className="hidden sm:inline">Skins</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="rewards" className="gap-1">
+                      <Gift className="w-4 h-4" />
+                      <span className="hidden sm:inline">Rewards</span>
                     </TabsTrigger>
                     <TabsTrigger value="freezes" className="gap-1">
                       <Snowflake className="w-4 h-4" />
@@ -365,7 +371,7 @@ const Shop = () => {
                     </motion.div>
                   </TabsContent>
 
-                  {/* Raccoon Skins Tab */}
+                  {/* Raccoon Skins Tab (Purchasable Only) */}
                   <TabsContent value="skins">
                     {/* Trade Actions */}
                     <motion.div
@@ -396,7 +402,7 @@ const Shop = () => {
                       initial="initial"
                       animate="animate"
                     >
-                      {skins.map((item) => {
+                      {purchasableSkins.map((item) => {
                         const owned = ownedItems.includes(item.id);
                         const equipped = equippedSkin === item.id;
                         return (
@@ -448,17 +454,110 @@ const Shop = () => {
                                       ) : (
                                         <span className="text-muted-foreground">Owned</span>
                                       )
-                                    ) : item.unlockCondition ? (
-                                      <SkinUnlockProgress
-                                        skinId={item.id}
-                                        progress={achievementProgress}
-                                        compact
-                                      />
                                     ) : (
                                       <span className="flex items-center gap-1 font-bold">
                                         <Zap className="w-3 h-3 text-primary" />
                                         {item.cost}
                                       </span>
+                                    )}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </motion.div>
+                          </motion.div>
+                        );
+                      })}
+                    </motion.div>
+                  </TabsContent>
+
+                  {/* Reward Skins Tab (Achievement Unlockable) */}
+                  <TabsContent value="rewards">
+                    <motion.div
+                      variants={staggerItem}
+                      className="mb-4 p-4 rounded-lg bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <Trophy className="w-5 h-5 text-yellow-500" />
+                        <h3 className="font-bold">Achievement Rewards</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        These exclusive skins are earned by completing achievements. Track your progress and unlock them through gameplay!
+                      </p>
+                    </motion.div>
+
+                    <motion.div 
+                      className="grid grid-cols-2 sm:grid-cols-3 gap-4"
+                      variants={staggerContainer}
+                      initial="initial"
+                      animate="animate"
+                    >
+                      {rewardSkins.map((item) => {
+                        const owned = ownedItems.includes(item.id);
+                        const equipped = equippedSkin === item.id;
+                        return (
+                          <motion.div 
+                            key={item.id} 
+                            variants={staggerItem}
+                            whileHover="hover"
+                            initial="initial"
+                          >
+                            <motion.div variants={skinCardHover}>
+                              <Card 
+                                className={cn(
+                                  "border-2 overflow-hidden transition-all cursor-pointer relative",
+                                  getRarityColor(item.rarity),
+                                  equipped && "ring-2 ring-primary",
+                                  !owned && "opacity-90"
+                                )}
+                                onClick={() => setPreviewSkin(item)}
+                              >
+                                {!owned && (
+                                  <div className="absolute top-2 right-2 z-10">
+                                    <Lock className="w-4 h-4 text-muted-foreground" />
+                                  </div>
+                                )}
+                                <CardContent className="p-4 text-center">
+                                  {item.image ? (
+                                    <motion.div 
+                                      className={cn(
+                                        "w-20 h-20 mx-auto mb-2 rounded-lg overflow-hidden bg-accent/50",
+                                        !owned && "grayscale"
+                                      )}
+                                      variants={skinImageHover}
+                                    >
+                                      <img 
+                                        src={item.image} 
+                                        alt={item.name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </motion.div>
+                                  ) : (
+                                    <motion.div 
+                                      className={cn("text-5xl mb-2", !owned && "grayscale")}
+                                      variants={skinImageHover}
+                                    >
+                                      {item.icon}
+                                    </motion.div>
+                                  )}
+                                  <h3 className="font-bold text-sm truncate">{item.name}</h3>
+                                  <Badge className={cn("text-xs mt-1 mb-2", getRarityBadge(item.rarity))}>
+                                    {item.rarity}
+                                  </Badge>
+                                  <div className="flex items-center justify-center gap-1 text-sm">
+                                    {owned ? (
+                                      equipped ? (
+                                        <span className="text-primary flex items-center gap-1">
+                                          <Check className="w-3 h-3" /> Equipped
+                                        </span>
+                                      ) : (
+                                        <span className="text-muted-foreground">Owned</span>
+                                      )
+                                    ) : (
+                                      <SkinUnlockProgress
+                                        skinId={item.id}
+                                        progress={achievementProgress}
+                                        compact
+                                      />
                                     )}
                                   </div>
                                 </CardContent>

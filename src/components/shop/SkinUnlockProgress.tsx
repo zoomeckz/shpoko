@@ -1,15 +1,24 @@
 import { Progress } from "@/components/ui/progress";
-import { Lock, Trophy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Lock, Trophy, ArrowRight } from "lucide-react";
 import { ACHIEVEMENTS, SKIN_UNLOCK_CONDITIONS } from "@/hooks/useAchievements";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 interface SkinUnlockProgressProps {
   skinId: string;
   progress: Record<string, number>;
   compact?: boolean;
+  showNavigation?: boolean;
 }
 
-export const SkinUnlockProgress = ({ skinId, progress, compact = false }: SkinUnlockProgressProps) => {
+export const SkinUnlockProgress = ({ 
+  skinId, 
+  progress, 
+  compact = false,
+  showNavigation = true 
+}: SkinUnlockProgressProps) => {
+  const navigate = useNavigate();
   const unlockCondition = SKIN_UNLOCK_CONDITIONS[skinId];
   
   if (!unlockCondition) return null;
@@ -22,6 +31,10 @@ export const SkinUnlockProgress = ({ skinId, progress, compact = false }: SkinUn
   const percentage = Math.min((currentProgress / achievement.requirement) * 100, 100);
   const isComplete = currentProgress >= achievement.requirement;
   
+  const handleNavigateToAchievements = () => {
+    navigate("/achievements");
+  };
+  
   if (compact) {
     return (
       <div className="w-full space-y-1">
@@ -30,8 +43,19 @@ export const SkinUnlockProgress = ({ skinId, progress, compact = false }: SkinUn
           <span className="truncate">{unlockCondition.description}</span>
         </div>
         <Progress value={percentage} className="h-1.5" />
-        <div className="text-xs text-center text-muted-foreground">
-          {currentProgress}/{achievement.requirement}
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <span>{currentProgress}/{achievement.requirement}</span>
+          {showNavigation && (
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNavigateToAchievements();
+              }}
+              className="text-primary hover:underline flex items-center gap-0.5"
+            >
+              Track <ArrowRight className="w-3 h-3" />
+            </button>
+          )}
         </div>
       </div>
     );
@@ -46,7 +70,7 @@ export const SkinUnlockProgress = ({ skinId, progress, compact = false }: SkinUn
           <Lock className="w-4 h-4 text-muted-foreground" />
         )}
         <span className={cn(
-          "text-sm font-medium",
+          "text-sm font-medium flex-1",
           isComplete ? "text-primary" : "text-muted-foreground"
         )}>
           {unlockCondition.description}
@@ -61,11 +85,26 @@ export const SkinUnlockProgress = ({ skinId, progress, compact = false }: SkinUn
         </div>
       </div>
       
-      {isComplete && (
-        <p className="text-xs text-primary font-medium">
-          ✨ Ready to claim! Visit Achievements to unlock.
-        </p>
-      )}
+      {isComplete ? (
+        <Button 
+          onClick={handleNavigateToAchievements}
+          size="sm"
+          className="w-full gap-2"
+        >
+          <Trophy className="w-4 h-4" />
+          Claim in Achievements
+        </Button>
+      ) : showNavigation ? (
+        <Button 
+          onClick={handleNavigateToAchievements}
+          variant="outline"
+          size="sm"
+          className="w-full gap-2"
+        >
+          <ArrowRight className="w-4 h-4" />
+          Track Progress
+        </Button>
+      ) : null}
     </div>
   );
 };
