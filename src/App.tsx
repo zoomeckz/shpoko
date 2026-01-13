@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { GuestProvider } from "@/contexts/GuestContext";
 import { InputModeProvider } from "@/contexts/InputModeContext";
 import { LanguageModeProvider } from "@/contexts/LanguageModeContext";
 import { SoundSettingsProvider } from "@/contexts/SoundSettingsContext";
@@ -115,6 +116,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
+            <GuestProvider>
             <SoundSettingsProvider>
             <InputModeProvider>
             <LanguageModeProvider>
@@ -229,6 +231,7 @@ const App = () => (
             </LanguageModeProvider>
             </InputModeProvider>
             </SoundSettingsProvider>
+            </GuestProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
