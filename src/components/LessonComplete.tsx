@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,6 +6,7 @@ import { Trophy, ArrowRight, ArrowLeft, Home, RotateCcw } from "lucide-react";
 import { getLessonNavigation, lessonRouteToId } from "@/lib/lessonNavigation";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useLanguageMode } from "@/contexts/LanguageModeContext";
+import { useGuest } from "@/contexts/GuestContext";
 import { getTranslations } from "@/lib/translations";
 
 interface LessonCompleteProps {
@@ -30,10 +32,21 @@ export const LessonComplete = ({
   const nav = getLessonNavigation(lessonId);
   const { progress } = useUserProgress();
   const { uiLanguage } = useLanguageMode();
+  const { isGuest, incrementLessons, addXP: addGuestXP } = useGuest();
   const t = getTranslations(uiLanguage);
   
   // Check if lesson was already completed before this session
   const wasAlreadyCompleted = progress[lessonId]?.completed;
+
+  // Track guest lesson completion
+  useEffect(() => {
+    if (isGuest && !isRevision) {
+      incrementLessons();
+      if (xpEarned > 0) {
+        addGuestXP(xpEarned);
+      }
+    }
+  }, []); // Only run once on mount
 
   return (
     <div className="min-h-screen bg-background p-4 flex items-center justify-center">

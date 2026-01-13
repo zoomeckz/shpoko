@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { motion, Variants } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useGuest } from "@/contexts/GuestContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trophy, Crown, Medal, ArrowLeft, Flame, Star, Sparkles } from "lucide-react";
+import { Trophy, Crown, Medal, ArrowLeft, Flame, Star, Sparkles, User } from "lucide-react";
 import { ProfilePicture } from "@/components/ProfilePictureSelector";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +35,7 @@ const Leaderboard = () => {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const { profile } = useAuth();
+  const { isGuest, guestUsername, xp: guestXp, level: guestLevel } = useGuest();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -194,8 +196,39 @@ const Leaderboard = () => {
             </motion.div>
           )}
 
-          {/* Your rank card */}
-          {profile && userRank > 0 && (
+          {/* Guest notice - show if user is a guest */}
+          {isGuest && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Card className="mb-6 p-4 bg-warning/10 border-warning/30">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-warning/20 flex items-center justify-center">
+                    <User className="w-5 h-5 text-warning" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold">{guestUsername}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {guestXp} XP • Level {guestLevel}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs bg-warning/20 text-warning px-2 py-1 rounded-full">
+                      Guest Mode
+                    </span>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Register to appear on leaderboard
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* Your rank card - only show for registered users */}
+          {!isGuest && profile && userRank > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

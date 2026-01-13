@@ -20,6 +20,7 @@ interface GuestContextType extends GuestState {
   declineRegistration: () => void;
   clearGuest: () => void;
   shouldShowRegistrationPrompt: () => boolean;
+  getProgressForTransfer: () => { xp: number; level: number; lessonsCompleted: number };
 }
 
 const GuestContext = createContext<GuestContextType | undefined>(undefined);
@@ -154,6 +155,14 @@ export const GuestProvider = ({ children }: { children: ReactNode }) => {
     return state.lessonsCompleted >= 3 || state.level >= 5;
   };
 
+  const getProgressForTransfer = () => {
+    return {
+      xp: state.xp,
+      level: state.level,
+      lessonsCompleted: state.lessonsCompleted,
+    };
+  };
+
   return (
     <GuestContext.Provider
       value={{
@@ -165,6 +174,7 @@ export const GuestProvider = ({ children }: { children: ReactNode }) => {
         declineRegistration,
         clearGuest,
         shouldShowRegistrationPrompt,
+        getProgressForTransfer,
       }}
     >
       {children}

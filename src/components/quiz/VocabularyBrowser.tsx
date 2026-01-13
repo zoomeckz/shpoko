@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { VOCABULARY_LIST, VOCAB_CATEGORIES, VocabWord, searchWords } from "@/data/vocabularyList";
+import { useLingqVocabulary } from "@/hooks/useLingqVocabulary";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Plus, Trash2, GraduationCap, BookOpen, Rocket, Check, X } from "lucide-react";
+import { Search, Plus, Trash2, GraduationCap, BookOpen, Rocket, Check, X, CheckCheck, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface VocabularyBrowserProps {
@@ -27,7 +28,7 @@ export const VocabularyBrowser = ({
   maxWords = 50,
 }: VocabularyBrowserProps) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"beginner" | "intermediate" | "advanced">("beginner");
+  const [activeTab, setActiveTab] = useState<"beginner" | "intermediate" | "advanced" | "personal">("beginner");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showCustomForm, setShowCustomForm] = useState(false);
   
@@ -36,10 +37,35 @@ export const VocabularyBrowser = ({
   const [customRomanization, setCustomRomanization] = useState("");
   const [customTranslation, setCustomTranslation] = useState("");
 
+  // Get personal vocabulary
+  const { vocabulary: personalVocab, loading: vocabLoading } = useLingqVocabulary();
+
   const selectedWordIds = new Set(selectedWords.map(w => w.id));
 
-  // Filter words
+  // Filter words - include personal vocab tab
   const filteredWords = useMemo(() => {
+    if (activeTab === "personal") {
+      // Convert personal vocabulary to VocabWord format
+      let words: VocabWord[] = personalVocab.map((w, idx) => ({
+        id: `personal_${w.id}`,
+        word: w.word,
+        romanization: w.romanization || w.word,
+        translation: w.translation || "",
+        category: "Personal",
+        difficulty: "intermediate" as const,
+        emoji: "📝",
+      }));
+      
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        words = words.filter(w => 
+          w.word.toLowerCase().includes(query) || 
+          w.translation.toLowerCase().includes(query)
+        );
+      }
+      return words;
+    }
+    
     let words = VOCABULARY_LIST.filter(w => w.difficulty === activeTab);
     
     if (selectedCategory) {
@@ -51,7 +77,7 @@ export const VocabularyBrowser = ({
     }
     
     return words;
-  }, [activeTab, selectedCategory, searchQuery]);
+  }, [activeTab, selectedCategory, searchQuery, personalVocab]);
 
   // Categories for current difficulty
   const categoriesForTab = useMemo(() => {
@@ -66,7 +92,7 @@ export const VocabularyBrowser = ({
       romanization: customRomanization || customWord,
       translation: customTranslation,
       category: "Custom",
-      difficulty: activeTab,
+      difficulty: activeTab === "personal" ? "intermediate" : activeTab,
       emoji: "📝",
     });
     
@@ -75,6 +101,29 @@ export const VocabularyBrowser = ({
     setCustomTranslation("");
     setShowCustomForm(false);
   };
+
+  // Mark all visible words
+  const handleMarkAll = () => {
+    const unselectedWords = filteredWords.filter(w => !selectedWordIds.has(w.id));
+    const slotsRemaining = maxWords - selectedWords.length;
+    const wordsToAdd = unselectedWords.slice(0, slotsRemaining);
+    
+    wordsToAdd.forEach(word => {
+      onWordSelect(word);
+    });
+  };
+
+  // Unmark all visible words
+  const handleUnmarkAll = () => {
+    filteredWords.forEach(word => {
+      if (selectedWordIds.has(word.id)) {
+        onWordRemove(word.id);
+      }
+    });
+  };
+
+  const visibleSelectedCount = filteredWords.filter(w => selectedWordIds.has(w.id)).length;
+  const canMarkMore = selectedWords.length < maxWords;
 
   const getDifficultyIcon = (diff: string) => {
     switch (diff) {
@@ -117,9 +166,9 @@ export const VocabularyBrowser = ({
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {/* Difficulty Tabs */}
+        {/* Difficulty Tabs - including Personal */}
         <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as any); setSelectedCategory(null); }}>
-          <TabsList className="grid grid-cols-3 w-full">
+          <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="beginner" className="gap-1">
               <BookOpen className="w-3 h-3" />
               <span className="hidden sm:inline">Beginner</span>
@@ -132,31 +181,63 @@ export const VocabularyBrowser = ({
               <Rocket className="w-3 h-3" />
               <span className="hidden sm:inline">Advanced</span>
             </TabsTrigger>
+            <TabsTrigger value="personal" className="gap-1">
+              <User className="w-3 h-3" />
+              <span className="hidden sm:inline">My Vocab</span>
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 
-        {/* Category Filter */}
-        <div className="flex flex-wrap gap-1">
-          <Button
-            variant={selectedCategory === null ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSelectedCategory(null)}
-            className="h-7 text-xs"
-          >
-            All
-          </Button>
-          {categoriesForTab.map(cat => (
+        {/* Category Filter - hide for personal tab */}
+        {activeTab !== "personal" && (
+          <div className="flex flex-wrap gap-1">
             <Button
-              key={cat}
-              variant={selectedCategory === cat ? "default" : "outline"}
+              variant={selectedCategory === null ? "default" : "outline"}
               size="sm"
-              onClick={() => setSelectedCategory(cat)}
+              onClick={() => setSelectedCategory(null)}
               className="h-7 text-xs"
             >
-              {cat}
+              All
             </Button>
-          ))}
-        </div>
+            {categoriesForTab.map(cat => (
+              <Button
+                key={cat}
+                variant={selectedCategory === cat ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory(cat)}
+                className="h-7 text-xs"
+              >
+                {cat}
+              </Button>
+            ))}
+          </div>
+        )}
+
+        {/* Mark All / Unmark All Buttons */}
+        {filteredWords.length > 0 && (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleMarkAll}
+              disabled={!canMarkMore || visibleSelectedCount === filteredWords.length}
+              className="flex-1 gap-1"
+            >
+              <CheckCheck className="w-4 h-4" />
+              Mark All ({Math.min(filteredWords.length - visibleSelectedCount, maxWords - selectedWords.length)})
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleUnmarkAll}
+              disabled={visibleSelectedCount === 0}
+              className="flex-1 gap-1"
+            >
+              <X className="w-4 h-4" />
+              Unmark All ({visibleSelectedCount})
+            </Button>
+          </div>
+        )}
 
         {/* Custom Word Form */}
         <AnimatePresence>
