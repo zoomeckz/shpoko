@@ -1,4 +1,6 @@
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useGuest } from "@/contexts/GuestContext";
 import { Sidebar } from "@/components/duolingo/Sidebar";
 import { TopBar } from "@/components/duolingo/TopBar";
 import { LessonPath } from "@/components/duolingo/LessonPath";
@@ -6,13 +8,40 @@ import { RightSidebar } from "@/components/duolingo/RightSidebar";
 import { DailyLoginBonus } from "@/components/DailyLoginBonus";
 import { LeagueCelebration, LeagueDemotion } from "@/components/league/LeagueCelebration";
 import { useLeagueReset } from "@/hooks/useLeagueReset";
-import Landing from "@/pages/Landing";
+import { OnboardingGuide } from "@/components/onboarding/OnboardingGuide";
+import { RegistrationPrompt } from "@/components/onboarding/RegistrationPrompt";
+import { LockedScreen } from "@/components/onboarding/LockedScreen";
 
 const Index = () => {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { 
+    isGuest, 
+    onboardingCompleted, 
+    isLocked,
+    initGuest, 
+    completeOnboarding,
+    shouldShowRegistrationPrompt 
+  } = useGuest();
   const { resetResult, showCelebration, dismissCelebration } = useLeagueReset();
+  const [showRegistrationPrompt, setShowRegistrationPrompt] = useState(false);
+  const [hasShownPrompt, setHasShownPrompt] = useState(false);
 
-  if (loading) {
+  // Auto-initialize guest if not authenticated and not already a guest
+  useEffect(() => {
+    if (!authLoading && !user && !isGuest) {
+      initGuest();
+    }
+  }, [authLoading, user, isGuest, initGuest]);
+
+  // Check for registration prompt
+  useEffect(() => {
+    if (isGuest && !hasShownPrompt && shouldShowRegistrationPrompt()) {
+      setShowRegistrationPrompt(true);
+      setHasShownPrompt(true);
+    }
+  }, [isGuest, hasShownPrompt, shouldShowRegistrationPrompt]);
+
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -20,15 +49,25 @@ const Index = () => {
     );
   }
 
-  // Show landing page for non-authenticated users
-  if (!user) {
-    return <Landing />;
+  // Show locked screen for guests who declined registration
+  if (isGuest && isLocked) {
+    return <LockedScreen />;
+  }
+
+  // Show onboarding for new guests
+  if (isGuest && !onboardingCompleted) {
+    return <OnboardingGuide onComplete={completeOnboarding} />;
   }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* League Celebration/Demotion Modals */}
-      {resetResult?.promoted && (
+      {/* Registration Prompt Modal */}
+      {showRegistrationPrompt && (
+        <RegistrationPrompt onClose={() => setShowRegistrationPrompt(false)} />
+      )}
+
+      {/* League Celebration/Demotion Modals - Only for authenticated users */}
+      {user && resetResult?.promoted && (
         <LeagueCelebration
           isOpen={showCelebration}
           onClose={dismissCelebration}
@@ -38,7 +77,7 @@ const Index = () => {
           weeklyXP={resetResult.weeklyXP}
         />
       )}
-      {resetResult?.demoted && (
+      {user && resetResult?.demoted && (
         <LeagueDemotion
           isOpen={showCelebration}
           onClose={dismissCelebration}
@@ -48,8 +87,8 @@ const Index = () => {
         />
       )}
 
-      {/* Daily Login Bonus Modal */}
-      <DailyLoginBonus />
+      {/* Daily Login Bonus Modal - Only for authenticated users */}
+      {user && <DailyLoginBonus />}
       
       {/* Mobile top bar */}
       <TopBar />
