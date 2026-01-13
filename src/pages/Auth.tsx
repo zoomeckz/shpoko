@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useGuest } from "@/contexts/GuestContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { calculateLevel } from "@/lib/levelUtils";
 
 const signUpSchema = z.object({
   username: z.string()
@@ -37,8 +40,16 @@ const Auth = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   
   const { signIn, signUp, user } = useAuth();
+  const { isGuest, getProgressForTransfer, clearGuest, guestUsername } = useGuest();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Pre-fill username with guest username if available
+  useEffect(() => {
+    if (isGuest && guestUsername && !username) {
+      setUsername(guestUsername);
+    }
+  }, [isGuest, guestUsername]);
 
   useEffect(() => {
     if (user) {
@@ -109,9 +120,35 @@ const Auth = () => {
             });
           }
         } else {
+          // If guest was converted, transfer their progress
+          if (isGuest) {
+            const guestProgress = getProgressForTransfer();
+            // Wait a bit for the profile to be created
+            setTimeout(async () => {
+              try {
+                // Get the new user's ID
+                const { data: { user: newUser } } = await supabase.auth.getUser();
+                if (newUser && guestProgress.xp > 0) {
+                  // Update the profile with guest progress
+                  await supabase
+                    .from("profiles")
+                    .update({
+                      xp: guestProgress.xp,
+                      level: calculateLevel(guestProgress.xp),
+                    })
+                    .eq("id", newUser.id);
+                }
+              } catch (e) {
+                console.error("Error transferring guest progress:", e);
+              }
+            }, 1000);
+            clearGuest();
+          }
           toast({
             title: "Welcome to Shpoko!",
-            description: "Your account has been created. Start learning!",
+            description: isGuest 
+              ? "Your progress has been saved to your new account!" 
+              : "Your account has been created. Start learning!",
           });
           navigate("/");
         }
