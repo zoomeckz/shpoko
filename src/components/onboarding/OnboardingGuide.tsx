@@ -25,7 +25,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     id: "lessons",
     title: "Lessons",
     description: "Start here! Complete lessons to earn XP and level up.",
-    targetSelector: '[href="/"]',
+    targetSelector: '[data-onboarding="lessons"]',
     position: "right",
     mobilePosition: "bottom",
   },
@@ -33,7 +33,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     id: "stories",
     title: "Stories",
     description: "Read Bulgarian stories to improve your reading skills!",
-    targetSelector: '[href="/stories"]',
+    targetSelector: '[data-onboarding="stories"]',
     position: "right",
     mobilePosition: "bottom",
   },
@@ -41,7 +41,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     id: "games",
     title: "Games",
     description: "Practice what you've learned with fun mini-games!",
-    targetSelector: 'button:has(.lucide-chevron-down)',
+    targetSelector: '[data-onboarding="games"]',
     position: "right",
     mobilePosition: "bottom",
   },
@@ -49,7 +49,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     id: "profile",
     title: "Your Profile",
     description: "Track your progress, streaks, and achievements!",
-    targetSelector: '[href="/profile"]',
+    targetSelector: '[data-onboarding="profile"]',
     position: "right",
     mobilePosition: "bottom",
   },
@@ -57,7 +57,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     id: "shpoko-image",
     title: "Shpoko Image Analyzer",
     description: "Take photos and I'll help you learn Bulgarian words!",
-    targetSelector: '[href="/image-analyzer"]',
+    targetSelector: '[data-onboarding="image-analyzer"]',
     position: "right",
     mobilePosition: "bottom",
   },
@@ -99,15 +99,24 @@ export const OnboardingGuide = ({ onComplete }: OnboardingGuideProps) => {
     if (!step.targetSelector || isCentered) return;
 
     const calculatePosition = () => {
-      const target = document.querySelector(step.targetSelector!);
+      const target = document.querySelector(step.targetSelector!) as HTMLElement;
       const tooltip = tooltipRef.current;
       
-      if (!target || !tooltip) return;
+      if (!target || !tooltip) {
+        console.log("Target not found:", step.targetSelector);
+        return;
+      }
 
       const targetRect = target.getBoundingClientRect();
       const tooltipRect = tooltip.getBoundingClientRect();
-      const padding = 16;
-      const arrowSize = 12;
+      const padding = 20;
+      const arrowSize = 16;
+
+      // If target is not visible (width/height is 0), skip
+      if (targetRect.width === 0 || targetRect.height === 0) {
+        console.log("Target has no dimensions:", step.targetSelector);
+        return;
+      }
 
       let top = 0;
       let left = 0;
@@ -118,27 +127,27 @@ export const OnboardingGuide = ({ onComplete }: OnboardingGuideProps) => {
 
       switch (effectivePosition) {
         case "right":
-          top = targetRect.top + targetRect.height / 2 - tooltipRect.height / 2;
+          top = targetRect.top + targetRect.height / 2 - (tooltipRect.height || 200) / 2;
           left = targetRect.right + padding + arrowSize;
           arrowTop = targetRect.top + targetRect.height / 2 - arrowSize / 2;
-          arrowLeft = targetRect.right + padding;
+          arrowLeft = targetRect.right + padding / 2;
           break;
         case "left":
-          top = targetRect.top + targetRect.height / 2 - tooltipRect.height / 2;
-          left = targetRect.left - tooltipRect.width - padding - arrowSize;
+          top = targetRect.top + targetRect.height / 2 - (tooltipRect.height || 200) / 2;
+          left = targetRect.left - (tooltipRect.width || 300) - padding - arrowSize;
           arrowTop = targetRect.top + targetRect.height / 2 - arrowSize / 2;
-          arrowLeft = targetRect.left - padding - arrowSize;
+          arrowLeft = targetRect.left - padding / 2 - arrowSize;
           break;
         case "top":
-          top = targetRect.top - tooltipRect.height - padding - arrowSize;
-          left = targetRect.left + targetRect.width / 2 - tooltipRect.width / 2;
-          arrowTop = targetRect.top - padding - arrowSize;
+          top = targetRect.top - (tooltipRect.height || 200) - padding - arrowSize;
+          left = targetRect.left + targetRect.width / 2 - (tooltipRect.width || 300) / 2;
+          arrowTop = targetRect.top - padding / 2 - arrowSize;
           arrowLeft = targetRect.left + targetRect.width / 2 - arrowSize / 2;
           break;
         case "bottom":
           top = targetRect.bottom + padding + arrowSize;
-          left = targetRect.left + targetRect.width / 2 - tooltipRect.width / 2;
-          arrowTop = targetRect.bottom + padding;
+          left = targetRect.left + targetRect.width / 2 - (tooltipRect.width || 300) / 2;
+          arrowTop = targetRect.bottom + padding / 2;
           arrowLeft = targetRect.left + targetRect.width / 2 - arrowSize / 2;
           break;
       }
@@ -146,45 +155,59 @@ export const OnboardingGuide = ({ onComplete }: OnboardingGuideProps) => {
       // Keep tooltip on screen
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
+      const tooltipWidth = tooltipRect.width || 300;
+      const tooltipHeight = tooltipRect.height || 200;
       
       if (left < padding) left = padding;
-      if (left + tooltipRect.width > viewportWidth - padding) {
-        left = viewportWidth - tooltipRect.width - padding;
+      if (left + tooltipWidth > viewportWidth - padding) {
+        left = viewportWidth - tooltipWidth - padding;
       }
       if (top < padding) top = padding;
-      if (top + tooltipRect.height > viewportHeight - padding) {
-        top = viewportHeight - tooltipRect.height - padding;
+      if (top + tooltipHeight > viewportHeight - padding) {
+        top = viewportHeight - tooltipHeight - padding;
       }
 
       setTooltipPosition({ top, left });
       setArrowPosition({ top: arrowTop, left: arrowLeft });
 
-      // Highlight target
-      target.classList.add("ring-4", "ring-primary", "ring-offset-2", "z-[101]", "relative");
+      // Highlight target with a spotlight effect
+      target.style.position = "relative";
+      target.style.zIndex = "101";
+      target.classList.add("ring-4", "ring-primary", "ring-offset-2", "rounded-xl", "bg-card");
     };
 
-    // Give time for DOM to render
-    const timer = setTimeout(calculatePosition, 100);
+    // Give time for DOM to render, then recalculate after tooltip renders
+    const timer1 = setTimeout(calculatePosition, 150);
+    const timer2 = setTimeout(calculatePosition, 400);
     window.addEventListener("resize", calculatePosition);
     
     return () => {
-      clearTimeout(timer);
+      clearTimeout(timer1);
+      clearTimeout(timer2);
       window.removeEventListener("resize", calculatePosition);
       // Clean up highlight
-      const target = document.querySelector(step.targetSelector!);
+      const target = document.querySelector(step.targetSelector!) as HTMLElement;
       if (target) {
-        target.classList.remove("ring-4", "ring-primary", "ring-offset-2", "z-[101]", "relative");
+        target.style.position = "";
+        target.style.zIndex = "";
+        target.classList.remove("ring-4", "ring-primary", "ring-offset-2", "rounded-xl", "bg-card");
       }
     };
   }, [currentStep, step.targetSelector, step.position, step.mobilePosition, isCentered, isMobile]);
 
+  const cleanupTarget = (selector: string) => {
+    const target = document.querySelector(selector) as HTMLElement;
+    if (target) {
+      target.style.position = "";
+      target.style.zIndex = "";
+      target.classList.remove("ring-4", "ring-primary", "ring-offset-2", "rounded-xl", "bg-card");
+    }
+  };
+
   const handleNext = () => {
     // Clean up current highlight
     if (step.targetSelector) {
-      const target = document.querySelector(step.targetSelector);
-      if (target) {
-        target.classList.remove("ring-4", "ring-primary", "ring-offset-2", "z-[101]", "relative");
-      }
+      cleanupTarget(step.targetSelector);
     }
 
     if (isLastStep) {
@@ -198,10 +221,7 @@ export const OnboardingGuide = ({ onComplete }: OnboardingGuideProps) => {
     // Clean up any highlights
     ONBOARDING_STEPS.forEach(s => {
       if (s.targetSelector) {
-        const target = document.querySelector(s.targetSelector);
-        if (target) {
-          target.classList.remove("ring-4", "ring-primary", "ring-offset-2", "z-[101]", "relative");
-        }
+        cleanupTarget(s.targetSelector);
       }
     });
     navigate("/auth");
@@ -211,10 +231,7 @@ export const OnboardingGuide = ({ onComplete }: OnboardingGuideProps) => {
     // Clean up any highlights
     ONBOARDING_STEPS.forEach(s => {
       if (s.targetSelector) {
-        const target = document.querySelector(s.targetSelector);
-        if (target) {
-          target.classList.remove("ring-4", "ring-primary", "ring-offset-2", "z-[101]", "relative");
-        }
+        cleanupTarget(s.targetSelector);
       }
     });
     navigate("/auth");
