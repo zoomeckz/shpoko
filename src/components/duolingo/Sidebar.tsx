@@ -15,12 +15,12 @@ interface SidebarProps {
 
 // Main navigation items (top section)
 const mainNavItems = [
-  { icon: Home, label: "Learn", path: "/" },
+  { icon: Home, label: "Learn", path: "/", onboardingId: "lessons" },
   { icon: Trophy, label: "Leaderboards", path: "/leaderboard" },
   { icon: Target, label: "Quests", path: "/quests" },
   { icon: BookOpen, label: "Scenarios", path: "/scenarios" },
-  { icon: BookMarked, label: "Stories", path: "/stories" },
-  { icon: ScanEye, label: "Shpoko Image", path: "/image-analyzer" },
+  { icon: BookMarked, label: "Stories", path: "/stories", onboardingId: "stories" },
+  { icon: ScanEye, label: "Shpoko Image", path: "/image-analyzer", onboardingId: "image-analyzer" },
 ];
 
 // Quiz items (collapsible section)
@@ -42,7 +42,7 @@ const gameItems = [
 // Bottom navigation items
 const bottomNavItems = [
   { icon: Users, label: "Friends", path: "/friends" },
-  { icon: User, label: "Profile", path: "/profile" },
+  { icon: User, label: "Profile", path: "/profile", onboardingId: "profile" },
 ];
 
 export const Sidebar = ({ className }: SidebarProps) => {
@@ -132,10 +132,11 @@ export const Sidebar = ({ className }: SidebarProps) => {
     items: typeof gameItems,
     isOpen: boolean,
     setIsOpen: (open: boolean) => void,
-    isActive: boolean
+    isActive: boolean,
+    onboardingId?: string
   ) => (
     <Collapsible open={isOpen || isActive} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className="w-full">
+      <CollapsibleTrigger className="w-full" data-onboarding={onboardingId}>
         <div className={cn(
           "flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 font-bold text-base",
           isActive
@@ -219,6 +220,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
             <Link
               key={item.path}
               to={item.path}
+              data-onboarding={item.onboardingId}
               className={cn(
                 "flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-base",
                 isActive
@@ -241,7 +243,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
         {renderCollapsibleSection("Quizzes", GraduationCap, quizItems, quizzesOpen, setQuizzesOpen, isQuizActive)}
 
         {/* Games Section - Collapsible */}
-        {renderCollapsibleSection("Games", Gamepad2, gameItems, gamesOpen, setGamesOpen, isGameActive)}
+        {renderCollapsibleSection("Games", Gamepad2, gameItems, gamesOpen, setGamesOpen, isGameActive, "games")}
 
         {/* Separator */}
         <div className="py-3">
@@ -257,6 +259,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
             <Link
               key={item.path}
               to={item.path}
+              data-onboarding={item.onboardingId}
               className={cn(
                 "flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-base",
                 isActive
