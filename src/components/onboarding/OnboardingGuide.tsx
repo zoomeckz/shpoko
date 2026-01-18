@@ -17,37 +17,12 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     id: "welcome",
     title: "Welcome to SHPOKO! 🦝",
-    description: "I'm your Bulgarian learning buddy! Let me show you around.",
+    description: "I'm your Bulgarian learning buddy! Learn through lessons, stories, and games. Complete 3 lessons to unlock all features!",
   },
   {
-    id: "lessons",
-    title: "Lessons",
-    description: "Complete lessons to earn XP and level up.",
-  },
-  {
-    id: "stories",
-    title: "Stories",
-    description: "Read Bulgarian stories to build reading confidence.",
-  },
-  {
-    id: "games",
-    title: "Games",
-    description: "Practice what you've learned with fun mini-games.",
-  },
-  {
-    id: "profile",
-    title: "Your Profile",
-    description: "Track your streak, XP, badges, and unlockables.",
-  },
-  {
-    id: "shpoko-image",
-    title: "Shpoko Image Analyzer",
-    description: "Snap a photo and learn Bulgarian words from what you see.",
-  },
-  {
-    id: "ready",
-    title: "You're Ready! 🎉",
-    description: "Start your first lesson. Complete 3 to unlock all features!",
+    id: "start",
+    title: "Ready to Learn? 🚀",
+    description: "Tap 'Start Learning' to begin your first lesson. You can find a full tour in the Help menu anytime!",
   },
 ];
 
@@ -153,7 +128,7 @@ export const OnboardingGuide = ({ onComplete }: OnboardingGuideProps) => {
           {/* Navigation */}
           <div className="flex gap-2">
             <Button onClick={handleNext} className="flex-1 font-bold">
-              {isLastStep ? "Let's Go! 🚀" : "Next"}
+              {isLastStep ? "Start Learning! 🚀" : "Next"}
             </Button>
           </div>
 
