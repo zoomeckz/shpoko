@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Trophy, Target, User, BookOpen, BookMarked, Flame, Crown, Zap, Gamepad2, Swords, Apple, Dices, Users, ShoppingBag, ChevronDown, Headphones, PenLine, ListChecks, GraduationCap, Bell, ScanEye, Shield } from "lucide-react";
+import { Home, Trophy, Target, User, BookOpen, BookMarked, Flame, Crown, Zap, Gamepad2, Swords, Apple, Dices, Users, ShoppingBag, ChevronDown, Headphones, PenLine, ListChecks, GraduationCap, Bell, ScanEye, Shield, HelpCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { isAdminEmail } from "@/hooks/useAdminAuth";
+import { HelpTourModal } from "@/components/onboarding/HelpTourModal";
 
 interface SidebarProps {
   className?: string;
@@ -52,6 +53,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
   const [quizzesOpen, setQuizzesOpen] = useState(false);
   const [pendingTradeCount, setPendingTradeCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [helpTourOpen, setHelpTourOpen] = useState(false);
 
   // Check if user is admin
   useEffect(() => {
@@ -313,6 +315,15 @@ export const Sidebar = ({ className }: SidebarProps) => {
           )}
         </Link>
 
+        {/* Help / Tour Button */}
+        <button
+          onClick={() => setHelpTourOpen(true)}
+          className="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-base text-muted-foreground hover:bg-accent border-2 border-transparent w-full text-left"
+        >
+          <HelpCircle className="w-6 h-6" />
+          <span>Help / Tour</span>
+        </button>
+
         {/* Admin Panel Link - Only visible for admins */}
         {isAdmin && (
           <>
@@ -364,6 +375,9 @@ export const Sidebar = ({ className }: SidebarProps) => {
           </div>
         </div>
       </div>
+
+      {/* Help Tour Modal */}
+      <HelpTourModal open={helpTourOpen} onOpenChange={setHelpTourOpen} />
     </aside>
   );
 };
