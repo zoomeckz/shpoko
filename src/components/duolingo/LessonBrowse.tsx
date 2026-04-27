@@ -86,7 +86,7 @@ export const LessonBrowse = ({ className }: LessonBrowseProps) => {
           {tier.items.length === 0 ? (
             <p className="text-sm text-muted-foreground italic px-2 py-3">No lessons in this tier yet.</p>
           ) : (
-            <ul className="grid gap-2">
+            <ul className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {tier.items.map((lesson) => {
                 const completed = isLessonCompleted(lesson.id);
                 const progress = getLessonProgress(lesson.id);
