@@ -132,11 +132,20 @@ export const OnboardingGuide = ({ onComplete }: OnboardingGuideProps) => {
             </Button>
           </div>
 
+          {/* Skip tour */}
+          <button
+            onClick={onComplete}
+            className="mt-3 w-full text-sm font-medium text-muted-foreground hover:text-foreground hover:underline"
+            type="button"
+          >
+            Skip tour
+          </button>
+
           {/* Already have account link */}
           {isFirstStep && (
             <button
               onClick={handleAlreadyHaveAccount}
-              className="mt-3 w-full text-sm font-medium text-primary hover:underline"
+              className="mt-1 w-full text-sm font-medium text-primary hover:underline"
               type="button"
             >
               Already have an account? Log in
