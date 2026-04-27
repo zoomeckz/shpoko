@@ -79,7 +79,14 @@ export const LessonPath = ({ className }: LessonPathProps) => {
     return "locked";
   };
 
-  const handleDeepDiveClick = (deepDive: DeepDiveLesson) => {
+  const handleDeepDiveClick = (deepDive: DeepDiveLesson, parentLesson: Lesson) => {
+    // Gate deep dives by their parent lesson's tier — guests can still
+    // do beginner-lesson deep dives, everything else prompts to register.
+    if (isLockedForGuest(parentLesson)) {
+      setUpgradePrompt({ open: true, label: deepDive.title });
+      return;
+    }
+
     // Show reward info
     if (deepDive.skinReward || deepDive.badgeReward) {
       const rewards = [];
@@ -87,7 +94,7 @@ export const LessonPath = ({ className }: LessonPathProps) => {
       if (deepDive.badgeReward) rewards.push("🏆 Badge");
       toast.info(`Complete for: ${rewards.join(" + ")} + ${deepDive.xpReward} XP`);
     }
-    
+
     navigate(deepDive.route);
   };
 
