@@ -94,7 +94,7 @@ export const LessonBrowse = ({ className }: LessonBrowseProps) => {
                 const icon = categoryIcon[lesson.category?.toLowerCase() || "default"] || categoryIcon.default;
 
                 return (
-                  <li key={lesson.id}>
+                  <li key={lesson.id} className="h-full">
                     <button
                       type="button"
                       onClick={() => {
@@ -105,45 +105,41 @@ export const LessonBrowse = ({ className }: LessonBrowseProps) => {
                         navigate(lesson.route || "/learn");
                       }}
                       className={cn(
-                        "w-full flex items-center gap-3 rounded-xl border-2 bg-card px-3 py-3 text-left transition-all",
+                        "relative h-full w-full flex flex-col items-start gap-2 rounded-xl border-2 bg-card p-3 text-left transition-all",
                         "hover:bg-accent hover:-translate-y-0.5 active:translate-y-0",
                         completed && "border-success/50",
                         !completed && "border-border",
                         guestLocked && "opacity-80"
                       )}
                     >
-                      <div
-                        className={cn(
-                          "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
-                          completed ? "bg-success text-success-foreground" : "bg-muted text-muted-foreground"
-                        )}
-                      >
-                        {completed ? <Check className="w-5 h-5" /> : icon}
+                      <div className="flex w-full items-center justify-between gap-2">
+                        <div
+                          className={cn(
+                            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                            completed ? "bg-success text-success-foreground" : "bg-muted text-muted-foreground"
+                          )}
+                        >
+                          {completed ? <Check className="w-5 h-5" /> : icon}
+                        </div>
+                        {guestLocked ? (
+                          <span className="flex items-center gap-1 rounded-full bg-primary/90 px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary-foreground">
+                            <Lock className="w-2.5 h-2.5" />
+                            Lock
+                          </span>
+                        ) : progress === 100 ? (
+                          <Sparkles className="w-4 h-4 text-warning" />
+                        ) : null}
                       </div>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm truncate">{lesson.title}</span>
-                          {progress === 100 && (
-                            <Sparkles className="w-3.5 h-3.5 text-warning shrink-0" />
-                          )}
+                      <div className="w-full min-w-0">
+                        <div className="font-bold text-sm leading-tight line-clamp-2">
+                          {lesson.title}
                         </div>
-                        <p className="text-xs text-muted-foreground truncate">
+                        <p className="mt-0.5 text-[11px] text-muted-foreground truncate">
                           {lesson.category}
                           {progress > 0 && progress < 100 && ` • ${progress}%`}
                         </p>
                       </div>
-
-                      {guestLocked ? (
-                        <span className="flex items-center gap-1 rounded-full bg-primary/90 px-2 py-0.5 text-[10px] font-bold uppercase text-primary-foreground">
-                          <Lock className="w-2.5 h-2.5" />
-                          Register
-                        </span>
-                      ) : (
-                        <span className="text-xs font-bold text-muted-foreground">
-                          {completed ? "✓" : "→"}
-                        </span>
-                      )}
                     </button>
                   </li>
                 );
