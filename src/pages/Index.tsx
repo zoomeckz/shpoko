@@ -41,9 +41,10 @@ const Index = () => {
     return <OnboardingGuide onComplete={completeOnboarding} />;
   }
 
-  // First-time login: profile exists but username is the auto placeholder
-  const needsUsername =
-    !!user && !!profile && /^user_/i.test(profile.username);
+  // First-time login: profile exists and the user has not yet picked their own username.
+  // We rely on the explicit `username_set` flag, not on a regex over the username,
+  // so users who freely choose names like "user_cool" are never re-prompted.
+  const needsUsername = !!user && !!profile && profile.username_set === false;
 
   return (
     <div className="min-h-screen bg-background">

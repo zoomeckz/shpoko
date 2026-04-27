@@ -24,7 +24,12 @@ export const ChangeUsernameDialog = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { canChange, daysRemaining } = canChangeUsername(profile?.last_username_change || null);
+  // If the user hasn't picked a username yet, treat this as the initial pick:
+  // skip the 30-day cooldown entirely.
+  const isInitialPick = profile?.username_set === false;
+  const cooldown = canChangeUsername(profile?.last_username_change || null);
+  const canChange = isInitialPick || cooldown.canChange;
+  const daysRemaining = cooldown.daysRemaining;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,12 +53,23 @@ export const ChangeUsernameDialog = () => {
     setLoading(true);
 
     try {
+      const updates: {
+        username: string;
+        username_set: boolean;
+        last_username_change?: string;
+      } = {
+        username: newUsername.trim(),
+        username_set: true,
+      };
+      // Only start the 30-day cooldown when a user changes a username
+      // they had already set — initial picks shouldn't lock them out.
+      if (!isInitialPick) {
+        updates.last_username_change = new Date().toISOString();
+      }
+
       const { error: updateError } = await supabase
         .from("profiles")
-        .update({
-          username: newUsername.trim(),
-          last_username_change: new Date().toISOString(),
-        })
+        .update(updates)
         .eq("id", profile.id);
 
       if (updateError) {
@@ -91,8 +107,10 @@ export const ChangeUsernameDialog = () => {
         <DialogHeader>
           <DialogTitle>Change Username</DialogTitle>
           <DialogDescription>
-            You can change your username once every 30 days.
-            {!canChange && (
+            {isInitialPick
+              ? "Set your username — you can change it again later."
+              : "You can change your username once every 30 days."}
+            {!canChange && !isInitialPick && (
               <span className="block mt-2 text-destructive">
                 Next change available in {daysRemaining} days
               </span>
