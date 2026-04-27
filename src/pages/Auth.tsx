@@ -13,6 +13,7 @@ import { z } from "zod";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { calculateLevel } from "@/lib/levelUtils";
+import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
 const signUpSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
