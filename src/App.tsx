@@ -131,6 +131,7 @@ const App = () => (
               <Route path="/contexto" element={<ContextoGame />} />
               <Route path="/assessment/:tier" element={<TierAssessment />} />
               <Route path="/game/rapid-fire" element={<RapidFireGame />} />
+              <Route path="/game/endless-words" element={<ShpokoEndlessWord />} />
               <Route path="/game/conjugation" element={<ConjugationGame />} />
               <Route path="/game/cloze-combat" element={<PhraseClozeCombat />} />
               <Route path="/game/fix-bulgarian" element={<FixMyBulgarianGame />} />
