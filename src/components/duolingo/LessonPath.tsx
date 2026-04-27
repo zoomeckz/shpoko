@@ -1,10 +1,14 @@
+import { useState } from "react";
 import { LessonNode } from "./LessonNode";
 import { useNavigate } from "react-router-dom";
-import { lessons, DeepDiveLesson } from "@/data/lessons";
+import { lessons, DeepDiveLesson, Lesson } from "@/data/lessons";
 import { useUserProgress } from "@/hooks/useUserProgress";
+import { useGuest } from "@/contexts/GuestContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { GuestUpgradePrompt } from "@/components/onboarding/GuestUpgradePrompt";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Star, BookOpen, MessageCircle, Mic, Headphones, PenTool, Award } from "lucide-react";
+import { Star, BookOpen, MessageCircle, Mic, Headphones, PenTool, Award, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 interface LessonPathProps {
@@ -24,6 +28,16 @@ const lessonIcons: Record<string, React.ReactNode> = {
 export const LessonPath = ({ className }: LessonPathProps) => {
   const navigate = useNavigate();
   const { isLessonCompleted, getLessonProgress } = useUserProgress();
+  const { isGuest } = useGuest();
+  const { user } = useAuth();
+  const [upgradePrompt, setUpgradePrompt] = useState<{ open: boolean; label: string }>({
+    open: false,
+    label: "this lesson",
+  });
+
+  // Guests can only play beginner content. Once a real account is linked, gating lifts.
+  const isLockedForGuest = (lesson: Pick<Lesson, "difficulty">) =>
+    !user && isGuest && lesson.difficulty !== "beginner";
 
   // Group lessons into sections of 4-5 for the winding path
   const getPosition = (index: number): "left" | "center" | "right" => {
