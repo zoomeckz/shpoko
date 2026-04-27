@@ -84,17 +84,17 @@ export const TopBar = ({ className }: TopBarProps) => {
 
           {/* Stats */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              <Flame className="w-5 h-5 text-warning" />
-              <span className="font-bold text-sm">{profile?.streak || 0}</span>
+            <div className="flex items-center gap-1 leading-none">
+              <Flame className="w-5 h-5 text-warning shrink-0" />
+              <span className="font-bold text-sm leading-none">{profile?.streak || 0}</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Zap className="w-5 h-5 text-primary" />
-              <span className="font-bold text-sm">{profile?.xp || 0}</span>
+            <div className="flex items-center gap-1 leading-none">
+              <Zap className="w-5 h-5 text-primary shrink-0" />
+              <span className="font-bold text-sm leading-none">{profile?.xp || 0}</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Heart className="w-5 h-5 text-error fill-error" />
-              <span className="font-bold text-sm">{profile?.is_premium ? "∞" : "5"}</span>
+            <div className="flex items-center gap-1 leading-none">
+              <Heart className="w-5 h-5 text-error fill-error shrink-0" />
+              <span className="font-bold text-sm leading-none">{profile?.is_premium ? "∞" : "5"}</span>
             </div>
           </div>
 
