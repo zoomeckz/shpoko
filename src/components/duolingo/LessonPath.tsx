@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LessonNode } from "./LessonNode";
+import { LessonBrowse } from "./LessonBrowse";
 import { useNavigate } from "react-router-dom";
 import { lessons, DeepDiveLesson, Lesson } from "@/data/lessons";
 import { useUserProgress } from "@/hooks/useUserProgress";
@@ -8,8 +9,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { GuestUpgradePrompt } from "@/components/onboarding/GuestUpgradePrompt";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Star, BookOpen, MessageCircle, Mic, Headphones, PenTool, Award, Lock } from "lucide-react";
+import { Star, BookOpen, MessageCircle, Mic, Headphones, PenTool, Award, Lock, Map, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
+
+type LessonView = "path" | "browse";
+const VIEW_STORAGE_KEY = "shpoko:lesson-view";
 
 interface LessonPathProps {
   className?: string;
@@ -34,6 +38,16 @@ export const LessonPath = ({ className }: LessonPathProps) => {
     open: false,
     label: "this lesson",
   });
+  const [view, setView] = useState<LessonView>(() => {
+    if (typeof window === "undefined") return "path";
+    const saved = window.localStorage.getItem(VIEW_STORAGE_KEY);
+    return saved === "browse" || saved === "path" ? saved : "path";
+  });
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(VIEW_STORAGE_KEY, view);
+    }
+  }, [view]);
 
   // Guests can only play beginner content. Once a real account is linked, gating lifts.
   const isLockedForGuest = (lesson: Pick<Lesson, "difficulty">) =>
@@ -131,17 +145,64 @@ export const LessonPath = ({ className }: LessonPathProps) => {
 
   return (
     <div className={cn("flex flex-col items-center gap-4 py-8", className)}>
-      {/* Section header */}
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-xs mb-4"
+      {/* View toggle: winding path vs free browse */}
+      <div
+        role="tablist"
+        aria-label="Lesson view"
+        className="inline-flex items-center gap-1 rounded-full border-2 border-border bg-card p-1 shadow-[0_2px_0_0_hsl(var(--border))]"
       >
-        <div className="bg-primary text-primary-foreground rounded-2xl px-6 py-4 text-center shadow-[0_4px_0_0_hsl(var(--primary-dark))]">
-          <h3 className="font-extrabold text-lg uppercase tracking-wide">Section 1</h3>
-          <p className="text-sm opacity-90">Basics</p>
-        </div>
-      </motion.div>
+        <button
+          role="tab"
+          aria-selected={view === "path"}
+          onClick={() => setView("path")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wide transition-all",
+            view === "path"
+              ? "bg-primary text-primary-foreground shadow-[0_2px_0_0_hsl(var(--primary-dark))]"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <Map className="w-3.5 h-3.5" />
+          Path
+        </button>
+        <button
+          role="tab"
+          aria-selected={view === "browse"}
+          onClick={() => setView("browse")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wide transition-all",
+            view === "browse"
+              ? "bg-primary text-primary-foreground shadow-[0_2px_0_0_hsl(var(--primary-dark))]"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <LayoutGrid className="w-3.5 h-3.5" />
+          Browse
+        </button>
+      </div>
+
+      {view === "browse" ? (
+        <>
+          <LessonBrowse className="w-full" />
+          <GuestUpgradePrompt
+            open={upgradePrompt.open}
+            onClose={() => setUpgradePrompt({ open: false, label: "this lesson" })}
+            contentLabel={upgradePrompt.label}
+          />
+        </>
+      ) : (
+        <>
+          {/* Section header */}
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full max-w-xs mb-4"
+          >
+            <div className="bg-primary text-primary-foreground rounded-2xl px-6 py-4 text-center shadow-[0_4px_0_0_hsl(var(--primary-dark))]">
+              <h3 className="font-extrabold text-lg uppercase tracking-wide">Section 1</h3>
+              <p className="text-sm opacity-90">Basics</p>
+            </div>
+          </motion.div>
 
       {/* Deep dive instruction */}
       <motion.div
@@ -263,11 +324,13 @@ export const LessonPath = ({ className }: LessonPathProps) => {
         );
       })}
 
-      <GuestUpgradePrompt
-        open={upgradePrompt.open}
-        onClose={() => setUpgradePrompt({ open: false, label: "this lesson" })}
-        contentLabel={upgradePrompt.label}
-      />
+          <GuestUpgradePrompt
+            open={upgradePrompt.open}
+            onClose={() => setUpgradePrompt({ open: false, label: "this lesson" })}
+            contentLabel={upgradePrompt.label}
+          />
+        </>
+      )}
     </div>
   );
 };
