@@ -48,9 +48,11 @@ export const UsernameSetup = () => {
       return;
     }
 
+    // Initial setup — mark as set, but DO NOT touch last_username_change so the
+    // 30-day cooldown only starts after a real, voluntary change later on.
     const { error: updateError } = await supabase
       .from("profiles")
-      .update({ username: username.trim() })
+      .update({ username: username.trim(), username_set: true })
       .eq("id", user.id);
 
     if (updateError) {
