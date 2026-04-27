@@ -1,5 +1,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
+export interface GuestLessonRecord {
+  score: number;
+  completedAt: string;
+}
+
 interface GuestState {
   isGuest: boolean;
   guestId: string | null;
@@ -7,6 +12,8 @@ interface GuestState {
   lessonsCompleted: number;
   level: number;
   xp: number;
+  /** Per-lesson completion record so we can transfer to user_progress on signup. */
+  completedLessons: Record<string, GuestLessonRecord>;
   onboardingCompleted: boolean;
   isLocked: boolean;
   declinedRegistration: boolean;
@@ -16,11 +23,18 @@ interface GuestContextType extends GuestState {
   initGuest: () => void;
   incrementLessons: () => void;
   addXP: (amount: number) => void;
+  markLessonCompleted: (lessonId: string, score: number) => void;
+  isGuestLessonCompleted: (lessonId: string) => boolean;
   completeOnboarding: () => void;
   declineRegistration: () => void;
   clearGuest: () => void;
   shouldShowRegistrationPrompt: () => boolean;
-  getProgressForTransfer: () => { xp: number; level: number; lessonsCompleted: number };
+  getProgressForTransfer: () => {
+    xp: number;
+    level: number;
+    lessonsCompleted: number;
+    completedLessons: Record<string, GuestLessonRecord>;
+  };
 }
 
 const GuestContext = createContext<GuestContextType | undefined>(undefined);
