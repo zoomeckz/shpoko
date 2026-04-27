@@ -208,10 +208,11 @@ export const LessonPath = ({ className }: LessonPathProps) => {
         const status = getNodeStatus(lesson.id, node.index);
         const lessonProgress = getLessonProgress(lesson.id);
         const icon = lessonIcons[lesson.category?.toLowerCase() || "default"] || lessonIcons.default;
+        const guestLocked = isLockedForGuest(lesson);
 
         return (
-          <motion.div 
-            key={lesson.id} 
+          <motion.div
+            key={lesson.id}
             className="relative"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -221,7 +222,22 @@ export const LessonPath = ({ className }: LessonPathProps) => {
             {visualIndex < displayNodes.length - 1 && (
               <div className="absolute left-1/2 top-full w-1 h-8 bg-muted -translate-x-1/2 rounded-full" />
             )}
-            
+
+            {/* Guest-locked badge — visual hint that this requires registration */}
+            {guestLocked && (
+              <div
+                className={cn(
+                  "absolute -top-1 z-10 flex items-center gap-1 rounded-full bg-primary/90 px-2 py-0.5 text-[10px] font-bold uppercase text-primary-foreground shadow pointer-events-none",
+                  getPosition(visualIndex) === "left" && "left-2",
+                  getPosition(visualIndex) === "center" && "left-1/2 -translate-x-1/2",
+                  getPosition(visualIndex) === "right" && "right-2"
+                )}
+              >
+                <Lock className="w-2.5 h-2.5" />
+                Register
+              </div>
+            )}
+
             <LessonNode
               status={status}
               position={getPosition(visualIndex)}
@@ -229,9 +245,13 @@ export const LessonPath = ({ className }: LessonPathProps) => {
               progress={status === "current" ? lessonProgress : undefined}
               icon={icon}
               deepDives={lesson.deepDives}
-              onDeepDiveClick={handleDeepDiveClick}
+              onDeepDiveClick={(dd) => handleDeepDiveClick(dd, lesson)}
               isDeepDiveCompleted={isDeepDiveCompleted}
               onClick={() => {
+                if (guestLocked) {
+                  setUpgradePrompt({ open: true, label: lesson.title });
+                  return;
+                }
                 if (lesson.route) {
                   navigate(lesson.route);
                 } else {
@@ -242,6 +262,12 @@ export const LessonPath = ({ className }: LessonPathProps) => {
           </motion.div>
         );
       })}
+
+      <GuestUpgradePrompt
+        open={upgradePrompt.open}
+        onClose={() => setUpgradePrompt({ open: false, label: "this lesson" })}
+        contentLabel={upgradePrompt.label}
+      />
     </div>
   );
 };
