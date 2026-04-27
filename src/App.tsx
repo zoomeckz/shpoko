@@ -82,6 +82,7 @@ import ForumThread from "./pages/ForumThread";
 // Mini Games
 import ShpokoFruitGame from "./pages/ShpokoFruitGame";
 import RapidFireGame from "./pages/RapidFireGame";
+import ShpokoEndlessWord from "./pages/ShpokoEndlessWord";
 // Profile & Quests
 import Profile from "./pages/Profile";
 import Quests from "./pages/Quests";
