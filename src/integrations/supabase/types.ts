@@ -498,6 +498,7 @@ export type Database = {
           streak_freezes: number
           updated_at: string
           username: string
+          username_set: boolean
           xp: number
         }
         Insert: {
@@ -515,6 +516,7 @@ export type Database = {
           streak_freezes?: number
           updated_at?: string
           username: string
+          username_set?: boolean
           xp?: number
         }
         Update: {
@@ -532,6 +534,7 @@ export type Database = {
           streak_freezes?: number
           updated_at?: string
           username?: string
+          username_set?: boolean
           xp?: number
         }
         Relationships: []
