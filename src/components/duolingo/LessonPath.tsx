@@ -324,11 +324,13 @@ export const LessonPath = ({ className }: LessonPathProps) => {
         );
       })}
 
-      <GuestUpgradePrompt
-        open={upgradePrompt.open}
-        onClose={() => setUpgradePrompt({ open: false, label: "this lesson" })}
-        contentLabel={upgradePrompt.label}
-      />
+          <GuestUpgradePrompt
+            open={upgradePrompt.open}
+            onClose={() => setUpgradePrompt({ open: false, label: "this lesson" })}
+            contentLabel={upgradePrompt.label}
+          />
+        </>
+      )}
     </div>
   );
 };
