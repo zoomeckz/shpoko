@@ -14,6 +14,7 @@ interface Profile {
   premium_until: string | null;
   last_username_change: string | null;
   profile_picture: string | null;
+  username_set: boolean;
 }
 
 interface AuthContextType {
