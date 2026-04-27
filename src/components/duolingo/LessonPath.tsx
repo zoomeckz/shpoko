@@ -1,10 +1,14 @@
+import { useState } from "react";
 import { LessonNode } from "./LessonNode";
 import { useNavigate } from "react-router-dom";
-import { lessons, DeepDiveLesson } from "@/data/lessons";
+import { lessons, DeepDiveLesson, Lesson } from "@/data/lessons";
 import { useUserProgress } from "@/hooks/useUserProgress";
+import { useGuest } from "@/contexts/GuestContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { GuestUpgradePrompt } from "@/components/onboarding/GuestUpgradePrompt";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Star, BookOpen, MessageCircle, Mic, Headphones, PenTool, Award } from "lucide-react";
+import { Star, BookOpen, MessageCircle, Mic, Headphones, PenTool, Award, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 interface LessonPathProps {
@@ -24,6 +28,16 @@ const lessonIcons: Record<string, React.ReactNode> = {
 export const LessonPath = ({ className }: LessonPathProps) => {
   const navigate = useNavigate();
   const { isLessonCompleted, getLessonProgress } = useUserProgress();
+  const { isGuest } = useGuest();
+  const { user } = useAuth();
+  const [upgradePrompt, setUpgradePrompt] = useState<{ open: boolean; label: string }>({
+    open: false,
+    label: "this lesson",
+  });
+
+  // Guests can only play beginner content. Once a real account is linked, gating lifts.
+  const isLockedForGuest = (lesson: Pick<Lesson, "difficulty">) =>
+    !user && isGuest && lesson.difficulty !== "beginner";
 
   // Group lessons into sections of 4-5 for the winding path
   const getPosition = (index: number): "left" | "center" | "right" => {
@@ -65,7 +79,14 @@ export const LessonPath = ({ className }: LessonPathProps) => {
     return "locked";
   };
 
-  const handleDeepDiveClick = (deepDive: DeepDiveLesson) => {
+  const handleDeepDiveClick = (deepDive: DeepDiveLesson, parentLesson: Lesson) => {
+    // Gate deep dives by their parent lesson's tier — guests can still
+    // do beginner-lesson deep dives, everything else prompts to register.
+    if (isLockedForGuest(parentLesson)) {
+      setUpgradePrompt({ open: true, label: deepDive.title });
+      return;
+    }
+
     // Show reward info
     if (deepDive.skinReward || deepDive.badgeReward) {
       const rewards = [];
@@ -73,7 +94,7 @@ export const LessonPath = ({ className }: LessonPathProps) => {
       if (deepDive.badgeReward) rewards.push("🏆 Badge");
       toast.info(`Complete for: ${rewards.join(" + ")} + ${deepDive.xpReward} XP`);
     }
-    
+
     navigate(deepDive.route);
   };
 
@@ -187,10 +208,11 @@ export const LessonPath = ({ className }: LessonPathProps) => {
         const status = getNodeStatus(lesson.id, node.index);
         const lessonProgress = getLessonProgress(lesson.id);
         const icon = lessonIcons[lesson.category?.toLowerCase() || "default"] || lessonIcons.default;
+        const guestLocked = isLockedForGuest(lesson);
 
         return (
-          <motion.div 
-            key={lesson.id} 
+          <motion.div
+            key={lesson.id}
             className="relative"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -200,7 +222,22 @@ export const LessonPath = ({ className }: LessonPathProps) => {
             {visualIndex < displayNodes.length - 1 && (
               <div className="absolute left-1/2 top-full w-1 h-8 bg-muted -translate-x-1/2 rounded-full" />
             )}
-            
+
+            {/* Guest-locked badge — visual hint that this requires registration */}
+            {guestLocked && (
+              <div
+                className={cn(
+                  "absolute -top-1 z-10 flex items-center gap-1 rounded-full bg-primary/90 px-2 py-0.5 text-[10px] font-bold uppercase text-primary-foreground shadow pointer-events-none",
+                  getPosition(visualIndex) === "left" && "left-2",
+                  getPosition(visualIndex) === "center" && "left-1/2 -translate-x-1/2",
+                  getPosition(visualIndex) === "right" && "right-2"
+                )}
+              >
+                <Lock className="w-2.5 h-2.5" />
+                Register
+              </div>
+            )}
+
             <LessonNode
               status={status}
               position={getPosition(visualIndex)}
@@ -208,9 +245,13 @@ export const LessonPath = ({ className }: LessonPathProps) => {
               progress={status === "current" ? lessonProgress : undefined}
               icon={icon}
               deepDives={lesson.deepDives}
-              onDeepDiveClick={handleDeepDiveClick}
+              onDeepDiveClick={(dd) => handleDeepDiveClick(dd, lesson)}
               isDeepDiveCompleted={isDeepDiveCompleted}
               onClick={() => {
+                if (guestLocked) {
+                  setUpgradePrompt({ open: true, label: lesson.title });
+                  return;
+                }
                 if (lesson.route) {
                   navigate(lesson.route);
                 } else {
@@ -221,6 +262,12 @@ export const LessonPath = ({ className }: LessonPathProps) => {
           </motion.div>
         );
       })}
+
+      <GuestUpgradePrompt
+        open={upgradePrompt.open}
+        onClose={() => setUpgradePrompt({ open: false, label: "this lesson" })}
+        contentLabel={upgradePrompt.label}
+      />
     </div>
   );
 };
