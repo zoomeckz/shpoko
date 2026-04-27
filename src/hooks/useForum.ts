@@ -320,11 +320,12 @@ export const useForum = () => {
       }
     } else {
       // Add new vote
-      await supabase.from("forum_votes").insert({
+      const voteData: any = {
         user_id: user.id,
         [column]: targetId,
         vote_type: voteType,
-      });
+      };
+      await supabase.from("forum_votes").insert(voteData);
     }
 
     return true;
