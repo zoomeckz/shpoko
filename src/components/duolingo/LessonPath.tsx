@@ -38,6 +38,16 @@ export const LessonPath = ({ className }: LessonPathProps) => {
     open: false,
     label: "this lesson",
   });
+  const [view, setView] = useState<LessonView>(() => {
+    if (typeof window === "undefined") return "path";
+    const saved = window.localStorage.getItem(VIEW_STORAGE_KEY);
+    return saved === "browse" || saved === "path" ? saved : "path";
+  });
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(VIEW_STORAGE_KEY, view);
+    }
+  }, [view]);
 
   // Guests can only play beginner content. Once a real account is linked, gating lifts.
   const isLockedForGuest = (lesson: Pick<Lesson, "difficulty">) =>
