@@ -82,6 +82,7 @@ import ForumThread from "./pages/ForumThread";
 // Mini Games
 import ShpokoFruitGame from "./pages/ShpokoFruitGame";
 import RapidFireGame from "./pages/RapidFireGame";
+import ShpokoEndlessWord from "./pages/ShpokoEndlessWord";
 // Profile & Quests
 import Profile from "./pages/Profile";
 import Quests from "./pages/Quests";
@@ -130,6 +131,7 @@ const App = () => (
               <Route path="/contexto" element={<ContextoGame />} />
               <Route path="/assessment/:tier" element={<TierAssessment />} />
               <Route path="/game/rapid-fire" element={<RapidFireGame />} />
+              <Route path="/game/endless-words" element={<ShpokoEndlessWord />} />
               <Route path="/game/conjugation" element={<ConjugationGame />} />
               <Route path="/game/cloze-combat" element={<PhraseClozeCombat />} />
               <Route path="/game/fix-bulgarian" element={<FixMyBulgarianGame />} />

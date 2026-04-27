@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Trophy, Target, User, BookOpen, BookMarked, Flame, Crown, Zap, Gamepad2, Swords, Apple, Dices, Users, ShoppingBag, ChevronDown, Headphones, PenLine, ListChecks, GraduationCap, Bell, ScanEye, Shield, HelpCircle } from "lucide-react";
+import { Home, Trophy, Target, User, BookOpen, BookMarked, Flame, Crown, Zap, Gamepad2, Swords, Apple, Dices, Users, ShoppingBag, ChevronDown, Headphones, PenLine, ListChecks, GraduationCap, Bell, ScanEye, Shield, HelpCircle, Type } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -35,6 +35,7 @@ const gameItems = [
   { icon: Apple, label: "Fruit Slicer", path: "/game/fruit-slicer" },
   { icon: Swords, label: "Dialogue Battle", path: "/game/dialogue-battle" },
   { icon: Dices, label: "Rapid Fire", path: "/game/rapid-fire" },
+  { icon: Type, label: "Endless Words", path: "/game/endless-words" },
   { icon: Gamepad2, label: "Conjugation", path: "/game/conjugation" },
   { icon: Headphones, label: "Listening Fill", path: "/game/listening-fill" },
   { icon: PenLine, label: "Fix My Bulgarian", path: "/game/fix-bulgarian" },

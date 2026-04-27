@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Flame, Heart, Zap, Crown, Menu, X, Home, Trophy, Target, User, LogOut, Gamepad2, Apple, Swords, Dices, BookOpen, BookMarked, Users, ShoppingBag, Shield } from "lucide-react";
+import { Flame, Heart, Zap, Crown, Menu, X, Home, Trophy, Target, User, LogOut, Gamepad2, Apple, Swords, Dices, BookOpen, BookMarked, Users, ShoppingBag, Shield, Type } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -25,6 +25,7 @@ const gameItems = [
   { icon: Apple, label: "Fruit Slicer", path: "/game/fruit-slicer" },
   { icon: Swords, label: "Dialogue Battle", path: "/game/dialogue-battle" },
   { icon: Dices, label: "Rapid Fire", path: "/game/rapid-fire" },
+  { icon: Type, label: "Endless Words", path: "/game/endless-words" },
   { icon: Gamepad2, label: "Conjugation", path: "/game/conjugation" },
 ];
 
