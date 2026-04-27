@@ -81,7 +81,10 @@ const Auth = () => {
     setTimeout(async () => {
       try {
         const { data: { user: newUser } } = await supabase.auth.getUser();
-        if (newUser && guestProgress.xp > 0) {
+        if (!newUser) return;
+
+        // 1) Transfer aggregate XP / level onto the new profile.
+        if (guestProgress.xp > 0) {
           await supabase
             .from("profiles")
             .update({
@@ -89,6 +92,29 @@ const Auth = () => {
               level: calculateLevel(guestProgress.xp),
             })
             .eq("id", newUser.id);
+        }
+
+        // 2) Transfer per-lesson completions into user_progress so the lesson
+        //    path keeps showing the lessons the guest already finished.
+        const lessonEntries = Object.entries(guestProgress.completedLessons || {});
+        if (lessonEntries.length > 0) {
+          const rows = lessonEntries.map(([lessonId, record]) => ({
+            user_id: newUser.id,
+            lesson_id: lessonId,
+            completed: true,
+            score: record.score,
+            // We don't track per-lesson correct/total for guests — use score as
+            // a reasonable proxy so existing constraints/columns are satisfied.
+            correct_answers: record.score,
+            total_answers: 100,
+            completed_at: record.completedAt,
+          }));
+          const { error: progressError } = await supabase
+            .from("user_progress")
+            .upsert(rows, { onConflict: "user_id,lesson_id" });
+          if (progressError) {
+            console.error("Error transferring guest lesson progress:", progressError);
+          }
         }
       } catch (e) {
         console.error("Error transferring guest progress:", e);
