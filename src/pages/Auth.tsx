@@ -35,6 +35,13 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleStatus, setGoogleStatus] = useState<
+    | { kind: "idle" }
+    | { kind: "connecting" }
+    | { kind: "redirecting" }
+    | { kind: "success" }
+    | { kind: "error"; message: string }
+  >({ kind: "idle" });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { signIn, signUp, user } = useAuth();
@@ -142,27 +149,45 @@ const Auth = () => {
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
+    setGoogleStatus({ kind: "connecting" });
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
       if (result.error) {
+        const message =
+          (result.error as { message?: string })?.message ||
+          "Please try again or use email instead.";
+        setGoogleStatus({ kind: "error", message });
         toast({
           title: "Google Sign-In Failed",
-          description: "Please try again or use email.",
+          description: message,
           variant: "destructive",
         });
         setGoogleLoading(false);
         return;
       }
-      if (result.redirected) return; // browser will redirect
-      // Authenticated; transfer guest progress and go home
+      if (result.redirected) {
+        // Browser will redirect to Google momentarily; keep the button disabled
+        // and show a clear status so the user knows what's happening.
+        setGoogleStatus({ kind: "redirecting" });
+        return;
+      }
+      // Authenticated inline (no redirect path)
+      setGoogleStatus({ kind: "success" });
+      toast({
+        title: "Signed in with Google",
+        description: "Welcome! Loading your account...",
+      });
       await transferGuestProgress();
       navigate("/");
     } catch (e) {
+      const message =
+        e instanceof Error ? e.message : "Something went wrong. Please try again.";
+      setGoogleStatus({ kind: "error", message });
       toast({
         title: "Google Sign-In Failed",
-        description: "Something went wrong.",
+        description: message,
         variant: "destructive",
       });
       setGoogleLoading(false);
