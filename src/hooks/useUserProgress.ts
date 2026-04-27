@@ -115,7 +115,7 @@ export const useUserProgress = () => {
   };
 
   return {
-    progress,
+    progress: effectiveProgress,
     loading,
     isLessonCompleted,
     getLessonProgress,
