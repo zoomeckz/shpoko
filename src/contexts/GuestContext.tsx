@@ -1,5 +1,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
+export interface GuestLessonRecord {
+  score: number;
+  completedAt: string;
+}
+
 interface GuestState {
   isGuest: boolean;
   guestId: string | null;
@@ -7,6 +12,8 @@ interface GuestState {
   lessonsCompleted: number;
   level: number;
   xp: number;
+  /** Per-lesson completion record so we can transfer to user_progress on signup. */
+  completedLessons: Record<string, GuestLessonRecord>;
   onboardingCompleted: boolean;
   isLocked: boolean;
   declinedRegistration: boolean;
@@ -16,11 +23,18 @@ interface GuestContextType extends GuestState {
   initGuest: () => void;
   incrementLessons: () => void;
   addXP: (amount: number) => void;
+  markLessonCompleted: (lessonId: string, score: number) => void;
+  isGuestLessonCompleted: (lessonId: string) => boolean;
   completeOnboarding: () => void;
   declineRegistration: () => void;
   clearGuest: () => void;
   shouldShowRegistrationPrompt: () => boolean;
-  getProgressForTransfer: () => { xp: number; level: number; lessonsCompleted: number };
+  getProgressForTransfer: () => {
+    xp: number;
+    level: number;
+    lessonsCompleted: number;
+    completedLessons: Record<string, GuestLessonRecord>;
+  };
 }
 
 const GuestContext = createContext<GuestContextType | undefined>(undefined);
@@ -59,6 +73,7 @@ export const GuestProvider = ({ children }: { children: ReactNode }) => {
     lessonsCompleted: 0,
     level: 1,
     xp: 0,
+    completedLessons: {},
     onboardingCompleted: false,
     isLocked: false,
     declinedRegistration: false,
@@ -70,7 +85,12 @@ export const GuestProvider = ({ children }: { children: ReactNode }) => {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        setState(parsed);
+        // Defensive merge so older stored shapes still load.
+        setState((prev) => ({
+          ...prev,
+          ...parsed,
+          completedLessons: parsed.completedLessons ?? {},
+        }));
       } catch (e) {
         console.error("Failed to parse guest state:", e);
       }
@@ -94,6 +114,7 @@ export const GuestProvider = ({ children }: { children: ReactNode }) => {
       lessonsCompleted: 0,
       level: 1,
       xp: 0,
+      completedLessons: {},
       onboardingCompleted: false,
       isLocked: false,
       declinedRegistration: false,
@@ -101,14 +122,14 @@ export const GuestProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const incrementLessons = () => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       lessonsCompleted: prev.lessonsCompleted + 1,
     }));
   };
 
   const addXP = (amount: number) => {
-    setState(prev => {
+    setState((prev) => {
       const newXP = prev.xp + amount;
       const newLevel = calculateLevel(newXP);
       return {
@@ -119,15 +140,38 @@ export const GuestProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const markLessonCompleted = (lessonId: string, score: number) => {
+    if (!lessonId) return;
+    setState((prev) => {
+      const existing = prev.completedLessons[lessonId];
+      // Keep the higher score if the lesson is being revised.
+      const bestScore = existing ? Math.max(existing.score, score) : score;
+      return {
+        ...prev,
+        completedLessons: {
+          ...prev.completedLessons,
+          [lessonId]: {
+            score: bestScore,
+            completedAt: existing?.completedAt ?? new Date().toISOString(),
+          },
+        },
+      };
+    });
+  };
+
+  const isGuestLessonCompleted = (lessonId: string): boolean => {
+    return !!state.completedLessons[lessonId];
+  };
+
   const completeOnboarding = () => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       onboardingCompleted: true,
     }));
   };
 
   const declineRegistration = () => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       declinedRegistration: true,
       isLocked: true,
@@ -143,6 +187,7 @@ export const GuestProvider = ({ children }: { children: ReactNode }) => {
       lessonsCompleted: 0,
       level: 1,
       xp: 0,
+      completedLessons: {},
       onboardingCompleted: false,
       isLocked: false,
       declinedRegistration: false,
@@ -160,6 +205,7 @@ export const GuestProvider = ({ children }: { children: ReactNode }) => {
       xp: state.xp,
       level: state.level,
       lessonsCompleted: state.lessonsCompleted,
+      completedLessons: state.completedLessons,
     };
   };
 
@@ -170,6 +216,8 @@ export const GuestProvider = ({ children }: { children: ReactNode }) => {
         initGuest,
         incrementLessons,
         addXP,
+        markLessonCompleted,
+        isGuestLessonCompleted,
         completeOnboarding,
         declineRegistration,
         clearGuest,

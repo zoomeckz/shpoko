@@ -32,19 +32,25 @@ export const LessonComplete = ({
   const nav = getLessonNavigation(lessonId);
   const { progress } = useUserProgress();
   const { uiLanguage } = useLanguageMode();
-  const { isGuest, incrementLessons, addXP: addGuestXP } = useGuest();
+  const { isGuest, incrementLessons, addXP: addGuestXP, markLessonCompleted } = useGuest();
   const t = getTranslations(uiLanguage);
   
   // Check if lesson was already completed before this session
   const wasAlreadyCompleted = progress[lessonId]?.completed;
 
-  // Track guest lesson completion
+  // Track guest lesson completion (per-lesson + aggregate XP) so it can transfer
+  // to user_progress when the guest registers.
   useEffect(() => {
     if (isGuest && !isRevision) {
       incrementLessons();
       if (xpEarned > 0) {
         addGuestXP(xpEarned);
       }
+    }
+    // Always record the completed lesson id for guests, even on revision,
+    // so re-runs don't lose it. markLessonCompleted preserves first-completion timestamp.
+    if (isGuest) {
+      markLessonCompleted(lessonId, score);
     }
   }, []); // Only run once on mount
 
