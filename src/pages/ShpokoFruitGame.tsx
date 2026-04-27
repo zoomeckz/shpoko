@@ -31,7 +31,7 @@ const ShpokoFruitGame = () => {
   const [timeLeft, setTimeLeft] = useState(60);
   const [difficulty, setDifficulty] = useState(1);
   const [xpAwarded, setXpAwarded] = useState(0);
-  const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
+  const gameLoopRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
   const musicTracks = [
