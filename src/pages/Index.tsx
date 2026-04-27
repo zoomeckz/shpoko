@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuest } from "@/contexts/GuestContext";
 import { Sidebar } from "@/components/duolingo/Sidebar";
@@ -9,22 +9,17 @@ import { DailyLoginBonus } from "@/components/DailyLoginBonus";
 import { LeagueCelebration, LeagueDemotion } from "@/components/league/LeagueCelebration";
 import { useLeagueReset } from "@/hooks/useLeagueReset";
 import { OnboardingGuide } from "@/components/onboarding/OnboardingGuide";
-import { RegistrationPrompt } from "@/components/onboarding/RegistrationPrompt";
-import { LockedScreen } from "@/components/onboarding/LockedScreen";
+import { UsernameSetup } from "@/components/onboarding/UsernameSetup";
 
 const Index = () => {
-  const { user, loading: authLoading } = useAuth();
-  const { 
-    isGuest, 
-    onboardingCompleted, 
-    isLocked,
-    initGuest, 
+  const { user, profile, loading: authLoading } = useAuth();
+  const {
+    isGuest,
+    onboardingCompleted,
+    initGuest,
     completeOnboarding,
-    shouldShowRegistrationPrompt 
   } = useGuest();
   const { resetResult, showCelebration, dismissCelebration } = useLeagueReset();
-  const [showRegistrationPrompt, setShowRegistrationPrompt] = useState(false);
-  const [hasShownPrompt, setHasShownPrompt] = useState(false);
 
   // Auto-initialize guest if not authenticated and not already a guest
   useEffect(() => {
@@ -32,14 +27,6 @@ const Index = () => {
       initGuest();
     }
   }, [authLoading, user, isGuest, initGuest]);
-
-  // Check for registration prompt
-  useEffect(() => {
-    if (isGuest && !hasShownPrompt && shouldShowRegistrationPrompt()) {
-      setShowRegistrationPrompt(true);
-      setHasShownPrompt(true);
-    }
-  }, [isGuest, hasShownPrompt, shouldShowRegistrationPrompt]);
 
   if (authLoading) {
     return (
@@ -49,22 +36,18 @@ const Index = () => {
     );
   }
 
-  // Show locked screen for guests who declined registration
-  if (isGuest && isLocked) {
-    return <LockedScreen />;
-  }
-
   // Show onboarding for new guests
   if (isGuest && !onboardingCompleted) {
     return <OnboardingGuide onComplete={completeOnboarding} />;
   }
 
+  // First-time login: profile exists but username is the auto placeholder
+  const needsUsername =
+    !!user && !!profile && /^user_/i.test(profile.username);
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Registration Prompt Modal */}
-      {showRegistrationPrompt && (
-        <RegistrationPrompt onClose={() => setShowRegistrationPrompt(false)} />
-      )}
+      {needsUsername && <UsernameSetup />}
 
       {/* League Celebration/Demotion Modals - Only for authenticated users */}
       {user && resetResult?.promoted && (
@@ -89,21 +72,21 @@ const Index = () => {
 
       {/* Daily Login Bonus Modal - Only for authenticated users */}
       {user && <DailyLoginBonus />}
-      
+
       {/* Mobile top bar */}
       <TopBar />
-      
+
       <div className="flex">
         {/* Left sidebar - hidden on mobile */}
         <Sidebar />
-        
+
         {/* Main content - lesson path */}
         <main className="flex-1 lg:ml-0 pb-20 lg:pb-0">
           <div className="max-w-lg mx-auto px-4">
             <LessonPath />
           </div>
         </main>
-        
+
         {/* Right sidebar - hidden on mobile */}
         <RightSidebar />
       </div>

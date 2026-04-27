@@ -3,9 +3,11 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuest } from "@/contexts/GuestContext";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { motion } from "framer-motion";
@@ -13,10 +15,6 @@ import { cn } from "@/lib/utils";
 import { calculateLevel } from "@/lib/levelUtils";
 
 const signUpSchema = z.object({
-  username: z.string()
-    .min(3, "Username must be at least 3 characters")
-    .max(20, "Username must be at most 20 characters")
-    .regex(/^[a-zA-Z0-9 ]+$/, "Username can only contain letters, numbers, and spaces"),
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string().min(1, "Please confirm your password"),
@@ -31,38 +29,29 @@ const signInSchema = z.object({
 });
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(false);
-  const [username, setUsername] = useState("");
+  const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
+
   const { signIn, signUp, user } = useAuth();
-  const { isGuest, getProgressForTransfer, clearGuest, guestUsername } = useGuest();
+  const { isGuest, getProgressForTransfer, clearGuest, initGuest } = useGuest();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Pre-fill username with guest username if available
   useEffect(() => {
-    if (isGuest && guestUsername && !username) {
-      setUsername(guestUsername);
-    }
-  }, [isGuest, guestUsername]);
-
-  useEffect(() => {
-    if (user) {
-      navigate("/");
-    }
+    if (user) navigate("/");
   }, [user, navigate]);
 
   const validateForm = () => {
     try {
-      if (isLogin) {
+      if (mode === "login") {
         signInSchema.parse({ email, password });
       } else {
-        signUpSchema.parse({ username, email, password, confirmPassword });
+        signUpSchema.parse({ email, password, confirmPassword });
       }
       setErrors({});
       return true;
@@ -70,9 +59,7 @@ const Auth = () => {
       if (error instanceof z.ZodError) {
         const newErrors: Record<string, string> = {};
         error.errors.forEach((err) => {
-          if (err.path[0]) {
-            newErrors[err.path[0] as string] = err.message;
-          }
+          if (err.path[0]) newErrors[err.path[0] as string] = err.message;
         });
         setErrors(newErrors);
       }
@@ -80,15 +67,35 @@ const Auth = () => {
     }
   };
 
+  const transferGuestProgress = async () => {
+    if (!isGuest) return;
+    const guestProgress = getProgressForTransfer();
+    setTimeout(async () => {
+      try {
+        const { data: { user: newUser } } = await supabase.auth.getUser();
+        if (newUser && guestProgress.xp > 0) {
+          await supabase
+            .from("profiles")
+            .update({
+              xp: guestProgress.xp,
+              level: calculateLevel(guestProgress.xp),
+            })
+            .eq("id", newUser.id);
+        }
+      } catch (e) {
+        console.error("Error transferring guest progress:", e);
+      }
+    }, 1000);
+    clearGuest();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
-    
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (mode === "login") {
         const { error } = await signIn(email, password);
         if (error) {
           toast({
@@ -97,19 +104,19 @@ const Auth = () => {
             variant: "destructive",
           });
         } else {
-          toast({
-            title: "Welcome back!",
-            description: "You have successfully logged in.",
-          });
+          toast({ title: "Welcome back!", description: "You're logged in." });
           navigate("/");
         }
       } else {
-        const { error } = await signUp(email, password, username);
+        // Register: no username needed yet — they'll choose one after auth
+        // Use a temporary placeholder; UsernameSetup modal will collect the real one.
+        const tempUsername = `user_${Date.now().toString(36)}`;
+        const { error } = await signUp(email, password, tempUsername);
         if (error) {
           if (error.message.includes("already")) {
             toast({
               title: "Email Already Registered",
-              description: "This email is already in use. Please log in or use a different email.",
+              description: "Try logging in instead.",
               variant: "destructive",
             });
           } else {
@@ -120,35 +127,10 @@ const Auth = () => {
             });
           }
         } else {
-          // If guest was converted, transfer their progress
-          if (isGuest) {
-            const guestProgress = getProgressForTransfer();
-            // Wait a bit for the profile to be created
-            setTimeout(async () => {
-              try {
-                // Get the new user's ID
-                const { data: { user: newUser } } = await supabase.auth.getUser();
-                if (newUser && guestProgress.xp > 0) {
-                  // Update the profile with guest progress
-                  await supabase
-                    .from("profiles")
-                    .update({
-                      xp: guestProgress.xp,
-                      level: calculateLevel(guestProgress.xp),
-                    })
-                    .eq("id", newUser.id);
-                }
-              } catch (e) {
-                console.error("Error transferring guest progress:", e);
-              }
-            }, 1000);
-            clearGuest();
-          }
+          await transferGuestProgress();
           toast({
             title: "Welcome to Shpoko!",
-            description: isGuest 
-              ? "Your progress has been saved to your new account!" 
-              : "Your account has been created. Start learning!",
+            description: "Let's set up your username next.",
           });
           navigate("/");
         }
@@ -158,174 +140,219 @@ const Auth = () => {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        toast({
+          title: "Google Sign-In Failed",
+          description: "Please try again or use email.",
+          variant: "destructive",
+        });
+        setGoogleLoading(false);
+        return;
+      }
+      if (result.redirected) return; // browser will redirect
+      // Authenticated; transfer guest progress and go home
+      await transferGuestProgress();
+      navigate("/");
+    } catch (e) {
+      toast({
+        title: "Google Sign-In Failed",
+        description: "Something went wrong.",
+        variant: "destructive",
+      });
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleContinueAsGuest = () => {
+    if (!isGuest) initGuest();
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <span className="text-3xl">🦝</span>
             <span className="text-2xl font-extrabold text-primary">SHPOKO</span>
           </Link>
-          <Button
-            variant="ghost"
-            onClick={() => setIsLogin(!isLogin)}
-            className="font-bold text-primary"
-          >
-            {isLogin ? "SIGN UP" : "LOGIN"}
-          </Button>
         </div>
       </header>
 
-      {/* Main content */}
       <main className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-4xl grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left side - Mascot */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="hidden lg:flex flex-col items-center text-center"
-          >
-            <motion.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="text-[180px] select-none"
-            >
-              🦝
-            </motion.div>
-            <h2 className="text-2xl font-bold text-foreground mt-4">
-              {isLogin ? "Welcome back!" : "Join millions of learners!"}
-            </h2>
-            <p className="text-muted-foreground mt-2 max-w-xs">
-              {isLogin 
-                ? "Continue your learning journey" 
-                : "Start learning a new language today. It's free, fun, and effective!"}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md"
+        >
+          <div className="bg-card rounded-2xl border-2 border-border p-6 sm:p-8 shadow-lg">
+            {/* Mascot */}
+            <div className="flex justify-center mb-2">
+              <motion.div
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                className="text-6xl select-none"
+              >
+                🦝
+              </motion.div>
+            </div>
+            <h1 className="text-2xl font-bold text-foreground text-center mb-1">
+              Welcome to SHPOKO
+            </h1>
+            <p className="text-sm text-muted-foreground text-center mb-5">
+              Learn Bulgarian the fun way
             </p>
-          </motion.div>
 
-          {/* Right side - Form */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="w-full max-w-md mx-auto"
-          >
-            <div className="bg-card rounded-2xl border-2 border-border p-8 shadow-lg">
-              <h1 className="text-2xl font-bold text-foreground text-center mb-6">
-                {isLogin ? "Log in" : "Create your profile"}
-              </h1>
+            {/* Google */}
+            <Button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={googleLoading || loading}
+              variant="outline"
+              className="w-full h-12 rounded-xl border-2 font-semibold text-base"
+            >
+              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              {googleLoading ? "Connecting..." : "Continue with Google"}
+            </Button>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {!isLogin && (
-                  <div className="space-y-2">
-                    <Label htmlFor="username" className="font-semibold">Username</Label>
+            {/* Divider */}
+            <div className="relative my-5">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">or</span>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <Tabs value={mode} onValueChange={(v) => { setMode(v as "login" | "register"); setErrors({}); }}>
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="login" className="font-bold">Log in</TabsTrigger>
+                <TabsTrigger value="register" className="font-bold">Register</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="login" className="mt-0">
+                <form onSubmit={handleSubmit} className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email-login" className="font-semibold text-sm">Email</Label>
                     <Input
-                      id="username"
-                      type="text"
-                      placeholder="Choose a username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      className={cn(
-                        "h-12 rounded-xl border-2 text-base",
-                        errors.username ? "border-error" : "border-border"
-                      )}
-                      autoComplete="username"
+                      id="email-login"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={cn("h-11 rounded-xl border-2", errors.email ? "border-destructive" : "border-border")}
+                      autoComplete="email"
                     />
-                    {errors.username && (
-                      <p className="text-sm text-error">{errors.username}</p>
-                    )}
+                    {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                   </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="font-semibold">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={cn(
-                      "h-12 rounded-xl border-2 text-base",
-                      errors.email ? "border-error" : "border-border"
-                    )}
-                    autoComplete="email"
-                  />
-                  {errors.email && (
-                    <p className="text-sm text-error">{errors.email}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="font-semibold">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={cn(
-                      "h-12 rounded-xl border-2 text-base",
-                      errors.password ? "border-error" : "border-border"
-                    )}
-                    autoComplete={isLogin ? "current-password" : "new-password"}
-                  />
-                  {errors.password && (
-                    <p className="text-sm text-error">{errors.password}</p>
-                  )}
-                </div>
-
-                {!isLogin && (
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="font-semibold">Confirm Password</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="password-login" className="font-semibold text-sm">Password</Label>
                     <Input
-                      id="confirmPassword"
+                      id="password-login"
                       type="password"
-                      placeholder="Confirm your password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className={cn(
-                        "h-12 rounded-xl border-2 text-base",
-                        errors.confirmPassword ? "border-error" : "border-border"
-                      )}
+                      placeholder="Your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className={cn("h-11 rounded-xl border-2", errors.password ? "border-destructive" : "border-border")}
+                      autoComplete="current-password"
+                    />
+                    {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+                  </div>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-12 text-base font-bold rounded-xl"
+                  >
+                    {loading ? "Loading..." : "LOG IN"}
+                  </Button>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="register" className="mt-0">
+                <form onSubmit={handleSubmit} className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email-reg" className="font-semibold text-sm">Email</Label>
+                    <Input
+                      id="email-reg"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={cn("h-11 rounded-xl border-2", errors.email ? "border-destructive" : "border-border")}
+                      autoComplete="email"
+                    />
+                    {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="password-reg" className="font-semibold text-sm">Password</Label>
+                    <Input
+                      id="password-reg"
+                      type="password"
+                      placeholder="At least 6 characters"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className={cn("h-11 rounded-xl border-2", errors.password ? "border-destructive" : "border-border")}
                       autoComplete="new-password"
                     />
-                    {errors.confirmPassword && (
-                      <p className="text-sm text-error">{errors.confirmPassword}</p>
-                    )}
+                    {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                   </div>
-                )}
+                  <div className="space-y-1.5">
+                    <Label htmlFor="confirm-reg" className="font-semibold text-sm">Confirm Password</Label>
+                    <Input
+                      id="confirm-reg"
+                      type="password"
+                      placeholder="Re-type your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className={cn("h-11 rounded-xl border-2", errors.confirmPassword ? "border-destructive" : "border-border")}
+                      autoComplete="new-password"
+                    />
+                    {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
+                  </div>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-12 text-base font-bold rounded-xl"
+                  >
+                    {loading ? "Creating..." : "CREATE ACCOUNT"}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
 
-                <Button 
-                  type="submit" 
-                  disabled={loading}
-                  className="w-full h-12 text-base font-bold rounded-xl bg-primary hover:bg-primary-light shadow-[0_4px_0_0_hsl(var(--primary-dark))] active:translate-y-1 active:shadow-none transition-all"
-                >
-                  {loading ? "Loading..." : isLogin ? "LOG IN" : "CREATE ACCOUNT"}
-                </Button>
-              </form>
-
-              <div className="mt-6 text-center">
-                <p className="text-muted-foreground text-sm">
-                  {isLogin ? "Don't have an account?" : "Already have an account?"}
-                </p>
-                <button
-                  onClick={() => {
-                    setIsLogin(!isLogin);
-                    setErrors({});
-                    setConfirmPassword("");
-                  }}
-                  className="text-primary font-bold hover:underline mt-1"
-                >
-                  {isLogin ? "SIGN UP" : "LOG IN"}
-                </button>
-              </div>
-
-              <p className="text-xs text-muted-foreground text-center mt-6">
-                By signing in to Shpoko, you agree to our Terms and Privacy Policy.
+            {/* Guest */}
+            <div className="mt-5 pt-5 border-t border-border">
+              <Button
+                type="button"
+                onClick={handleContinueAsGuest}
+                variant="ghost"
+                className="w-full font-semibold text-muted-foreground"
+              >
+                Continue as guest →
+              </Button>
+              <p className="text-[11px] text-muted-foreground text-center mt-1">
+                Guests can play basic lessons. Register to unlock everything.
               </p>
             </div>
-          </motion.div>
-        </div>
+
+            <p className="text-xs text-muted-foreground text-center mt-5">
+              By continuing, you agree to our Terms and Privacy Policy.
+            </p>
+          </div>
+        </motion.div>
       </main>
     </div>
   );
