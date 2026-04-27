@@ -53,7 +53,11 @@ export const ChangeUsernameDialog = () => {
     setLoading(true);
 
     try {
-      const updates: Record<string, unknown> = {
+      const updates: {
+        username: string;
+        username_set: boolean;
+        last_username_change?: string;
+      } = {
         username: newUsername.trim(),
         username_set: true,
       };
