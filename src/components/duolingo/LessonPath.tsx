@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LessonNode } from "./LessonNode";
+import { LessonBrowse } from "./LessonBrowse";
 import { useNavigate } from "react-router-dom";
 import { lessons, DeepDiveLesson, Lesson } from "@/data/lessons";
 import { useUserProgress } from "@/hooks/useUserProgress";
@@ -8,8 +9,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { GuestUpgradePrompt } from "@/components/onboarding/GuestUpgradePrompt";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Star, BookOpen, MessageCircle, Mic, Headphones, PenTool, Award, Lock } from "lucide-react";
+import { Star, BookOpen, MessageCircle, Mic, Headphones, PenTool, Award, Lock, Map, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
+
+type LessonView = "path" | "browse";
+const VIEW_STORAGE_KEY = "shpoko:lesson-view";
 
 interface LessonPathProps {
   className?: string;
