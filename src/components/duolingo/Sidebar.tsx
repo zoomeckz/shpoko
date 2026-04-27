@@ -35,6 +35,7 @@ const gameItems = [
   { icon: Apple, label: "Fruit Slicer", path: "/game/fruit-slicer" },
   { icon: Swords, label: "Dialogue Battle", path: "/game/dialogue-battle" },
   { icon: Dices, label: "Rapid Fire", path: "/game/rapid-fire" },
+  { icon: Type, label: "Endless Words", path: "/game/endless-words" },
   { icon: Gamepad2, label: "Conjugation", path: "/game/conjugation" },
   { icon: Headphones, label: "Listening Fill", path: "/game/listening-fill" },
   { icon: PenLine, label: "Fix My Bulgarian", path: "/game/fix-bulgarian" },
