@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useGuest } from "@/contexts/GuestContext";
 
 interface UserProgress {
   lesson_id: string;
@@ -13,10 +14,13 @@ export const useUserProgress = () => {
   const [progress, setProgress] = useState<Record<string, UserProgress>>({});
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { isGuest, completedLessons: guestCompletedLessons } = useGuest();
 
   useEffect(() => {
     if (user?.id) {
       fetchProgress();
+    } else {
+      setLoading(false);
     }
   }, [user?.id]);
 
@@ -38,12 +42,30 @@ export const useUserProgress = () => {
     setLoading(false);
   };
 
+  // For guests we expose their localStorage-tracked completions in the same
+  // shape so the lesson path / completion UI works identically before signup.
+  const effectiveProgress: Record<string, UserProgress> = user?.id
+    ? progress
+    : isGuest
+    ? Object.fromEntries(
+        Object.entries(guestCompletedLessons).map(([lessonId, rec]) => [
+          lessonId,
+          {
+            lesson_id: lessonId,
+            completed: true,
+            score: rec.score,
+            completed_at: rec.completedAt,
+          },
+        ])
+      )
+    : {};
+
   const isLessonCompleted = (lessonId: string): boolean => {
-    return progress[lessonId]?.completed ?? false;
+    return effectiveProgress[lessonId]?.completed ?? false;
   };
 
   const getLessonProgress = (lessonId: string): number => {
-    const p = progress[lessonId];
+    const p = effectiveProgress[lessonId];
     if (!p) return 0;
     if (p.completed) return 100;
     return p.score || 0;
