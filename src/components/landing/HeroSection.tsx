@@ -114,7 +114,7 @@ export function HeroSection() {
             </div>
           </div>
 
-          <div className="absolute -bottom-5 -left-4 rounded-2xl bg-card border border-border px-4 py-3 shadow-[var(--shadow-card)]">
+          <div className="absolute -bottom-6 -left-6 rounded-2xl bg-card border border-border px-4 py-3 shadow-[var(--shadow-card)]">
             <p className="text-xs font-bold text-muted-foreground">Streak</p>
             <p className="text-lg font-extrabold text-foreground">12 days 🔥</p>
           </div>
