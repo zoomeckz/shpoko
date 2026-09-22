@@ -10,6 +10,7 @@ import { LanguageModeProvider } from "@/contexts/LanguageModeContext";
 import { SoundSettingsProvider } from "@/contexts/SoundSettingsContext";
 import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
+import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import About from "./pages/About";
 import { CyrillicLesson } from "./pages/CyrillicLesson";
@@ -123,6 +124,7 @@ const App = () => (
             <LanguageModeProvider>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/welcome" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/about" element={<About />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
