@@ -2,122 +2,135 @@
 @tailwind components;
 @tailwind utilities;
 
-/* SHPOKO Design System — soft grey canvas, baby pink, light blue, green */
+/* SHPOKO Design System — bright white canvas, chunky 3D buttons,
+   sky blue primary, lime green for "correct", baby pink accent. */
 
 @layer base {
   :root {
-    /* Light blue primary */
-    --primary: 205 78% 56%;
+    /* Sky blue primary */
+    --primary: 199 92% 54%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 205 85% 70%;
-    --primary-dark: 205 70% 44%;
+    --primary-light: 199 95% 64%;
+    --primary-dark: 199 80% 46%;
 
-    /* Soft grey canvas */
-    --background: 220 16% 95%;
-    --foreground: 220 18% 18%;
+    /* White canvas, soft charcoal text */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 24%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 18% 18%;
+    --card-foreground: 0 0% 24%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 18% 18%;
+    --popover-foreground: 0 0% 24%;
 
-    /* Fresh green */
-    --success: 150 55% 45%;
+    /* Lime green — correct answers, streaks, progress */
+    --success: 94 98% 40%;
     --success-foreground: 0 0% 100%;
-    --success-dark: 150 55% 35%;
+    --success-light: 95 87% 89%;
+    --success-dark: 88 100% 33%;
 
-    --error: 4 78% 58%;
+    --error: 0 100% 65%;
     --error-foreground: 0 0% 100%;
+    --error-light: 0 100% 93%;
+    --error-dark: 0 82% 54%;
 
-    --warning: 42 92% 60%;
-    --warning-foreground: 220 18% 18%;
+    /* Sunny yellow — XP, rewards */
+    --warning: 46 100% 50%;
+    --warning-foreground: 0 0% 24%;
+    --warning-dark: 40 100% 44%;
 
-    /* Baby pink secondary */
-    --secondary: 344 70% 92%;
-    --secondary-foreground: 344 45% 32%;
+    /* Baby pink */
+    --secondary: 336 100% 95%;
+    --secondary-foreground: 336 60% 40%;
 
-    --muted: 220 14% 91%;
-    --muted-foreground: 220 10% 42%;
+    --muted: 0 0% 97%;
+    --muted-foreground: 0 0% 47%;
 
-    /* Baby pink accent */
-    --accent: 344 78% 88%;
-    --accent-foreground: 344 45% 28%;
+    --accent: 336 100% 92%;
+    --accent-foreground: 336 60% 36%;
+    --accent-strong: 336 90% 66%;
+    --accent-dark: 336 70% 54%;
 
-    --destructive: 4 78% 58%;
+    --destructive: 0 100% 65%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 14% 87%;
-    --input: 220 14% 92%;
-    --ring: 205 78% 56%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 199 92% 54%;
 
     /* Shadows */
     --shadow-button: 0 4px 0 0;
-    --shadow-card: 0 2px 12px -4px hsl(220 20% 30% / 0.12);
-    --shadow-elevated: 0 14px 40px -16px hsl(220 20% 30% / 0.22);
+    --shadow-card: 0 2px 0 0 hsl(var(--border));
+    --shadow-elevated: 0 16px 40px -18px hsl(0 0% 20% / 0.25);
 
-    --radius: 1.25rem;
+    --radius: 1rem;
 
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 18% 18%;
-    --sidebar-primary: 205 78% 56%;
+    --sidebar-foreground: 0 0% 24%;
+    --sidebar-primary: 199 92% 54%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 344 78% 94%;
-    --sidebar-accent-foreground: 344 45% 28%;
-    --sidebar-border: 220 14% 89%;
-    --sidebar-ring: 205 78% 56%;
+    --sidebar-accent: 199 100% 95%;
+    --sidebar-accent-foreground: 199 80% 38%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 199 92% 54%;
   }
 
   .dark {
-    --primary: 205 80% 62%;
-    --primary-foreground: 0 0% 100%;
-    --primary-light: 205 85% 74%;
-    --primary-dark: 205 72% 48%;
-    
-    --background: 220 15% 10%;
-    --foreground: 0 0% 95%;
-    
-    --card: 220 15% 13%;
-    --card-foreground: 0 0% 95%;
-    
-    --popover: 220 15% 13%;
-    --popover-foreground: 0 0% 95%;
-    
-    --success: 150 52% 52%;
-    --success-foreground: 0 0% 100%;
-    --success-dark: 150 52% 40%;
-    
-    --error: 4 90% 62%;
-    --error-foreground: 0 0% 100%;
-    
-    --warning: 45 100% 55%;
-    --warning-foreground: 0 0% 10%;
-    
-    --secondary: 220 15% 18%;
-    --secondary-foreground: 0 0% 90%;
-    
-    --muted: 220 15% 15%;
-    --muted-foreground: 0 0% 60%;
-    
-    --accent: 344 30% 24%;
-    --accent-foreground: 344 70% 90%;
-    
-    --destructive: 4 90% 62%;
-    --destructive-foreground: 0 0% 100%;
-    
-    --border: 220 15% 22%;
-    --input: 220 15% 18%;
-    --ring: 205 80% 62%;
-    
-    --sidebar-background: 220 15% 10%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 205 80% 62%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 18%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 220 15% 20%;
-    --sidebar-ring: 205 80% 62%;
+    --primary: 199 92% 58%;
+    --primary-foreground: 197 30% 11%;
+    --primary-light: 199 92% 68%;
+    --primary-dark: 199 80% 44%;
+
+    --background: 197 30% 11%;
+    --foreground: 200 40% 96%;
+
+    --card: 199 26% 17%;
+    --card-foreground: 200 40% 96%;
+
+    --popover: 199 26% 17%;
+    --popover-foreground: 200 40% 96%;
+
+    --success: 94 80% 46%;
+    --success-foreground: 197 30% 11%;
+    --success-light: 94 40% 20%;
+    --success-dark: 88 90% 32%;
+
+    --error: 0 100% 68%;
+    --error-foreground: 197 30% 11%;
+    --error-light: 0 40% 22%;
+    --error-dark: 0 75% 52%;
+
+    --warning: 46 100% 52%;
+    --warning-foreground: 197 30% 11%;
+    --warning-dark: 40 100% 40%;
+
+    --secondary: 336 30% 22%;
+    --secondary-foreground: 336 90% 88%;
+
+    --muted: 199 26% 15%;
+    --muted-foreground: 200 12% 62%;
+
+    --accent: 336 35% 26%;
+    --accent-foreground: 336 90% 90%;
+    --accent-strong: 336 90% 70%;
+    --accent-dark: 336 60% 50%;
+
+    --destructive: 0 100% 68%;
+    --destructive-foreground: 197 30% 11%;
+
+    --border: 203 18% 26%;
+    --input: 203 18% 26%;
+    --ring: 199 92% 58%;
+
+    --sidebar-background: 197 30% 11%;
+    --sidebar-foreground: 200 40% 96%;
+    --sidebar-primary: 199 92% 58%;
+    --sidebar-primary-foreground: 197 30% 11%;
+    --sidebar-accent: 199 40% 20%;
+    --sidebar-accent-foreground: 199 92% 70%;
+    --sidebar-border: 203 18% 26%;
+    --sidebar-ring: 199 92% 58%;
   }
 }
 
@@ -127,43 +140,49 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
     font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-weight: 700;
+    font-weight: 800;
   }
 }
 
-/* Duolingo-style button with 3D effect */
+/* Chunky 3D buttons — the bottom "lip" disappears when pressed */
 @layer components {
   .duo-button {
-    @apply relative font-bold uppercase tracking-wide rounded-2xl transition-all duration-150;
+    @apply relative font-extrabold uppercase tracking-wide rounded-2xl transition-all duration-100;
     @apply active:translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed;
   }
-  
+
   .duo-button-primary {
     @apply bg-primary text-primary-foreground;
     box-shadow: 0 4px 0 0 hsl(var(--primary-dark));
   }
-  
+
   .duo-button-primary:hover:not(:disabled) {
-    @apply brightness-110;
+    @apply brightness-105;
   }
-  
+
   .duo-button-primary:active {
     box-shadow: none;
   }
-  
+
   .duo-button-success {
     @apply bg-success text-success-foreground;
     box-shadow: 0 4px 0 0 hsl(var(--success-dark));
   }
-  
+
   .duo-button-secondary {
     @apply bg-card text-foreground border-2 border-border;
+    box-shadow: 0 4px 0 0 hsl(var(--border));
+  }
+
+  /* Bordered card with a flat bottom lip, used for options and tiles */
+  .duo-card {
+    @apply rounded-2xl border-2 border-border bg-card;
     box-shadow: 0 4px 0 0 hsl(var(--border));
   }
 }
@@ -228,48 +247,66 @@
   50% { transform: scale(1.02); }
 }
 
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 @layer utilities {
   .animate-shake {
     animation: shake 0.5s ease-in-out;
   }
-  
+
   .animate-confetti {
     animation: confetti-fall 3s ease-out forwards;
   }
-  
+
   .animate-pulse-ring {
     animation: pulse-ring 1s ease-out infinite;
   }
-  
+
   .animate-count-up {
     animation: count-up 0.3s ease-out;
   }
-  
+
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }
-  
+
   .animate-bounce-in {
     animation: bounce-in 0.4s ease-out;
   }
-  
+
   .animate-slide-up {
     animation: slide-up 0.4s ease-out;
   }
-  
+
   .animate-wiggle {
     animation: wiggle 0.5s ease-in-out infinite;
   }
-  
+
   .animate-jump {
     animation: jump 0.6s ease-in-out;
   }
-  
+
   .animate-sad {
     animation: sad-shake 0.4s ease-in-out;
   }
-  
+
   .animate-breathe {
     animation: breathe 3s ease-in-out infinite;
+  }
+
+  .animate-marquee {
+    animation: marquee 40s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-marquee,
+    .animate-float,
+    .animate-breathe,
+    .animate-wiggle {
+      animation: none;
+    }
   }
 }

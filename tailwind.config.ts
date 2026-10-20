@@ -47,7 +47,9 @@ export default {
 				},
 				accent: {
 					DEFAULT: 'hsl(var(--accent))',
-					foreground: 'hsl(var(--accent-foreground))'
+					foreground: 'hsl(var(--accent-foreground))',
+					strong: 'hsl(var(--accent-strong))',
+					dark: 'hsl(var(--accent-dark))'
 				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
@@ -60,15 +62,19 @@ export default {
 				success: {
 					DEFAULT: 'hsl(var(--success))',
 					foreground: 'hsl(var(--success-foreground))',
+					light: 'hsl(var(--success-light))',
 					dark: 'hsl(var(--success-dark))'
 				},
 				warning: {
 					DEFAULT: 'hsl(var(--warning))',
-					foreground: 'hsl(var(--warning-foreground))'
+					foreground: 'hsl(var(--warning-foreground))',
+					dark: 'hsl(var(--warning-dark))'
 				},
 				error: {
 					DEFAULT: 'hsl(var(--error))',
-					foreground: 'hsl(var(--error-foreground))'
+					foreground: 'hsl(var(--error-foreground))',
+					light: 'hsl(var(--error-light))',
+					dark: 'hsl(var(--error-dark))'
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',

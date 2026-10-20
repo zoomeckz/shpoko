@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuest } from "@/contexts/GuestContext";
 import { Sidebar } from "@/components/duolingo/Sidebar";
@@ -10,23 +9,12 @@ import { LeagueCelebration, LeagueDemotion } from "@/components/league/LeagueCel
 import { useLeagueReset } from "@/hooks/useLeagueReset";
 import { OnboardingGuide } from "@/components/onboarding/OnboardingGuide";
 import { UsernameSetup } from "@/components/onboarding/UsernameSetup";
+import Landing from "./Landing";
 
 const Index = () => {
   const { user, profile, loading: authLoading } = useAuth();
-  const {
-    isGuest,
-    onboardingCompleted,
-    initGuest,
-    completeOnboarding,
-  } = useGuest();
+  const { isGuest, onboardingCompleted, completeOnboarding } = useGuest();
   const { resetResult, showCelebration, dismissCelebration } = useLeagueReset();
-
-  // Auto-initialize guest if not authenticated and not already a guest
-  useEffect(() => {
-    if (!authLoading && !user && !isGuest) {
-      initGuest();
-    }
-  }, [authLoading, user, isGuest, initGuest]);
 
   if (authLoading) {
     return (
@@ -34,6 +22,11 @@ const Index = () => {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
+  }
+
+  // New visitors see the landing page until they start as a guest or log in.
+  if (!user && !isGuest) {
+    return <Landing />;
   }
 
   // Show onboarding for new guests

@@ -1,125 +1,70 @@
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Check, Volume2 } from "lucide-react";
-import shpokoMascot from "@/assets/shpoko-mascot-new.png";
+import { DuoButton } from "@/components/duolingo/DuoButton";
+import shpokoMascot from "@/assets/shpoko-mascot.png";
 
-export function HeroSection() {
+// Letter tiles that float around the mascot.
+const tiles = [
+  { letter: "Ж", className: "top-2 left-0 bg-accent-strong shadow-[0_4px_0_0_hsl(var(--accent-dark))] -rotate-12", delay: 0 },
+  { letter: "Щ", className: "top-0 right-2 bg-primary shadow-[0_4px_0_0_hsl(var(--primary-dark))] rotate-6", delay: 0.6 },
+  { letter: "Ю", className: "bottom-10 -left-2 bg-success shadow-[0_4px_0_0_hsl(var(--success-dark))] rotate-6", delay: 1.2 },
+  { letter: "Б", className: "bottom-4 right-0 bg-warning shadow-[0_4px_0_0_hsl(var(--warning-dark))] -rotate-6", delay: 0.3 },
+];
+
+interface HeroSectionProps {
+  onStart: () => void;
+}
+
+export function HeroSection({ onStart }: HeroSectionProps) {
   return (
-    <section className="relative overflow-hidden border-b border-border">
-      <div className="absolute inset-0 -z-10 pointer-events-none">
-        <div className="absolute -top-24 -left-20 w-80 h-80 rounded-full bg-accent/60 blur-3xl" />
-        <div className="absolute top-32 right-0 w-96 h-96 rounded-full bg-primary/15 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 w-72 h-72 rounded-full bg-success/15 blur-3xl" />
-      </div>
+    <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-10 pb-16 md:py-20 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.92 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.45 }}
+        className="relative mx-auto w-full max-w-[300px] sm:max-w-[380px] aspect-square"
+      >
+        <div className="absolute inset-[8%] rounded-full bg-primary/10" />
+        <motion.img
+          src={shpokoMascot}
+          alt="Shpoko the raccoon giving a thumbs up"
+          className="absolute inset-[10%] w-[80%] h-[80%] object-contain drop-shadow-[0_10px_0_hsl(var(--border))]"
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        />
+        {tiles.map((t) => (
+          <motion.span
+            key={t.letter}
+            aria-hidden="true"
+            className={`absolute w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-3xl sm:text-4xl font-black text-white ${t.className}`}
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 2.6, delay: t.delay, repeat: Infinity, ease: "easeInOut" }}
+          >
+            {t.letter}
+          </motion.span>
+        ))}
+      </motion.div>
 
-      <div className="max-w-6xl mx-auto px-5 py-16 sm:py-24 grid lg:grid-cols-[1.05fr_0.95fr] gap-12 items-center">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-widest text-secondary-foreground">
-            Bulgarian · from English
-          </span>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, delay: 0.1 }}
+        className="text-center"
+      >
+        <h1 className="text-[28px] sm:text-[34px] leading-tight font-extrabold text-foreground max-w-md mx-auto">
+          Learn to read and write Bulgarian. Fast, fun and{" "}
+          <span className="text-success">100% free.</span>
+        </h1>
 
-          <h1 className="mt-6 text-4xl sm:text-6xl font-extrabold leading-[1.02] tracking-tight text-foreground">
-            Read, hear and speak
-            <span className="block text-primary">real Bulgarian.</span>
-          </h1>
-
-          <p className="mt-5 text-lg text-muted-foreground max-w-xl">
-            Short lessons, native audio and word games built around the words
-            people actually use. Every answer counts in Cyrillic or Latin letters.
-          </p>
-
-          <div className="mt-8 flex flex-col sm:flex-row gap-3">
-            <Link to="/auth" className="sm:w-auto">
-              <Button
-                size="lg"
-                className="w-full sm:w-auto text-base font-extrabold rounded-full px-8 py-6 shadow-[0_5px_0_0_hsl(var(--primary-dark))] active:translate-y-1 active:shadow-none transition-all"
-              >
-                Start learning free
-              </Button>
-            </Link>
-            <Link to="/auth" className="sm:w-auto">
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full sm:w-auto text-base font-extrabold rounded-full px-8 py-6 border-2 bg-card"
-              >
-                I have an account
-              </Button>
-            </Link>
-          </div>
-
-          <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-muted-foreground">
-            {["No card needed", "5 minutes a day", "Guest mode"].map((item) => (
-              <li key={item} className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-success/15 flex items-center justify-center">
-                  <Check className="w-3 h-3 text-success" />
-                </span>
-                {item}
-              </li>
-            ))}
-          </ul>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.94 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
-          className="relative mx-auto w-full max-w-sm"
-        >
-          <div className="rounded-[2rem] bg-card border border-border p-6 shadow-[var(--shadow-elevated)]">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-extrabold uppercase tracking-widest text-accent-foreground bg-accent rounded-full px-3 py-1">
-                New word
-              </span>
-              <span className="text-xs font-bold text-muted-foreground">3 / 8</span>
-            </div>
-
-            <div className="mt-6 flex items-center gap-4">
-              <motion.img
-                src={shpokoMascot}
-                alt="SHPOKO mascot"
-                className="w-20 h-20 object-contain shrink-0"
-                animate={{ y: [0, -6, 0] }}
-                transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
-              />
-              <div className="relative rounded-2xl bg-secondary px-4 py-3">
-                <p className="text-2xl font-extrabold text-foreground">ябълка</p>
-                <p className="text-sm font-semibold text-secondary-foreground">yabalka</p>
-              </div>
-            </div>
-
-            <button className="mt-5 w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-border bg-background py-3 text-sm font-extrabold text-foreground">
-              <Volume2 className="w-4 h-4 text-primary" />
-              Hear it
-            </button>
-
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              {["apple", "bread", "water", "cheese"].map((word, i) => (
-                <div
-                  key={word}
-                  className={`rounded-2xl border-2 py-3 text-center text-sm font-extrabold ${
-                    i === 0
-                      ? "border-success bg-success/10 text-success"
-                      : "border-border bg-background text-foreground"
-                  }`}
-                >
-                  {word}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="absolute -bottom-6 -left-6 rounded-2xl bg-card border border-border px-4 py-3 shadow-[var(--shadow-card)]">
-            <p className="text-xs font-bold text-muted-foreground">Streak</p>
-            <p className="text-lg font-extrabold text-foreground">12 days 🔥</p>
-          </div>
-        </motion.div>
-      </div>
+        <div className="mt-8 flex flex-col gap-3 max-w-[330px] mx-auto">
+          <DuoButton size="xl" fullWidth onClick={onStart}>
+            Start learning
+          </DuoButton>
+          <DuoButton asChild variant="white" size="xl" fullWidth>
+            <Link to="/auth">I already have an account</Link>
+          </DuoButton>
+        </div>
+      </motion.div>
     </section>
   );
 }

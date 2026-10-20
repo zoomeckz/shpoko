@@ -66,36 +66,32 @@ export const useGuest = () => {
 };
 
 export const GuestProvider = ({ children }: { children: ReactNode }) => {
-  const [state, setState] = useState<GuestState>({
-    isGuest: false,
-    guestId: null,
-    guestUsername: "",
-    lessonsCompleted: 0,
-    level: 1,
-    xp: 0,
-    completedLessons: {},
-    onboardingCompleted: false,
-    isLocked: false,
-    declinedRegistration: false,
-  });
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        // Defensive merge so older stored shapes still load.
-        setState((prev) => ({
-          ...prev,
-          ...parsed,
-          completedLessons: parsed.completedLessons ?? {},
-        }));
-      } catch (e) {
-        console.error("Failed to parse guest state:", e);
-      }
+  // Read localStorage synchronously on first render so returning guests
+  // never see a flash of the logged-out landing page.
+  const [state, setState] = useState<GuestState>(() => {
+    const initial: GuestState = {
+      isGuest: false,
+      guestId: null,
+      guestUsername: "",
+      lessonsCompleted: 0,
+      level: 1,
+      xp: 0,
+      completedLessons: {},
+      onboardingCompleted: false,
+      isLocked: false,
+      declinedRegistration: false,
+    };
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) return initial;
+      const parsed = JSON.parse(stored);
+      // Defensive merge so older stored shapes still load.
+      return { ...initial, ...parsed, completedLessons: parsed.completedLessons ?? {} };
+    } catch (e) {
+      console.error("Failed to parse guest state:", e);
+      return initial;
     }
-  }, []);
+  });
 
   // Save to localStorage whenever state changes
   useEffect(() => {

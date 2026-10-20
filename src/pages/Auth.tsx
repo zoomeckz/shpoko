@@ -1,19 +1,18 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuest } from "@/contexts/GuestContext";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { DuoButton } from "@/components/duolingo/DuoButton";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { calculateLevel } from "@/lib/levelUtils";
-import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, X } from "lucide-react";
+import shpokoMascot from "@/assets/shpoko-mascot.png";
 
 const signUpSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -29,8 +28,13 @@ const signInSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+type Mode = "login" | "register";
+
 const Auth = () => {
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [searchParams] = useSearchParams();
+  const [mode, setMode] = useState<Mode>(
+    searchParams.get("mode") === "signup" ? "register" : "login"
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -53,6 +57,12 @@ const Auth = () => {
   useEffect(() => {
     if (user) navigate("/");
   }, [user, navigate]);
+
+  const switchMode = (next: Mode) => {
+    setMode(next);
+    setErrors({});
+    setConfirmPassword("");
+  };
 
   const validateForm = () => {
     try {
@@ -226,227 +236,186 @@ const Auth = () => {
     navigate("/");
   };
 
+  const isLogin = mode === "login";
+
+  // Grey, borderless-looking fields that light up blue on focus.
+  const fieldClass = (hasError: boolean) =>
+    cn(
+      "w-full h-14 rounded-2xl border-2 bg-muted px-4 text-[17px] font-semibold text-foreground",
+      "placeholder:text-muted-foreground/70 placeholder:font-semibold outline-none transition-colors",
+      "focus:border-primary focus:bg-card",
+      hasError ? "border-error" : "border-border"
+    );
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="border-b border-border bg-card">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-3xl">🦝</span>
-            <span className="text-2xl font-extrabold text-primary">SHPOKO</span>
-          </Link>
-        </div>
+      <header className="px-4 sm:px-6 h-[70px] flex items-center justify-between">
+        <Link
+          to="/"
+          aria-label="Close"
+          className="w-10 h-10 -ml-2 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
+        >
+          <X className="w-6 h-6" strokeWidth={3} />
+        </Link>
+        <DuoButton
+          variant="white"
+          size="sm"
+          onClick={() => switchMode(isLogin ? "register" : "login")}
+        >
+          {isLogin ? "Sign up" : "Log in"}
+        </DuoButton>
       </header>
 
-      <main className="flex-1 flex items-center justify-center p-4">
+      <main className="flex-1 flex items-start sm:items-center justify-center px-4 pb-12">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          key={mode}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md"
+          transition={{ duration: 0.25 }}
+          className="w-full max-w-[380px]"
         >
-          <div className="bg-card rounded-2xl border-2 border-border p-6 sm:p-8 shadow-lg">
-            {/* Mascot */}
-            <div className="flex justify-center mb-2">
-              <motion.div
-                animate={{ y: [0, -6, 0] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                className="text-6xl select-none"
-              >
-                🦝
-              </motion.div>
+          <img
+            src={shpokoMascot}
+            alt=""
+            className="w-20 h-20 mx-auto object-contain"
+          />
+          <h1 className="mt-3 text-[26px] font-extrabold text-foreground text-center">
+            {isLogin ? "Log in" : "Create your profile"}
+          </h1>
+          <p className="mt-1 text-center text-muted-foreground font-semibold">
+            {isLogin ? "Welcome back! Your streak missed you." : "Free forever. Save your progress anywhere."}
+          </p>
+
+          <form onSubmit={handleSubmit} className="mt-6 space-y-3" noValidate>
+            <div>
+              <Label htmlFor="auth-email" className="sr-only">Email</Label>
+              <input
+                id="auth-email"
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={fieldClass(!!errors.email)}
+                autoComplete="email"
+                aria-invalid={!!errors.email}
+              />
+              {errors.email && <p className="mt-1.5 ml-1 text-sm font-semibold text-error">{errors.email}</p>}
             </div>
-            <h1 className="text-2xl font-bold text-foreground text-center mb-1">
-              Welcome to SHPOKO
-            </h1>
-            <p className="text-sm text-muted-foreground text-center mb-5">
-              Learn Bulgarian the fun way
-            </p>
 
-            {/* Google */}
-            <Button
-              type="button"
-              onClick={handleGoogleSignIn}
-              disabled={googleLoading || loading}
-              variant="outline"
-              aria-busy={googleLoading}
-              className="w-full h-12 rounded-xl border-2 font-semibold text-base"
-            >
-              {googleLoading ? (
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" aria-hidden="true" />
-              ) : (
-                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" aria-hidden="true">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-              )}
-              {googleStatus.kind === "redirecting"
-                ? "Redirecting to Google..."
-                : googleStatus.kind === "connecting"
-                ? "Connecting..."
-                : googleStatus.kind === "success"
-                ? "Signed in!"
-                : "Continue with Google"}
-            </Button>
+            <div>
+              <Label htmlFor="auth-password" className="sr-only">Password</Label>
+              <input
+                id="auth-password"
+                type="password"
+                placeholder={isLogin ? "Password" : "Password (at least 6 characters)"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={fieldClass(!!errors.password)}
+                autoComplete={isLogin ? "current-password" : "new-password"}
+                aria-invalid={!!errors.password}
+              />
+              {errors.password && <p className="mt-1.5 ml-1 text-sm font-semibold text-error">{errors.password}</p>}
+            </div>
 
-            {/* Inline Google status message */}
-            {googleStatus.kind !== "idle" && googleStatus.kind !== "connecting" && (
-              <div
-                role="status"
-                aria-live="polite"
-                className={cn(
-                  "mt-2 flex items-start gap-2 rounded-lg px-3 py-2 text-xs",
-                  googleStatus.kind === "error" &&
-                    "bg-destructive/10 text-destructive",
-                  googleStatus.kind === "success" &&
-                    "bg-green-500/10 text-green-700 dark:text-green-400",
-                  googleStatus.kind === "redirecting" &&
-                    "bg-muted text-muted-foreground"
+            {!isLogin && (
+              <div>
+                <Label htmlFor="auth-confirm" className="sr-only">Confirm password</Label>
+                <input
+                  id="auth-confirm"
+                  type="password"
+                  placeholder="Confirm password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className={fieldClass(!!errors.confirmPassword)}
+                  autoComplete="new-password"
+                  aria-invalid={!!errors.confirmPassword}
+                />
+                {errors.confirmPassword && (
+                  <p className="mt-1.5 ml-1 text-sm font-semibold text-error">{errors.confirmPassword}</p>
                 )}
-              >
-                {googleStatus.kind === "error" && (
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
-                )}
-                {googleStatus.kind === "success" && (
-                  <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
-                )}
-                {googleStatus.kind === "redirecting" && (
-                  <Loader2 className="w-4 h-4 shrink-0 mt-0.5 animate-spin" aria-hidden="true" />
-                )}
-                <span>
-                  {googleStatus.kind === "error" && googleStatus.message}
-                  {googleStatus.kind === "success" && "Signed in with Google. Loading your account..."}
-                  {googleStatus.kind === "redirecting" && "Taking you to Google to finish signing in..."}
-                </span>
               </div>
             )}
 
-            {/* Divider */}
-            <div className="relative my-5">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">or</span>
-              </div>
-            </div>
+            <DuoButton type="submit" size="lg" fullWidth disabled={loading} className="!mt-5">
+              {loading && <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />}
+              {isLogin ? (loading ? "Logging in..." : "Log in") : loading ? "Creating..." : "Create account"}
+            </DuoButton>
+          </form>
 
-            {/* Tabs */}
-            <Tabs value={mode} onValueChange={(v) => { setMode(v as "login" | "register"); setErrors({}); }}>
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="login" className="font-bold">Log in</TabsTrigger>
-                <TabsTrigger value="register" className="font-bold">Register</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="login" className="mt-0">
-                <form onSubmit={handleSubmit} className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email-login" className="font-semibold text-sm">Email</Label>
-                    <Input
-                      id="email-login"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className={cn("h-11 rounded-xl border-2", errors.email ? "border-destructive" : "border-border")}
-                      autoComplete="email"
-                    />
-                    {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="password-login" className="font-semibold text-sm">Password</Label>
-                    <Input
-                      id="password-login"
-                      type="password"
-                      placeholder="Your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className={cn("h-11 rounded-xl border-2", errors.password ? "border-destructive" : "border-border")}
-                      autoComplete="current-password"
-                    />
-                    {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
-                  </div>
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full h-12 text-base font-bold rounded-xl"
-                  >
-                    {loading ? "Loading..." : "LOG IN"}
-                  </Button>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="register" className="mt-0">
-                <form onSubmit={handleSubmit} className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email-reg" className="font-semibold text-sm">Email</Label>
-                    <Input
-                      id="email-reg"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className={cn("h-11 rounded-xl border-2", errors.email ? "border-destructive" : "border-border")}
-                      autoComplete="email"
-                    />
-                    {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="password-reg" className="font-semibold text-sm">Password</Label>
-                    <Input
-                      id="password-reg"
-                      type="password"
-                      placeholder="At least 6 characters"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className={cn("h-11 rounded-xl border-2", errors.password ? "border-destructive" : "border-border")}
-                      autoComplete="new-password"
-                    />
-                    {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="confirm-reg" className="font-semibold text-sm">Confirm Password</Label>
-                    <Input
-                      id="confirm-reg"
-                      type="password"
-                      placeholder="Re-type your password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className={cn("h-11 rounded-xl border-2", errors.confirmPassword ? "border-destructive" : "border-border")}
-                      autoComplete="new-password"
-                    />
-                    {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
-                  </div>
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full h-12 text-base font-bold rounded-xl"
-                  >
-                    {loading ? "Creating..." : "CREATE ACCOUNT"}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
-
-            {/* Guest */}
-            <div className="mt-5 pt-5 border-t border-border">
-              <Button
-                type="button"
-                onClick={handleContinueAsGuest}
-                variant="ghost"
-                className="w-full font-semibold text-muted-foreground"
-              >
-                Continue as guest →
-              </Button>
-              <p className="text-[11px] text-muted-foreground text-center mt-1">
-                Guests can play basic lessons. Register to unlock everything.
-              </p>
-            </div>
-
-            <p className="text-xs text-muted-foreground text-center mt-5">
-              By continuing, you agree to our Terms and Privacy Policy.
-            </p>
+          <div className="my-6 flex items-center gap-4" aria-hidden="true">
+            <div className="h-0.5 flex-1 bg-border" />
+            <span className="text-sm font-extrabold text-muted-foreground">OR</span>
+            <div className="h-0.5 flex-1 bg-border" />
           </div>
+
+          <DuoButton
+            type="button"
+            variant="outline"
+            size="lg"
+            fullWidth
+            onClick={handleGoogleSignIn}
+            disabled={googleLoading || loading}
+            aria-busy={googleLoading}
+          >
+            {googleLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+            ) : (
+              <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+            )}
+            {googleStatus.kind === "redirecting"
+              ? "Redirecting..."
+              : googleStatus.kind === "connecting"
+              ? "Connecting..."
+              : googleStatus.kind === "success"
+              ? "Signed in!"
+              : "Continue with Google"}
+          </DuoButton>
+
+          {/* Inline Google status message */}
+          {googleStatus.kind !== "idle" && googleStatus.kind !== "connecting" && (
+            <div
+              role="status"
+              aria-live="polite"
+              className={cn(
+                "mt-3 flex items-start gap-2 rounded-xl px-3 py-2 text-sm font-semibold",
+                googleStatus.kind === "error" && "bg-error-light text-error-dark",
+                googleStatus.kind === "success" && "bg-success-light text-success-dark",
+                googleStatus.kind === "redirecting" && "bg-muted text-muted-foreground"
+              )}
+            >
+              {googleStatus.kind === "error" && (
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
+              )}
+              {googleStatus.kind === "success" && (
+                <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
+              )}
+              {googleStatus.kind === "redirecting" && (
+                <Loader2 className="w-4 h-4 shrink-0 mt-0.5 animate-spin" aria-hidden="true" />
+              )}
+              <span>
+                {googleStatus.kind === "error" && googleStatus.message}
+                {googleStatus.kind === "success" && "Signed in with Google. Loading your account..."}
+                {googleStatus.kind === "redirecting" && "Taking you to Google to finish signing in..."}
+              </span>
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={handleContinueAsGuest}
+            className="mt-6 w-full text-center text-sm font-extrabold uppercase tracking-wide text-primary hover:brightness-110"
+          >
+            Continue without an account
+          </button>
+
+          <p className="mt-8 text-xs font-semibold text-muted-foreground text-center leading-relaxed">
+            By continuing, you agree to Shpoko's Terms and Privacy Policy.
+          </p>
         </motion.div>
       </main>
     </div>

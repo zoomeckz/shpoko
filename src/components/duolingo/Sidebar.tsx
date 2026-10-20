@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { isAdminEmail } from "@/hooks/useAdminAuth";
 import { HelpTourModal } from "@/components/onboarding/HelpTourModal";
+import { Wordmark } from "@/components/landing/Wordmark";
 
 interface SidebarProps {
   className?: string;
@@ -207,8 +208,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
     )}>
       {/* Logo */}
       <Link to="/" className="flex items-center gap-3 px-4 py-3 mb-6">
-        <span className="text-3xl">🦝</span>
-        <span className="text-2xl font-extrabold text-primary">SHPOKO</span>
+        <Wordmark />
       </Link>
 
       {/* Navigation */}

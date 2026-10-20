@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { isAdminEmail } from "@/hooks/useAdminAuth";
+import { Wordmark } from "@/components/landing/Wordmark";
 
 interface TopBarProps {
   className?: string;
@@ -79,8 +80,7 @@ export const TopBar = ({ className }: TopBarProps) => {
         <div className="flex items-center justify-between px-4 h-14">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl">🦝</span>
-            <span className="text-lg font-extrabold text-primary">SHPOKO</span>
+            <Wordmark size="sm" />
           </Link>
 
           {/* Stats */}
@@ -146,8 +146,7 @@ export const TopBar = ({ className }: TopBarProps) => {
               {/* Header */}
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl">🦝</span>
-                  <span className="text-2xl font-extrabold text-primary">SHPOKO</span>
+                  <Wordmark />
                 </div>
                 <button 
                   onClick={() => setMobileMenuOpen(false)}
