@@ -10,6 +10,8 @@ import { useLeagueReset } from "@/hooks/useLeagueReset";
 import { OnboardingGuide } from "@/components/onboarding/OnboardingGuide";
 import { UsernameSetup } from "@/components/onboarding/UsernameSetup";
 import Landing from "./Landing";
+import { ComingSoonPath } from "@/components/duolingo/ComingSoonPath";
+import { SHOW_LEGACY } from "@/config/features";
 
 const Index = () => {
   const { user, profile, loading: authLoading } = useAuth();
@@ -30,7 +32,7 @@ const Index = () => {
   }
 
   // Show onboarding for new guests
-  if (isGuest && !onboardingCompleted) {
+  if (SHOW_LEGACY && isGuest && !onboardingCompleted) {
     return <OnboardingGuide onComplete={completeOnboarding} />;
   }
 
@@ -44,7 +46,7 @@ const Index = () => {
       {needsUsername && <UsernameSetup />}
 
       {/* League Celebration/Demotion Modals - Only for authenticated users */}
-      {user && resetResult?.promoted && (
+      {SHOW_LEGACY && user && resetResult?.promoted && (
         <LeagueCelebration
           isOpen={showCelebration}
           onClose={dismissCelebration}
@@ -54,7 +56,7 @@ const Index = () => {
           weeklyXP={resetResult.weeklyXP}
         />
       )}
-      {user && resetResult?.demoted && (
+      {SHOW_LEGACY && user && resetResult?.demoted && (
         <LeagueDemotion
           isOpen={showCelebration}
           onClose={dismissCelebration}
@@ -65,7 +67,7 @@ const Index = () => {
       )}
 
       {/* Daily Login Bonus Modal - Only for authenticated users */}
-      {user && <DailyLoginBonus />}
+      {SHOW_LEGACY && user && <DailyLoginBonus />}
 
       {/* Mobile top bar */}
       <TopBar />
@@ -77,12 +79,12 @@ const Index = () => {
         {/* Main content - lesson path */}
         <main className="flex-1 lg:ml-0 pb-20 lg:pb-0">
           <div className="max-w-lg mx-auto px-4">
-            <LessonPath />
+            {SHOW_LEGACY ? <LessonPath /> : <ComingSoonPath />}
           </div>
         </main>
 
         {/* Right sidebar - hidden on mobile */}
-        <RightSidebar />
+        {SHOW_LEGACY && <RightSidebar />}
       </div>
     </div>
   );

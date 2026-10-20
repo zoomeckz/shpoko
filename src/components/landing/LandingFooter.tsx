@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { DuoButton } from "@/components/duolingo/DuoButton";
 import shpokoMascot from "@/assets/shpoko-mascot.png";
 import { Wordmark } from "./Wordmark";
+import { isLive } from "@/config/features";
 
 interface LandingFooterProps {
   onStart: () => void;
@@ -26,7 +27,7 @@ export function LandingFooter({ onStart }: LandingFooterProps) {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
           <Wordmark inverted />
           <nav className="flex items-center gap-6 text-sm font-extrabold text-white/90">
-            <Link to="/about" className="hover:text-white">About</Link>
+            {isLive("/about") && <Link to="/about" className="hover:text-white">About</Link>}
             <Link to="/auth" className="hover:text-white">Log in</Link>
           </nav>
           <p className="text-xs font-bold text-white/80">© {new Date().getFullYear()} Shpoko</p>

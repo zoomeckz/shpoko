@@ -79,7 +79,7 @@ function PathVisual() {
 
 // Illustration: everything is included, no price tag.
 function FreeVisual() {
-  const items = ["Every lesson", "Every game", "Stories & flashcards", "Today and always"];
+  const items = ["Every lesson", "Every exercise", "Reading and writing", "Today and always"];
   return (
     <div className="relative mx-auto w-full max-w-sm" aria-hidden="true">
       <div className="duo-card p-6 pt-10">

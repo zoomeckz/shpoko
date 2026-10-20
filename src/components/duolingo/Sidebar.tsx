@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Link, useLocation } from "react-router-dom";
-import { Home, Trophy, Target, User, BookOpen, BookMarked, Flame, Crown, Zap, Gamepad2, Swords, Apple, Dices, Users, ShoppingBag, ChevronDown, Headphones, PenLine, ListChecks, GraduationCap, Bell, ScanEye, Shield, HelpCircle, Type } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { LogOut, Home, Trophy, Target, User, BookOpen, BookMarked, Flame, Crown, Zap, Gamepad2, Swords, Apple, Dices, Users, ShoppingBag, ChevronDown, Headphones, PenLine, ListChecks, GraduationCap, Bell, ScanEye, Shield, HelpCircle, Type } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -10,6 +10,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { isAdminEmail } from "@/hooks/useAdminAuth";
 import { HelpTourModal } from "@/components/onboarding/HelpTourModal";
 import { Wordmark } from "@/components/landing/Wordmark";
+import { DuoButton } from "@/components/duolingo/DuoButton";
+import { DarkModeToggle } from "@/components/DarkModeToggle";
+import { SHOW_LEGACY, isLive } from "@/config/features";
 
 interface SidebarProps {
   className?: string;
@@ -50,7 +53,21 @@ const bottomNavItems = [
 
 export const Sidebar = ({ className }: SidebarProps) => {
   const location = useLocation();
-  const { profile, user } = useAuth();
+  const navigate = useNavigate();
+  const { profile, user, signOut } = useAuth();
+
+  // Only show what's part of the rebuilt site (see src/config/features.ts).
+  const liveMainItems = mainNavItems.filter((item) => isLive(item.path));
+  const liveQuizItems = quizItems.filter((item) => isLive(item.path));
+  const liveGameItems = gameItems.filter((item) => isLive(item.path));
+  const liveBottomItems = bottomNavItems.filter((item) => isLive(item.path));
+  const showMiddle = liveQuizItems.length > 0 || liveGameItems.length > 0;
+  const showBottom = liveBottomItems.length > 0 || isLive("/shop") || SHOW_LEGACY;
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
+  };
   const [gamesOpen, setGamesOpen] = useState(false);
   const [quizzesOpen, setQuizzesOpen] = useState(false);
   const [pendingTradeCount, setPendingTradeCount] = useState(0);
@@ -214,7 +231,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 overflow-y-auto">
         {/* Main Navigation Items */}
-        {mainNavItems.map((item) => {
+        {liveMainItems.map((item) => {
           const isActive = location.pathname === item.path || 
             (item.path !== "/" && location.pathname.startsWith(item.path + "/"));
           const Icon = item.icon;
@@ -237,24 +254,26 @@ export const Sidebar = ({ className }: SidebarProps) => {
           );
         })}
 
-        {/* Separator */}
-        <div className="py-3">
-          <Separator />
-        </div>
+        {showMiddle && (
+          <div className="py-3">
+            <Separator />
+          </div>
+        )}
 
         {/* Quizzes Section - Collapsible */}
-        {renderCollapsibleSection("Quizzes", GraduationCap, quizItems, quizzesOpen, setQuizzesOpen, isQuizActive)}
+        {liveQuizItems.length > 0 && renderCollapsibleSection("Quizzes", GraduationCap, liveQuizItems, quizzesOpen, setQuizzesOpen, isQuizActive)}
 
         {/* Games Section - Collapsible */}
-        {renderCollapsibleSection("Games", Gamepad2, gameItems, gamesOpen, setGamesOpen, isGameActive, "games")}
+        {liveGameItems.length > 0 && renderCollapsibleSection("Games", Gamepad2, liveGameItems, gamesOpen, setGamesOpen, isGameActive, "games")}
 
-        {/* Separator */}
-        <div className="py-3">
-          <Separator />
-        </div>
+        {showBottom && (
+          <div className="py-3">
+            <Separator />
+          </div>
+        )}
 
         {/* Bottom Navigation Items (Friends, Profile) */}
-        {bottomNavItems.map((item) => {
+        {liveBottomItems.map((item) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
           
@@ -277,6 +296,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
         })}
 
         {/* Shop - Special styling with notification badge */}
+        {isLive("/shop") && (
         <Link
           to="/shop"
           className={cn(
@@ -315,8 +335,10 @@ export const Sidebar = ({ className }: SidebarProps) => {
             </span>
           )}
         </Link>
+        )}
 
         {/* Help / Tour Button */}
+        {SHOW_LEGACY && (
         <button
           onClick={() => setHelpTourOpen(true)}
           className="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-base text-muted-foreground hover:bg-accent border-2 border-transparent w-full text-left"
@@ -324,6 +346,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
           <HelpCircle className="w-6 h-6" />
           <span>Help / Tour</span>
         </button>
+        )}
 
         {/* Admin Panel Link - Only visible for admins */}
         {isAdmin && (
@@ -348,7 +371,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
       </nav>
 
       {/* Premium banner */}
-      {!profile?.is_premium && (
+      {isLive("/premium") && !profile?.is_premium && (
         <Link
           to="/premium"
           className="mt-4 p-4 bg-gradient-to-r from-warning/20 to-warning/10 rounded-xl border-2 border-warning/30 hover:border-warning transition-colors"
@@ -364,6 +387,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
       )}
 
       {/* User stats mini */}
+      {SHOW_LEGACY && (
       <div className="mt-4 p-4 bg-accent rounded-xl">
         <div className="flex items-center justify-around">
           <div className="flex items-center gap-2">
@@ -375,6 +399,36 @@ export const Sidebar = ({ className }: SidebarProps) => {
             <span className="font-bold">{profile?.xp || 0}</span>
           </div>
         </div>
+      </div>
+      )}
+
+      {/* Account */}
+      <div className="mt-4 space-y-3">
+        {!user && (
+          <DuoButton asChild size="md" fullWidth>
+            <Link to="/auth?mode=signup">Create a profile</Link>
+          </DuoButton>
+        )}
+        <div className="flex items-center justify-between rounded-2xl border-2 border-border px-4 py-2">
+          <span className="text-sm font-bold text-muted-foreground">Dark mode</span>
+          <DarkModeToggle />
+        </div>
+        {user ? (
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-2 text-sm font-bold text-muted-foreground hover:bg-muted transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            Log out
+          </button>
+        ) : (
+          <Link
+            to="/auth"
+            className="block w-full rounded-xl px-4 py-2 text-center text-sm font-extrabold uppercase tracking-wide text-primary hover:bg-muted transition-colors"
+          >
+            Log in
+          </Link>
+        )}
       </div>
 
       {/* Help Tour Modal */}

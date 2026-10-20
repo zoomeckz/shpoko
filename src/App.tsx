@@ -9,6 +9,7 @@ import { InputModeProvider } from "@/contexts/InputModeContext";
 import { LanguageModeProvider } from "@/contexts/LanguageModeContext";
 import { SoundSettingsProvider } from "@/contexts/SoundSettingsContext";
 import { ThemeProvider } from "next-themes";
+import { RouteGate } from "@/components/RouteGate";
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
@@ -122,6 +123,7 @@ const App = () => (
             <SoundSettingsProvider>
             <InputModeProvider>
             <LanguageModeProvider>
+            <RouteGate>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/welcome" element={<Landing />} />
@@ -232,6 +234,7 @@ const App = () => (
               <Route path="/admin/settings" element={<AdminSettings />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </RouteGate>
             </LanguageModeProvider>
             </InputModeProvider>
             </SoundSettingsProvider>

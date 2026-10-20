@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { isAdminEmail } from "@/hooks/useAdminAuth";
 import { Wordmark } from "@/components/landing/Wordmark";
+import { SHOW_LEGACY, isLive } from "@/config/features";
 
 interface TopBarProps {
   className?: string;
@@ -36,6 +37,10 @@ export const TopBar = ({ className }: TopBarProps) => {
   const { profile, user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  // Only show what's part of the rebuilt site (see src/config/features.ts).
+  const liveNavItems = navItems.filter((item) => isLive(item.path));
+  const liveGameItems = gameItems.filter((item) => isLive(item.path));
 
   // Check if user is admin
   useEffect(() => {
@@ -67,7 +72,7 @@ export const TopBar = ({ className }: TopBarProps) => {
 
   const handleLogout = async () => {
     await signOut();
-    navigate("/auth");
+    navigate("/");
   };
 
   return (
@@ -84,6 +89,7 @@ export const TopBar = ({ className }: TopBarProps) => {
           </Link>
 
           {/* Stats */}
+          {SHOW_LEGACY && (
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1 leading-none">
               <Flame className="w-5 h-5 text-warning shrink-0" />
@@ -98,6 +104,7 @@ export const TopBar = ({ className }: TopBarProps) => {
               <span className="font-bold text-sm leading-none">{profile?.is_premium ? "∞" : "5"}</span>
             </div>
           </div>
+          )}
 
           {/* Menu button */}
           <button 
@@ -110,9 +117,10 @@ export const TopBar = ({ className }: TopBarProps) => {
       </header>
 
       {/* Mobile Bottom Navigation */}
+      {liveNavItems.length > 1 && (
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border">
         <div className="flex items-center justify-around h-16">
-          {navItems.map((item) => {
+          {liveNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
             
@@ -132,6 +140,7 @@ export const TopBar = ({ className }: TopBarProps) => {
           })}
         </div>
       </nav>
+      )}
 
       {/* Mobile Menu Overlay */}
       <AnimatePresence>
@@ -157,6 +166,7 @@ export const TopBar = ({ className }: TopBarProps) => {
               </div>
 
               {/* User info */}
+              {SHOW_LEGACY && (
               <div className="bg-accent rounded-xl p-4 mb-6">
                 <p className="font-bold text-lg">{profile?.username || "Learner"}</p>
                 <p className="text-sm text-muted-foreground">Level {profile?.level || 1}</p>
@@ -171,10 +181,11 @@ export const TopBar = ({ className }: TopBarProps) => {
                   </div>
                 </div>
               </div>
+              )}
 
               {/* Menu items */}
               <div className="flex-1 space-y-2">
-                {navItems.map((item) => {
+                {liveNavItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
                   
@@ -196,6 +207,7 @@ export const TopBar = ({ className }: TopBarProps) => {
                   );
                 })}
 
+                {isLive("/scenarios") && (
                 <Link
                   to="/scenarios"
                   onClick={() => setMobileMenuOpen(false)}
@@ -209,7 +221,9 @@ export const TopBar = ({ className }: TopBarProps) => {
                   <BookOpen className="w-6 h-6" />
                   <span>Scenarios</span>
                 </Link>
+                )}
 
+                {isLive("/stories") && (
                 <Link
                   to="/stories"
                   onClick={() => setMobileMenuOpen(false)}
@@ -223,8 +237,10 @@ export const TopBar = ({ className }: TopBarProps) => {
                   <BookMarked className="w-6 h-6" />
                   <span>Stories</span>
                 </Link>
+                )}
 
-                {/* Separator */}
+                {liveGameItems.length > 0 && (
+                <>
                 <div className="py-3">
                   <Separator />
                 </div>
@@ -237,7 +253,7 @@ export const TopBar = ({ className }: TopBarProps) => {
                   </p>
                 </div>
                 
-                {gameItems.map((item) => {
+                {liveGameItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
                   
@@ -258,7 +274,10 @@ export const TopBar = ({ className }: TopBarProps) => {
                     </Link>
                   );
                 })}
+                </>
+                )}
                 
+                {isLive("/premium") && (
                 <Link
                   to="/premium"
                   onClick={() => setMobileMenuOpen(false)}
@@ -267,6 +286,7 @@ export const TopBar = ({ className }: TopBarProps) => {
                   <Crown className="w-6 h-6" />
                   <span>Super SHPOKO</span>
                 </Link>
+                )}
 
                 {/* Admin Panel Link - Only visible for admins */}
                 {isAdmin && (
@@ -297,6 +317,7 @@ export const TopBar = ({ className }: TopBarProps) => {
                   <span className="font-semibold">Dark Mode</span>
                   <DarkModeToggle />
                 </div>
+                {user ? (
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-4 px-4 py-3 rounded-xl font-bold text-error hover:bg-error/10 transition-colors w-full"
@@ -304,6 +325,24 @@ export const TopBar = ({ className }: TopBarProps) => {
                   <LogOut className="w-6 h-6" />
                   <span>Log out</span>
                 </button>
+                ) : (
+                  <div className="space-y-2 px-1">
+                    <Link
+                      to="/auth?mode=signup"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block w-full rounded-2xl bg-primary py-3 text-center font-extrabold uppercase tracking-wide text-primary-foreground shadow-[0_4px_0_0_hsl(var(--primary-dark))]"
+                    >
+                      Create a profile
+                    </Link>
+                    <Link
+                      to="/auth"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block w-full py-3 text-center font-extrabold uppercase tracking-wide text-primary"
+                    >
+                      Log in
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
