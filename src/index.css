@@ -8,10 +8,16 @@
 @layer base {
   :root {
     /* Sky blue primary */
-    --primary: 199 92% 54%;
+    --primary: 94 98% 40%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 199 95% 64%;
-    --primary-dark: 199 80% 46%;
+    --primary-light: 87 80% 49%;
+    --primary-dark: 88 100% 33%;
+
+    /* Blue — secondary actions, selected answers, active nav */
+    --info: 199 92% 54%;
+    --info-foreground: 0 0% 100%;
+    --info-light: 199 100% 93%;
+    --info-dark: 199 80% 46%;
 
     /* White canvas, soft charcoal text */
     --background: 0 0% 100%;
@@ -68,7 +74,7 @@
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 0 0% 24%;
-    --sidebar-primary: 199 92% 54%;
+    --sidebar-primary: 94 98% 40%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 199 100% 95%;
     --sidebar-accent-foreground: 199 80% 38%;
@@ -77,10 +83,15 @@
   }
 
   .dark {
-    --primary: 199 92% 58%;
+    --primary: 85 63% 51%;
     --primary-foreground: 197 30% 11%;
-    --primary-light: 199 92% 68%;
-    --primary-dark: 199 80% 44%;
+    --primary-light: 85 70% 60%;
+    --primary-dark: 88 57% 40%;
+
+    --info: 199 93% 63%;
+    --info-foreground: 197 30% 11%;
+    --info-light: 199 50% 18%;
+    --info-dark: 199 80% 47%;
 
     --background: 197 30% 11%;
     --foreground: 200 40% 96%;
@@ -125,7 +136,7 @@
 
     --sidebar-background: 197 30% 11%;
     --sidebar-foreground: 200 40% 96%;
-    --sidebar-primary: 199 92% 58%;
+    --sidebar-primary: 85 63% 51%;
     --sidebar-primary-foreground: 197 30% 11%;
     --sidebar-accent: 199 40% 20%;
     --sidebar-accent-foreground: 199 92% 70%;

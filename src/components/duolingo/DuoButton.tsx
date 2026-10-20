@@ -13,16 +13,18 @@ export const duoButtonVariants = cva(
           "bg-primary text-primary-foreground shadow-[0_4px_0_0_hsl(var(--primary-dark))] hover:brightness-105",
         success:
           "bg-success text-success-foreground shadow-[0_4px_0_0_hsl(var(--success-dark))] hover:brightness-105",
+        info:
+          "bg-info text-info-foreground shadow-[0_4px_0_0_hsl(var(--info-dark))] hover:brightness-105",
         danger:
           "bg-error text-error-foreground shadow-[0_4px_0_0_hsl(var(--error-dark))] hover:brightness-105",
         secondary:
           "bg-accent-strong text-white shadow-[0_4px_0_0_hsl(var(--accent-dark))] hover:brightness-105",
         white:
-          "bg-card text-primary border-2 border-border shadow-[0_4px_0_0_hsl(var(--border))] hover:bg-muted",
+          "bg-card text-info border-2 border-border shadow-[0_4px_0_0_hsl(var(--border))] hover:bg-muted",
         outline:
           "bg-card text-foreground border-2 border-border shadow-[0_4px_0_0_hsl(var(--border))] hover:bg-muted",
         ghost:
-          "bg-transparent text-primary shadow-none hover:bg-primary/10 active:translate-y-0",
+          "bg-transparent text-info shadow-none hover:bg-info/10 active:translate-y-0",
       },
       size: {
         sm: "h-9 px-4 text-xs",

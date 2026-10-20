@@ -243,7 +243,7 @@ const Auth = () => {
     cn(
       "w-full h-14 rounded-2xl border-2 bg-muted px-4 text-[17px] font-semibold text-foreground",
       "placeholder:text-muted-foreground/70 placeholder:font-semibold outline-none transition-colors",
-      "focus:border-primary focus:bg-card",
+      "focus:border-info focus:bg-card",
       hasError ? "border-error" : "border-border"
     );
 
@@ -336,7 +336,7 @@ const Auth = () => {
               </div>
             )}
 
-            <DuoButton type="submit" size="lg" fullWidth disabled={loading} className="!mt-5">
+            <DuoButton type="submit" variant="info" size="lg" fullWidth disabled={loading} className="!mt-5">
               {loading && <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />}
               {isLogin ? (loading ? "Logging in..." : "Log in") : loading ? "Creating..." : "Create account"}
             </DuoButton>
