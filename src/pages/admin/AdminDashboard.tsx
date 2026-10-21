@@ -1,159 +1,269 @@
-import { useEffect, useState } from "react";
-import { AdminLayout } from "./AdminLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, BookOpen, MessageSquare, Trophy, TrendingUp, Activity, Crown } from "lucide-react";
+import { ReactNode, useCallback, useEffect, useState } from "react";
+import { Activity, Flame, RefreshCw, UserPlus, Users, Zap } from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { supabase } from "@/integrations/supabase/client";
+import { DuoButton } from "@/components/duolingo/DuoButton";
+import { cn } from "@/lib/utils";
+import { AdminLayout } from "./AdminLayout";
 
-interface DashboardStats {
-  totalUsers: number;
-  premiumUsers: number;
-  activeToday: number;
-  totalQuizzes: number;
-  totalForumThreads: number;
-  totalVocabulary: number;
-  totalLeagues: number;
+interface ProfileRow {
+  username: string;
+  xp: number;
+  level: number;
+  streak: number;
+  last_activity_date: string | null;
+  created_at: string;
 }
 
-export default function AdminDashboard() {
-  const [stats, setStats] = useState<DashboardStats>({
-    totalUsers: 0,
-    premiumUsers: 0,
-    activeToday: 0,
-    totalQuizzes: 0,
-    totalForumThreads: 0,
-    totalVocabulary: 0,
-    totalLeagues: 0,
+interface Stats {
+  totalUsers: number;
+  activeToday: number;
+  activeWeek: number;
+  newWeek: number;
+  totalXp: number;
+  onStreak: number;
+  signups: { date: string; count: number }[];
+  lastActive: { date: string; count: number }[];
+  byLevel: { level: number; count: number }[];
+  byStreak: { range: string; count: number }[];
+  topUsers: { username: string; xp: number }[];
+}
+
+const dayKey = (d: Date) => d.toISOString().split("T")[0];
+const daysAgo = (n: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d;
+};
+const shortDate = (key: string) =>
+  new Date(key + "T00:00:00").toLocaleDateString(undefined, { day: "numeric", month: "short" });
+
+function buildStats(rows: ProfileRow[], totalUsers: number): Stats {
+  const today = dayKey(new Date());
+  const weekAgo = dayKey(daysAgo(6));
+
+  const signups = Array.from({ length: 14 }, (_, i) => {
+    const key = dayKey(daysAgo(13 - i));
+    return { date: shortDate(key), count: rows.filter((r) => r.created_at?.slice(0, 10) === key).length };
   });
+  const lastActive = Array.from({ length: 7 }, (_, i) => {
+    const key = dayKey(daysAgo(6 - i));
+    return { date: shortDate(key), count: rows.filter((r) => r.last_activity_date === key).length };
+  });
+
+  const levelCounts: Record<number, number> = {};
+  rows.forEach((r) => (levelCounts[r.level] = (levelCounts[r.level] || 0) + 1));
+  const byLevel = Object.entries(levelCounts)
+    .map(([level, count]) => ({ level: Number(level), count }))
+    .sort((a, b) => a.level - b.level)
+    .slice(0, 20);
+
+  const ranges = [
+    { range: "0", min: 0, max: 0 },
+    { range: "1–7", min: 1, max: 7 },
+    { range: "8–30", min: 8, max: 30 },
+    { range: "31–100", min: 31, max: 100 },
+    { range: "100+", min: 101, max: Infinity },
+  ];
+  const byStreak = ranges.map((r) => ({
+    range: r.range,
+    count: rows.filter((p) => p.streak >= r.min && p.streak <= r.max).length,
+  }));
+
+  return {
+    totalUsers,
+    activeToday: rows.filter((r) => r.last_activity_date === today).length,
+    activeWeek: rows.filter((r) => r.last_activity_date && r.last_activity_date >= weekAgo).length,
+    newWeek: rows.filter((r) => r.created_at && r.created_at.slice(0, 10) >= weekAgo).length,
+    totalXp: rows.reduce((sum, r) => sum + (r.xp || 0), 0),
+    onStreak: rows.filter((r) => r.streak > 0).length,
+    signups,
+    lastActive,
+    byLevel,
+    byStreak,
+    topUsers: [...rows].sort((a, b) => b.xp - a.xp).slice(0, 10).map((r) => ({ username: r.username, xp: r.xp })),
+  };
+}
+
+function StatTile({ label, value, icon: Icon, tone }: { label: string; value: string; icon: typeof Users; tone: string }) {
+  return (
+    <div className="duo-card p-5">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-extrabold uppercase tracking-wide text-muted-foreground">{label}</p>
+        <span className={cn("w-9 h-9 rounded-xl flex items-center justify-center", tone)}>
+          <Icon className="w-5 h-5" />
+        </span>
+      </div>
+      <p className="mt-3 text-3xl font-black text-foreground">{value}</p>
+    </div>
+  );
+}
+
+function ChartCard({ title, description, children, className }: { title: string; description: string; children: ReactNode; className?: string }) {
+  return (
+    <div className={cn("duo-card p-5", className)}>
+      <p className="text-lg font-extrabold text-foreground">{title}</p>
+      <p className="text-sm font-semibold text-muted-foreground">{description}</p>
+      <div className="mt-4">{children}</div>
+    </div>
+  );
+}
+
+// Recharts styling that follows the light/dark theme.
+const axis = { tick: { fill: "hsl(var(--muted-foreground))", fontSize: 12, fontWeight: 700 }, axisLine: false, tickLine: false };
+const grid = { stroke: "hsl(var(--border))", strokeDasharray: "4 4", vertical: false };
+const tooltip = {
+  cursor: { fill: "hsl(var(--muted))" },
+  contentStyle: {
+    background: "hsl(var(--popover))",
+    border: "2px solid hsl(var(--border))",
+    borderRadius: 12,
+    color: "hsl(var(--foreground))",
+    fontWeight: 700,
+  },
+  labelStyle: { color: "hsl(var(--muted-foreground))" },
+};
+
+export default function AdminDashboard() {
+  const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const [
-          usersRes,
-          premiumRes,
-          activeTodayRes,
-          quizzesRes,
-          threadsRes,
-          vocabRes,
-          leaguesRes,
-        ] = await Promise.all([
-          supabase.from("profiles").select("id", { count: "exact", head: true }),
-          supabase.from("profiles").select("id", { count: "exact", head: true }).eq("is_premium", true),
-          supabase.from("profiles").select("id", { count: "exact", head: true }).gte("last_activity_date", new Date().toISOString().split('T')[0]),
-          supabase.from("quizzes").select("id", { count: "exact", head: true }),
-          supabase.from("forum_threads").select("id", { count: "exact", head: true }),
-          supabase.from("user_vocabulary").select("id", { count: "exact", head: true }),
-          supabase.from("leagues").select("id", { count: "exact", head: true }),
-        ]);
-
-        setStats({
-          totalUsers: usersRes.count || 0,
-          premiumUsers: premiumRes.count || 0,
-          activeToday: activeTodayRes.count || 0,
-          totalQuizzes: quizzesRes.count || 0,
-          totalForumThreads: threadsRes.count || 0,
-          totalVocabulary: vocabRes.count || 0,
-          totalLeagues: leaguesRes.count || 0,
-        });
-      } catch (error) {
-        console.error("Error fetching stats:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [countRes, rowsRes] = await Promise.all([
+        supabase.from("profiles").select("id", { count: "exact", head: true }),
+        supabase.from("profiles").select("username, xp, level, streak, last_activity_date, created_at"),
+      ]);
+      const rows = (rowsRes.data ?? []) as ProfileRow[];
+      setStats(buildStats(rows, countRes.count ?? rows.length));
+    } catch (error) {
+      console.error("Error loading admin stats:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const statCards = [
-    { title: "Total Users", value: stats.totalUsers, icon: Users, color: "text-blue-500" },
-    { title: "Premium Users", value: stats.premiumUsers, icon: Crown, color: "text-yellow-500" },
-    { title: "Active Today", value: stats.activeToday, icon: Activity, color: "text-green-500" },
-    { title: "Total Quizzes", value: stats.totalQuizzes, icon: BookOpen, color: "text-purple-500" },
-    { title: "Forum Threads", value: stats.totalForumThreads, icon: MessageSquare, color: "text-orange-500" },
-    { title: "Vocabulary Items", value: stats.totalVocabulary, icon: TrendingUp, color: "text-pink-500" },
-    { title: "Leagues", value: stats.totalLeagues, icon: Trophy, color: "text-red-500" },
-  ];
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const n = (v: number | undefined) => (loading || v === undefined ? "…" : v.toLocaleString());
 
   return (
-    <AdminLayout title="Dashboard">
+    <AdminLayout
+      title="Overview"
+      description="How people are using Shpoko. Counts registered accounts; guests aren't stored."
+      actions={
+        <DuoButton variant="white" size="sm" onClick={load} disabled={loading}>
+          <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
+          Refresh
+        </DuoButton>
+      }
+    >
       <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold mb-2">Welcome to Admin Panel</h2>
-          <p className="text-muted-foreground">
-            Manage users, content, games, and more from this central dashboard.
-          </p>
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
+          <StatTile label="Total users" value={n(stats?.totalUsers)} icon={Users} tone="bg-primary/15 text-primary" />
+          <StatTile label="Active today" value={n(stats?.activeToday)} icon={Activity} tone="bg-success/15 text-success" />
+          <StatTile label="Active this week" value={n(stats?.activeWeek)} icon={Activity} tone="bg-success/15 text-success" />
+          <StatTile label="New this week" value={n(stats?.newWeek)} icon={UserPlus} tone="bg-accent-strong/15 text-accent-strong" />
+          <StatTile label="On a streak" value={n(stats?.onStreak)} icon={Flame} tone="bg-warning/15 text-warning" />
+          <StatTile label="XP earned" value={n(stats?.totalXp)} icon={Zap} tone="bg-warning/15 text-warning" />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {statCards.map((stat) => (
-            <Card key={stat.title}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {loading ? "..." : stat.value.toLocaleString()}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {stats && (
+          <>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <ChartCard title="New sign-ups" description="Accounts created per day, last 14 days">
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={stats.signups}>
+                    <CartesianGrid {...grid} />
+                    <XAxis dataKey="date" {...axis} interval={1} />
+                    <YAxis allowDecimals={false} {...axis} width={32} />
+                    <Tooltip {...tooltip} />
+                    <Bar dataKey="count" name="Sign-ups" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartCard>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Common admin tasks</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-2">
-              <a href="/admin/users" className="flex items-center gap-2 p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors">
-                <Users className="h-5 w-5" />
-                <span>Manage Users</span>
-              </a>
-              <a href="/admin/quizzes" className="flex items-center gap-2 p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors">
-                <BookOpen className="h-5 w-5" />
-                <span>Manage Quizzes</span>
-              </a>
-              <a href="/admin/forum" className="flex items-center gap-2 p-3 rounded-lg bg-muted hover:bg-muted/80 transition-colors">
-                <MessageSquare className="h-5 w-5" />
-                <span>Moderate Forum</span>
-              </a>
-            </CardContent>
-          </Card>
+              <ChartCard title="Last active" description="Users whose latest visit was on each day, last 7 days">
+                <ResponsiveContainer width="100%" height={240}>
+                  <LineChart data={stats.lastActive}>
+                    <CartesianGrid {...grid} />
+                    <XAxis dataKey="date" {...axis} />
+                    <YAxis allowDecimals={false} {...axis} width={32} />
+                    <Tooltip {...tooltip} />
+                    <Line
+                      type="monotone"
+                      dataKey="count"
+                      name="Users"
+                      stroke="hsl(var(--success))"
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: "hsl(var(--success))" }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartCard>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>System Status</CardTitle>
-              <CardDescription>Backend service health</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Database</span>
-                <span className="flex items-center gap-2 text-green-500 text-sm">
-                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                  Healthy
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Authentication</span>
-                <span className="flex items-center gap-2 text-green-500 text-sm">
-                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                  Healthy
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Edge Functions</span>
-                <span className="flex items-center gap-2 text-green-500 text-sm">
-                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                  Healthy
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              <ChartCard title="Users by level" description="How many users are on each level">
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={stats.byLevel}>
+                    <CartesianGrid {...grid} />
+                    <XAxis dataKey="level" {...axis} />
+                    <YAxis allowDecimals={false} {...axis} width={32} />
+                    <Tooltip {...tooltip} />
+                    <Bar dataKey="count" name="Users" fill="hsl(var(--accent-strong))" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartCard>
+
+              <ChartCard title="Users by streak" description="Current streak length in days">
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={stats.byStreak}>
+                    <CartesianGrid {...grid} />
+                    <XAxis dataKey="range" {...axis} />
+                    <YAxis allowDecimals={false} {...axis} width={32} />
+                    <Tooltip {...tooltip} />
+                    <Bar dataKey="count" name="Users" fill="hsl(var(--warning))" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartCard>
+            </div>
+
+            <ChartCard title="Top 10 by XP" description="Your most active learners">
+              {stats.topUsers.length === 0 ? (
+                <p className="py-8 text-center font-bold text-muted-foreground">No users yet.</p>
+              ) : (
+                <ol className="divide-y-2 divide-border">
+                  {stats.topUsers.map((u, i) => (
+                    <li key={u.username + i} className="flex items-center gap-4 py-3">
+                      <span
+                        className={cn(
+                          "w-8 text-center text-lg font-black",
+                          i === 0 ? "text-warning" : i < 3 ? "text-primary" : "text-muted-foreground"
+                        )}
+                      >
+                        {i + 1}
+                      </span>
+                      <span className="flex-1 font-extrabold text-foreground">{u.username}</span>
+                      <span className="font-extrabold text-warning">{u.xp.toLocaleString()} XP</span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </ChartCard>
+          </>
+        )}
       </div>
     </AdminLayout>
   );

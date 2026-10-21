@@ -14,10 +14,10 @@ export const SHOW_LEGACY = false;
 export const SHOW_SOUND_BUTTONS = false;
 
 /** Pages that are part of the new site. */
-const LIVE_PATHS = ["/", "/welcome", "/auth"];
+const LIVE_PATHS = ["/", "/welcome", "/auth", "/admin", "/admin/users"];
 
-/** Whole sections that stay reachable (the admin panel is for the site owner). */
-const LIVE_PREFIXES = ["/admin", "/course"];
+/** Whole sections that stay reachable. */
+const LIVE_PREFIXES = ["/course"];
 
 export const isLive = (path: string) =>
   SHOW_LEGACY ||
