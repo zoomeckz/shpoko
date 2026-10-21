@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DuoButton } from "@/components/duolingo/DuoButton";
+import { useSfx } from "@/hooks/useSfx";
 
 interface Question {
   prompt: string;
@@ -44,6 +45,7 @@ export function TryItCard({ onStart }: TryItCardProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>("choosing");
   const [correctCount, setCorrectCount] = useState(0);
+  const sfx = useSfx();
 
   const question = QUESTIONS[index];
   const isCorrect = selected === question.answer;
@@ -51,12 +53,18 @@ export function TryItCard({ onStart }: TryItCardProps) {
 
   const check = () => {
     if (!selected) return;
-    if (selected === question.answer) setCorrectCount((c) => c + 1);
+    if (selected === question.answer) {
+      setCorrectCount((c) => c + 1);
+      sfx.correct(correctCount + 1);
+    } else {
+      sfx.wrong();
+    }
     setPhase("checked");
   };
 
   const next = () => {
     if (index === QUESTIONS.length - 1) {
+      sfx.complete();
       setPhase("done");
       return;
     }
@@ -118,7 +126,10 @@ export function TryItCard({ onStart }: TryItCardProps) {
                     type="button"
                     disabled={phase === "checked"}
                     aria-pressed={isSelected}
-                    onClick={() => setSelected(option)}
+                    onClick={() => {
+                      if (option !== selected) sfx.tap();
+                      setSelected(option);
+                    }}
                     className={cn(
                       "h-16 rounded-2xl border-2 text-2xl font-extrabold transition-all duration-100",
                       "active:translate-y-1 active:shadow-none disabled:active:translate-y-0",

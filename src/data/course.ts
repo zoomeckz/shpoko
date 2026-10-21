@@ -2,7 +2,7 @@
  * The new Shpoko course. Each lesson is a list of short exercises played by
  * src/pages/CourseLesson.tsx.
  *
- * `audio` fields point at clips in /public (e.g. public/audio/letters/a.mp3).
+ * `audio` fields point at clips in /public (e.g. public/audio/letters/r.mp3).
  * Sound buttons stay hidden until SHOW_SOUND_BUTTONS is turned on in
  * src/config/features.ts, so missing clips never show up for learners.
  */
@@ -12,13 +12,31 @@ export interface ChoiceOption {
   audio?: string;
 }
 
+export interface FamiliarLetter {
+  upper: string;
+  lower: string;
+  sound: string;
+  /** Extra writing rule, shown highlighted. */
+  note?: string;
+  audio?: string;
+}
+
 export type Exercise =
+  | {
+      /** A short overview of letters that are written just like English ones. */
+      type: "familiar";
+      title: string;
+      note: string;
+      letters: FamiliarLetter[];
+    }
   | {
       type: "intro";
       letter: string;
       lower: string;
       sound: string;
       hint: string;
+      /** The English letter this one is easily mistaken for. */
+      looksLike?: string;
       audio?: string;
     }
   | {
@@ -27,7 +45,7 @@ export type Exercise =
       /** Big text shown above the options (a letter or a word). */
       display?: string;
       displayAudio?: string;
-      /** "letters" renders options as large Cyrillic tiles. */
+      /** "letters" renders options as large tiles. */
       optionStyle?: "letters" | "text";
       options: ChoiceOption[];
       answer: string;
@@ -69,119 +87,191 @@ export interface CourseUnit {
 const letterAudio = (name: string) => `/audio/letters/${name}.mp3`;
 const wordAudio = (name: string) => `/audio/words/${name}.mp3`;
 
+// Lesson 1: a quick look at the letters learners already know, then the
+// "false friends" that look English but sound different.
 const lesson1: Exercise[] = [
-  { type: "intro", letter: "А", lower: "а", sound: "a", hint: "Like the “a” in father.", audio: letterAudio("a") },
-  { type: "intro", letter: "О", lower: "о", sound: "o", hint: "Like the “o” in port, but short.", audio: letterAudio("o") },
+  {
+    type: "familiar",
+    title: "Letters you already know",
+    note: "These are written just like in English. A few sound a little different, but you write them the same way.",
+    letters: [
+      { upper: "А", lower: "а", sound: "a, as in father", audio: letterAudio("a") },
+      { upper: "Е", lower: "е", sound: "e, as in pet (never “ee”)", audio: letterAudio("e") },
+      { upper: "К", lower: "к", sound: "k, as in kite", audio: letterAudio("k") },
+      { upper: "О", lower: "о", sound: "o, as in sort, but short", audio: letterAudio("o") },
+      {
+        upper: "М",
+        lower: "м",
+        sound: "m, as in moon",
+        note: "Small м is just a little М. It's never written m.",
+        audio: letterAudio("m"),
+      },
+      { upper: "Т", lower: "т", sound: "t, as in top", note: "Small т is a little Т too.", audio: letterAudio("t") },
+    ],
+  },
+  {
+    type: "choice",
+    prompt: "Which one is a small М?",
+    optionStyle: "letters",
+    options: [{ label: "m" }, { label: "м" }, { label: "n" }],
+    answer: "м",
+    explain: "Small м is a little М, never m.",
+  },
+  {
+    type: "intro",
+    letter: "Р",
+    lower: "р",
+    sound: "r",
+    looksLike: "P",
+    hint: "A rolled “r”, like in Spanish or Italian.",
+    audio: letterAudio("r"),
+  },
+  {
+    type: "intro",
+    letter: "С",
+    lower: "с",
+    sound: "s",
+    looksLike: "C",
+    hint: "Always “s” as in sun. Never a “k” sound.",
+    audio: letterAudio("s"),
+  },
   {
     type: "choice",
     prompt: "What sound does this letter make?",
-    display: "А",
-    displayAudio: letterAudio("a"),
-    options: [{ label: "a" }, { label: "o" }, { label: "u" }],
-    answer: "a",
+    display: "Р",
+    displayAudio: letterAudio("r"),
+    options: [{ label: "p" }, { label: "r" }, { label: "b" }],
+    answer: "r",
   },
-  { type: "intro", letter: "М", lower: "м", sound: "m", hint: "Just like the English “m” in moon.", audio: letterAudio("m") },
   {
     type: "choice",
-    prompt: "Select the letter that sounds like “m”",
-    optionStyle: "letters",
-    options: [{ label: "О", audio: letterAudio("o") }, { label: "М", audio: letterAudio("m") }, { label: "А", audio: letterAudio("a") }],
-    answer: "М",
+    prompt: "What sound does this letter make?",
+    display: "С",
+    displayAudio: letterAudio("s"),
+    options: [{ label: "k" }, { label: "ch" }, { label: "s" }],
+    answer: "s",
   },
   {
     type: "choice",
     prompt: "How do you read this word?",
-    display: "МАМА",
-    displayAudio: wordAudio("mama"),
-    options: [{ label: "mama" }, { label: "nana" }, { label: "mapa" }],
-    answer: "mama",
-    explain: "МАМА means mum.",
+    display: "РАК",
+    displayAudio: wordAudio("rak"),
+    options: [{ label: "pak" }, { label: "rak" }, { label: "rac" }],
+    answer: "rak",
+    explain: "РАК means crab 🦀",
   },
-  { type: "intro", letter: "Т", lower: "т", sound: "t", hint: "Like the “t” in top.", audio: letterAudio("t") },
-  { type: "intro", letter: "К", lower: "к", sound: "k", hint: "Like the “k” in kite.", audio: letterAudio("k") },
+  {
+    type: "intro",
+    letter: "Н",
+    lower: "н",
+    sound: "n",
+    looksLike: "H",
+    hint: "“n” as in nose. Small н looks like a little Н.",
+    audio: letterAudio("n"),
+  },
+  {
+    type: "intro",
+    letter: "В",
+    lower: "в",
+    sound: "v",
+    looksLike: "B",
+    hint: "“v” as in van. Small в is a little В.",
+    audio: letterAudio("v"),
+  },
   {
     type: "match",
     prompt: "Tap the matching pairs",
     pairs: [
-      { left: "А", right: "a", audio: letterAudio("a") },
-      { left: "О", right: "o", audio: letterAudio("o") },
-      { left: "М", right: "m", audio: letterAudio("m") },
-      { left: "Т", right: "t", audio: letterAudio("t") },
-      { left: "К", right: "k", audio: letterAudio("k") },
+      { left: "Р", right: "r", audio: letterAudio("r") },
+      { left: "С", right: "s", audio: letterAudio("s") },
+      { left: "Н", right: "n", audio: letterAudio("n") },
+      { left: "В", right: "v", audio: letterAudio("v") },
     ],
   },
-  { type: "intro", letter: "Е", lower: "е", sound: "e", hint: "Like the “e” in pet.", audio: letterAudio("e") },
   {
     type: "choice",
-    prompt: "What sound does this letter make?",
-    display: "Е",
-    displayAudio: letterAudio("e"),
-    options: [{ label: "o" }, { label: "e" }, { label: "a" }],
-    answer: "e",
+    prompt: "How do you read this word?",
+    display: "НОС",
+    displayAudio: wordAudio("nos"),
+    options: [{ label: "hoc" }, { label: "nos" }, { label: "noc" }],
+    answer: "nos",
+    explain: "НОС means nose 👃",
+  },
+  {
+    type: "build",
+    prompt: "Write this word in Cyrillic",
+    target: "sok (juice)",
+    answer: ["С", "О", "К"],
+    tiles: ["К", "Р", "С", "О", "Н", "А"],
+    explain: "СОК means juice 🧃",
+    audio: wordAudio("sok"),
+  },
+  {
+    type: "intro",
+    letter: "У",
+    lower: "у",
+    sound: "u",
+    looksLike: "Y",
+    hint: "“oo” as in moon, but short.",
+    audio: letterAudio("u"),
+  },
+  {
+    type: "intro",
+    letter: "Х",
+    lower: "х",
+    sound: "h",
+    looksLike: "X",
+    hint: "“h” as in hat, a little throaty, like “ch” in Scottish loch.",
+    audio: letterAudio("h"),
   },
   {
     type: "choice",
-    prompt: "Select the letter that sounds like “k”",
+    prompt: "Select the letter that sounds like “u”",
     optionStyle: "letters",
     options: [
-      { label: "Т", audio: letterAudio("t") },
-      { label: "Е", audio: letterAudio("e") },
-      { label: "К", audio: letterAudio("k") },
-      { label: "М", audio: letterAudio("m") },
+      { label: "Х", audio: letterAudio("h") },
+      { label: "У", audio: letterAudio("u") },
+      { label: "В", audio: letterAudio("v") },
+      { label: "Н", audio: letterAudio("n") },
     ],
-    answer: "К",
+    answer: "У",
   },
   {
     type: "choice",
     prompt: "How do you read this word?",
-    display: "КОТКА",
-    displayAudio: wordAudio("kotka"),
-    options: [{ label: "kokta" }, { label: "kotka" }, { label: "totka" }],
-    answer: "kotka",
-    explain: "КОТКА means cat 🐱",
-  },
-  {
-    type: "build",
-    prompt: "Write this word in Cyrillic",
-    target: "mama (mum)",
-    answer: ["М", "А", "М", "А"],
-    tiles: ["А", "М", "Т", "А", "О", "М"],
-    audio: wordAudio("mama"),
+    display: "УХО",
+    displayAudio: wordAudio("uho"),
+    options: [{ label: "yxo" }, { label: "uho" }, { label: "uxo" }],
+    answer: "uho",
+    explain: "УХО means ear 👂",
   },
   {
     type: "choice",
-    prompt: "How do you read this word?",
-    display: "ТАТКО",
-    displayAudio: wordAudio("tatko"),
-    options: [{ label: "takto" }, { label: "tatka" }, { label: "tatko" }],
-    answer: "tatko",
-    explain: "ТАТКО means dad.",
-  },
-  {
-    type: "build",
-    prompt: "Write this word in Cyrillic",
-    target: "oko (eye)",
-    answer: ["О", "К", "О"],
-    tiles: ["К", "О", "Е", "Т", "О", "А"],
-    audio: wordAudio("oko"),
+    prompt: "How do you read this sign?",
+    display: "РЕСТОРАНТ",
+    displayAudio: wordAudio("restorant"),
+    options: [{ label: "pectopaht" }, { label: "restorant" }, { label: "restoran" }],
+    answer: "restorant",
+    explain: "РЕСТОРАНТ means restaurant 🍽️",
   },
   {
     type: "match",
     prompt: "Match the words with their meaning",
     pairs: [
-      { left: "МАМА", right: "mum", audio: wordAudio("mama") },
-      { left: "ТАТКО", right: "dad", audio: wordAudio("tatko") },
-      { left: "КОТКА", right: "cat", audio: wordAudio("kotka") },
-      { left: "ОКО", right: "eye", audio: wordAudio("oko") },
+      { left: "НОС", right: "nose", audio: wordAudio("nos") },
+      { left: "УХО", right: "ear", audio: wordAudio("uho") },
+      { left: "СОК", right: "juice", audio: wordAudio("sok") },
+      { left: "РАК", right: "crab", audio: wordAudio("rak") },
     ],
   },
   {
     type: "build",
     prompt: "Write this word in Cyrillic",
-    target: "kotka (cat)",
-    answer: ["К", "О", "Т", "К", "А"],
-    tiles: ["Т", "К", "А", "Е", "О", "К", "М"],
-    audio: wordAudio("kotka"),
+    target: "more (sea)",
+    answer: ["М", "О", "Р", "Е"],
+    tiles: ["Е", "Р", "Н", "М", "С", "О"],
+    explain: "МОРЕ means sea 🌊",
+    audio: wordAudio("more"),
   },
 ];
 
@@ -192,11 +282,10 @@ export const course: CourseUnit[] = [
     unit: 1,
     title: "Read your first letters",
     lessons: [
-      { id: "alphabet-1", title: "First letters", description: "А О Е К М Т", xp: 10, exercises: lesson1 },
-      { id: "alphabet-2", title: "Look-alikes", description: "Р Н В С Х У", xp: 10, exercises: null },
-      { id: "alphabet-3", title: "New shapes", description: "Б Г Д З И Л П", xp: 10, exercises: null },
-      { id: "alphabet-4", title: "Tricky sounds", description: "Ж Ш Щ Ц Ч Ф", xp: 10, exercises: null },
-      { id: "alphabet-5", title: "Last letters", description: "Й Ъ Ь Ю Я", xp: 10, exercises: null },
+      { id: "alphabet-1", title: "First letters", description: "В Н Р С У Х", xp: 10, exercises: lesson1 },
+      { id: "alphabet-2", title: "New shapes", description: "Б Г Д З И Л П", xp: 10, exercises: null },
+      { id: "alphabet-3", title: "Tricky sounds", description: "Ж Ш Щ Ц Ч Ф", xp: 10, exercises: null },
+      { id: "alphabet-4", title: "Last letters", description: "Й Ъ Ь Ю Я", xp: 10, exercises: null },
     ],
   },
 ];

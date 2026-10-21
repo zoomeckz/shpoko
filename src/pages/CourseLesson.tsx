@@ -1,17 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, X } from "lucide-react";
+import { Check, Volume2, VolumeX, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { findLesson, type CourseLesson as Lesson } from "@/data/course";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuest } from "@/contexts/GuestContext";
 import { useUserProgress } from "@/hooks/useUserProgress";
+import { useSfx } from "@/hooks/useSfx";
+import { useSoundSettings } from "@/contexts/SoundSettingsContext";
 import { DuoButton } from "@/components/duolingo/DuoButton";
 import {
   AnswerState,
   BuildExercise,
   ChoiceExercise,
+  FamiliarExercise,
   IntroExercise,
   MatchExercise,
 } from "@/components/course/exercises";
@@ -28,6 +31,8 @@ function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const { user, updateXP } = useAuth();
   const { isGuest, initGuest, addXP, markLessonCompleted, isGuestLessonCompleted } = useGuest();
   const { saveProgress } = useUserProgress();
+  const sfx = useSfx();
+  const { soundEnabled, toggleSound } = useSoundSettings();
 
   // Exercises still to play; wrong answers are appended again at the end.
   const [queue, setQueue] = useState<number[]>(() => exercises.map((_, i) => i));
@@ -39,13 +44,15 @@ function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const [mistakes, setMistakes] = useState<Set<number>>(new Set());
   const [praise, setPraise] = useState(PRAISE[0]);
   const [confirmExit, setConfirmExit] = useState(false);
+  const [streak, setStreak] = useState(0);
   const startedAt = useRef(Date.now());
   const saved = useRef(false);
 
   const index = queue[pos];
   const exercise = exercises[index];
-  const isIntro = exercise?.type === "intro";
-  const graded = exercises.filter((e) => e.type !== "intro").length;
+  // Teaching screens are just read and continued, not graded.
+  const isIntro = exercise?.type === "intro" || exercise?.type === "familiar";
+  const graded = exercises.filter((e) => e.type !== "intro" && e.type !== "familiar").length;
   const accuracy = Math.round(((graded - mistakes.size) / graded) * 100);
 
   // Visitors who land here directly still get their progress remembered.
@@ -61,14 +68,19 @@ function LessonPlayer({ lesson }: { lesson: Lesson }) {
       setLastCorrect(correct);
       setPraise(PRAISE[Math.floor(Math.random() * PRAISE.length)]);
       if (correct) {
+        const nextStreak = streak + 1;
+        setStreak(nextStreak);
+        sfx.correct(nextStreak);
         setDone((d) => new Set(d).add(index));
       } else {
+        setStreak(0);
+        sfx.wrong();
         setMistakes((m) => new Set(m).add(index));
         setQueue((q) => [...q, index]);
       }
       setPhase("checked");
     },
-    [index]
+    [index, streak, sfx]
   );
 
   const next = useCallback(() => {
@@ -107,6 +119,7 @@ function LessonPlayer({ lesson }: { lesson: Lesson }) {
   useEffect(() => {
     if (phase !== "finished" || saved.current) return;
     saved.current = true;
+    sfx.complete();
     if (user) {
       saveProgress(lesson.id, accuracy, graded - mistakes.size, graded, () => updateXP(lesson.xp));
     } else {
@@ -161,6 +174,15 @@ function LessonPlayer({ lesson }: { lesson: Lesson }) {
             <span className="absolute left-2 right-2 top-1 h-1 rounded-full bg-white/30" />
           </motion.div>
         </div>
+        <button
+          type="button"
+          onClick={toggleSound}
+          aria-label={soundEnabled ? "Mute sound effects" : "Turn on sound effects"}
+          aria-pressed={!soundEnabled}
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {soundEnabled ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
+        </button>
       </header>
 
       {/* Exercise */}
@@ -173,6 +195,7 @@ function LessonPlayer({ lesson }: { lesson: Lesson }) {
             exit={{ opacity: 0, x: -24 }}
             transition={{ duration: 0.18 }}
           >
+            {exercise.type === "familiar" && <FamiliarExercise exercise={exercise} {...props} />}
             {exercise.type === "intro" && <IntroExercise exercise={exercise} {...props} />}
             {exercise.type === "choice" && <ChoiceExercise exercise={exercise} {...props} />}
             {exercise.type === "match" && <MatchExercise exercise={exercise} {...props} />}

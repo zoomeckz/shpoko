@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { Exercise } from "@/data/course";
+import { useSfx } from "@/hooks/useSfx";
 import { SoundButton } from "./SoundButton";
 
 export interface AnswerState {
@@ -44,15 +45,67 @@ function Prompt({ children }: { children: React.ReactNode }) {
   return <h1 className="text-2xl sm:text-[28px] font-extrabold text-foreground">{children}</h1>;
 }
 
+/* ---------- Letters you already know ---------- */
+
+export function FamiliarExercise({
+  exercise,
+  onChange,
+}: BaseProps & { exercise: Extract<Exercise, { type: "familiar" }> }) {
+  const sfx = useSfx();
+
+  useEffect(() => {
+    onChange({ ready: true, correct: true, solution: "" });
+    sfx.reveal();
+  }, [onChange, sfx]);
+
+  return (
+    <div>
+      <span className="rounded-full bg-primary/15 px-4 py-1.5 text-sm font-extrabold uppercase tracking-widest text-primary">
+        Good news
+      </span>
+      <h1 className="mt-4 text-2xl sm:text-[28px] font-extrabold text-foreground">{exercise.title}</h1>
+      <p className="mt-2 font-bold text-muted-foreground">{exercise.note}</p>
+
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {exercise.letters.map((l, i) => (
+          <motion.div
+            key={l.upper}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 * i }}
+            className={cn(
+              "duo-card flex items-center gap-4 p-3",
+              l.note && "sm:col-span-2 border-primary/60 shadow-[0_4px_0_0_hsl(var(--primary)/0.6)]"
+            )}
+          >
+            <span className="w-16 shrink-0 text-center text-3xl font-black text-foreground">
+              {l.upper}
+              <span className="ml-1 text-muted-foreground/70">{l.lower}</span>
+            </span>
+            <span className="min-w-0">
+              <span className="block font-bold text-foreground">{l.sound}</span>
+              {l.note && <span className="block text-sm font-extrabold text-primary">{l.note}</span>}
+            </span>
+            <SoundButton src={l.audio} size="sm" className="ml-auto shrink-0" />
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ---------- New letter ---------- */
 
 export function IntroExercise({
   exercise,
   onChange,
 }: BaseProps & { exercise: Extract<Exercise, { type: "intro" }> }) {
+  const sfx = useSfx();
+
   useEffect(() => {
     onChange({ ready: true, correct: true, solution: "" });
-  }, [onChange]);
+    sfx.reveal();
+  }, [onChange, sfx]);
 
   return (
     <div className="flex flex-col items-center text-center">
@@ -63,18 +116,33 @@ export function IntroExercise({
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 18 }}
-        className="duo-card mt-8 w-full max-w-xs px-6 py-8"
+        className="duo-card relative mt-8 w-full max-w-xs px-6 py-8"
       >
+        {exercise.looksLike && (
+          <motion.span
+            initial={{ scale: 0, rotate: -20 }}
+            animate={{ scale: 1, rotate: 8 }}
+            transition={{ delay: 0.35, type: "spring", stiffness: 300, damping: 14 }}
+            className="absolute -top-4 -right-3 rounded-xl bg-error px-3 py-1.5 text-sm font-extrabold text-error-foreground shadow-[0_3px_0_0_hsl(var(--error-dark))]"
+          >
+            Not “{exercise.looksLike}”!
+          </motion.span>
+        )}
         <p className="text-[96px] leading-none font-black text-foreground">
           {exercise.letter}
           <span className="ml-3 text-muted-foreground/60">{exercise.lower}</span>
         </p>
         <div className="mt-6 flex items-center justify-center gap-3">
           <SoundButton src={exercise.audio} />
-          <p className="text-2xl font-extrabold text-primary">“{exercise.sound}”</p>
+          <p className="text-2xl font-extrabold text-primary">sounds like “{exercise.sound}”</p>
         </div>
       </motion.div>
-      <p className="mt-6 text-lg font-bold text-muted-foreground">{exercise.hint}</p>
+      {exercise.looksLike && (
+        <p className="mt-6 text-lg font-extrabold text-foreground">
+          Looks like an English {exercise.looksLike}, but it isn't one.
+        </p>
+      )}
+      <p className={cn("text-lg font-bold text-muted-foreground", exercise.looksLike ? "mt-1" : "mt-6")}>{exercise.hint}</p>
     </div>
   );
 }
@@ -88,9 +156,11 @@ export function ChoiceExercise({
 }: BaseProps & { exercise: Extract<Exercise, { type: "choice" }> }) {
   const [selected, setSelected] = useState<string | null>(null);
   const letters = exercise.optionStyle === "letters";
+  const sfx = useSfx();
 
   const choose = (label: string) => {
     if (checked) return;
+    if (label !== selected) sfx.tap();
     setSelected(label);
     onChange({ ready: true, correct: label === exercise.answer, solution: exercise.answer });
   };
@@ -166,8 +236,17 @@ export function MatchExercise({
   const [pickedRight, setPickedRight] = useState<string | null>(null);
   const [matched, setMatched] = useState<string[]>([]);
   const [flash, setFlash] = useState<{ left: string; right: string; ok: boolean } | null>(null);
+  const sfx = useSfx();
 
   const partnerOf = (l: string) => exercise.pairs.find((p) => p.left === l)?.right;
+  const pickLeft = (l: string) => {
+    if (!pickedRight) sfx.tap();
+    setPickedLeft(l);
+  };
+  const pickRight = (r: string) => {
+    if (!pickedLeft) sfx.tap();
+    setPickedRight(r);
+  };
 
   useEffect(() => {
     onChange({ ready: false, correct: true, solution: "" });
@@ -176,6 +255,8 @@ export function MatchExercise({
   useEffect(() => {
     if (!pickedLeft || !pickedRight) return;
     const ok = partnerOf(pickedLeft) === pickedRight;
+    if (ok) sfx.match(matched.length);
+    else sfx.miss();
     setFlash({ left: pickedLeft, right: pickedRight, ok });
     const t = setTimeout(() => {
       if (ok) setMatched((m) => [...m, pickedLeft]);
@@ -215,7 +296,7 @@ export function MatchExercise({
               key={l}
               type="button"
               disabled={leftState(l) === "done" || !!flash}
-              onClick={() => setPickedLeft(l)}
+              onClick={() => pickLeft(l)}
               className={cn(tileClass(leftState(l)), "w-full h-16 text-2xl")}
             >
               {l}
@@ -228,7 +309,7 @@ export function MatchExercise({
               key={r}
               type="button"
               disabled={rightState(r) === "done" || !!flash}
-              onClick={() => setPickedRight(r)}
+              onClick={() => pickRight(r)}
               className={cn(tileClass(rightState(r)), "w-full h-16 text-xl")}
             >
               {r}
@@ -249,6 +330,7 @@ export function BuildExercise({
 }: BaseProps & { exercise: Extract<Exercise, { type: "build" }> }) {
   // Indexes into exercise.tiles, in the order they were placed.
   const [placed, setPlaced] = useState<number[]>([]);
+  const sfx = useSfx();
 
   useEffect(() => {
     const built = placed.map((i) => exercise.tiles[i]).join("");
@@ -259,8 +341,16 @@ export function BuildExercise({
     });
   }, [placed, exercise, onChange]);
 
-  const add = (i: number) => !checked && setPlaced((p) => [...p, i]);
-  const remove = (i: number) => !checked && setPlaced((p) => p.filter((x) => x !== i));
+  const add = (i: number) => {
+    if (checked) return;
+    sfx.tap();
+    setPlaced((p) => [...p, i]);
+  };
+  const remove = (i: number) => {
+    if (checked) return;
+    sfx.untap();
+    setPlaced((p) => p.filter((x) => x !== i));
+  };
 
   return (
     <div>
