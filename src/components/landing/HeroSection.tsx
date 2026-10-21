@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { DuoButton } from "@/components/duolingo/DuoButton";
-import shpokoMascot from "@/assets/shpoko-mascot.png";
+import shpokoMascot from "@/assets/shpoko-mascot.webp";
 
 // Letter tiles that float around the mascot.
 const tiles = [

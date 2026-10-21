@@ -107,8 +107,9 @@ export const Sidebar = ({ className }: SidebarProps) => {
   const isGameActive = gameItems.some(item => location.pathname === item.path);
   const isQuizActive = quizItems.some(item => location.pathname === item.path);
 
-  // Fetch pending incoming trades count
+  // Fetch pending incoming trades count (only while the shop is part of the site)
   useEffect(() => {
+    if (!isLive("/shop")) return;
     const fetchPendingTrades = async () => {
       if (!user) {
         setPendingTradeCount(0);
@@ -437,7 +438,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
       </div>
 
       {/* Help Tour Modal */}
-      <HelpTourModal open={helpTourOpen} onOpenChange={setHelpTourOpen} />
+      {SHOW_LEGACY && <HelpTourModal open={helpTourOpen} onOpenChange={setHelpTourOpen} />}
     </aside>
   );
 };

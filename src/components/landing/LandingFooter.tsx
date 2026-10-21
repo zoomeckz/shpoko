@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { DuoButton } from "@/components/duolingo/DuoButton";
-import shpokoMascot from "@/assets/shpoko-mascot.png";
+import shpokoMascot from "@/assets/shpoko-mascot.webp";
 import { Wordmark } from "./Wordmark";
 import { isLive } from "@/config/features";
 

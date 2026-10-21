@@ -5,7 +5,7 @@ import { Check, Lock, Star, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { course, type CourseLesson } from "@/data/course";
 import { useUserProgress } from "@/hooks/useUserProgress";
-import shpokoMascot from "@/assets/shpoko-mascot.png";
+import shpokoMascot from "@/assets/shpoko-mascot.webp";
 
 // Horizontal offsets (px) that make the path wind left and right.
 const OFFSETS = [0, 45, 70, 45, 0, -45, -70, -45];
@@ -174,8 +174,8 @@ function LessonCard({
         >
           {status === "completed"
             ? isTest
-              ? "Retake test"
-              : "Practice again"
+              ? `Retake test +${Math.ceil(lesson.xp / 2)} XP`
+              : `Practice +${Math.ceil(lesson.xp / 2)} XP`
             : isTest
               ? `Start test +${lesson.xp} XP`
               : `Start +${lesson.xp} XP`}

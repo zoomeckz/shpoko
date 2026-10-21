@@ -12,7 +12,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { calculateLevel } from "@/lib/levelUtils";
 import { Loader2, CheckCircle2, AlertCircle, X } from "lucide-react";
-import shpokoMascot from "@/assets/shpoko-mascot.png";
+import shpokoMascot from "@/assets/shpoko-mascot.webp";
 
 const signUpSchema = z.object({
   email: z.string().email("Please enter a valid email address"),

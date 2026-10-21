@@ -10,107 +10,115 @@ import { LanguageModeProvider } from "@/contexts/LanguageModeContext";
 import { SoundSettingsProvider } from "@/contexts/SoundSettingsContext";
 import { ThemeProvider } from "next-themes";
 import { RouteGate } from "@/components/RouteGate";
+import { lazy, Suspense } from "react";
 import Index from "./pages/Index";
-import Landing from "./pages/Landing";
-import Auth from "./pages/Auth";
-import About from "./pages/About";
-import { CyrillicLesson } from "./pages/CyrillicLesson";
-import { GreetingsLesson } from "./pages/GreetingsLesson";
-import { NumbersLesson } from "./pages/NumbersLesson";
-import TypeInLesson from "./pages/TypeInLesson";
-import FillBlanksLesson from "./pages/FillBlanksLesson";
-import MatchCyrillicLesson from "./pages/MatchCyrillicLesson";
-import ChooseWordLesson from "./pages/ChooseWordLesson";
-import Leaderboard from "./pages/Leaderboard";
-import Premium from "./pages/Premium";
-import NotFound from "./pages/NotFound";
-import LingqReader from "./pages/LingqReader";
-import ChildrenStories from "./pages/ChildrenStories";
-import ContextoGame from "./pages/ContextoGame";
-import TierAssessment from "./pages/TierAssessment";
-import ConjugationGame from "./pages/ConjugationGame";
-import PhraseClozeCombat from "./pages/PhraseClozeCombat";
-import FixMyBulgarianGame from "./pages/FixMyBulgarianGame";
-import ListeningFillGame from "./pages/ListeningFillGame";
+const Landing = lazy(() => import("./pages/Landing"));
+const Auth = lazy(() => import("./pages/Auth"));
+const About = lazy(() => import("./pages/About"));
+const CyrillicLesson = lazy(() => import("./pages/CyrillicLesson").then((m) => ({ default: m.CyrillicLesson })));
+const GreetingsLesson = lazy(() => import("./pages/GreetingsLesson").then((m) => ({ default: m.GreetingsLesson })));
+const NumbersLesson = lazy(() => import("./pages/NumbersLesson").then((m) => ({ default: m.NumbersLesson })));
+const TypeInLesson = lazy(() => import("./pages/TypeInLesson"));
+const FillBlanksLesson = lazy(() => import("./pages/FillBlanksLesson"));
+const MatchCyrillicLesson = lazy(() => import("./pages/MatchCyrillicLesson"));
+const ChooseWordLesson = lazy(() => import("./pages/ChooseWordLesson"));
+const Leaderboard = lazy(() => import("./pages/Leaderboard"));
+const Premium = lazy(() => import("./pages/Premium"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const LingqReader = lazy(() => import("./pages/LingqReader"));
+const ChildrenStories = lazy(() => import("./pages/ChildrenStories"));
+const ContextoGame = lazy(() => import("./pages/ContextoGame"));
+const TierAssessment = lazy(() => import("./pages/TierAssessment"));
+const ConjugationGame = lazy(() => import("./pages/ConjugationGame"));
+const PhraseClozeCombat = lazy(() => import("./pages/PhraseClozeCombat"));
+const FixMyBulgarianGame = lazy(() => import("./pages/FixMyBulgarianGame"));
+const ListeningFillGame = lazy(() => import("./pages/ListeningFillGame"));
 // Topic Lessons
-import ColorsLesson from "./pages/topic/ColorsLesson";
-import NumbersTopicLesson from "./pages/topic/NumbersTopicLesson";
-import ShapesLesson from "./pages/topic/ShapesLesson";
-import AdjectivesLesson from "./pages/topic/AdjectivesLesson";
-import Adjectives2Lesson from "./pages/topic/Adjectives2Lesson";
-import VerbsLesson from "./pages/topic/VerbsLesson";
-import WeekdaysLesson from "./pages/topic/WeekdaysLesson";
-import FoodDrinksLesson from "./pages/topic/FoodDrinksLesson";
-import RestaurantLesson from "./pages/topic/RestaurantLesson";
-import DirectionsLesson from "./pages/topic/DirectionsLesson";
-import DirectionsBeginnerLesson from "./pages/topic/DirectionsBeginnerLesson";
-import DirectionsIntermediateLesson from "./pages/topic/DirectionsIntermediateLesson";
-import DirectionsAdvancedLesson from "./pages/topic/DirectionsAdvancedLesson";
-import WeatherLesson from "./pages/topic/WeatherLesson";
-import AnimalsLesson from "./pages/topic/AnimalsLesson";
-import JobsLesson from "./pages/topic/JobsLesson";
-import FamilyLesson from "./pages/topic/FamilyLesson";
-import RestaurantOrderingLesson from "./pages/topic/RestaurantOrderingLesson";
-import SynonymsLesson from "./pages/topic/SynonymsLesson";
-import DialogueBattleGame from "./pages/DialogueBattleGame";
-import PronounsLesson from "./pages/topic/PronounsLesson";
-import EssentialVerbsLesson from "./pages/topic/EssentialVerbsLesson";
-import SurvivalPhrasesLesson from "./pages/topic/SurvivalPhrasesLesson";
-import FoodDrinksStarterLesson from "./pages/topic/FoodDrinksStarterLesson";
-import ParticlesBeginnerLesson from "./pages/topic/ParticlesBeginnerLesson";
-import ParticlesIntermediateLesson from "./pages/topic/ParticlesIntermediateLesson";
-import ParticlesAdvancedLesson from "./pages/topic/ParticlesAdvancedLesson";
-import { CyrillicLettersLesson } from "./pages/topic/CyrillicLettersLesson";
+const ColorsLesson = lazy(() => import("./pages/topic/ColorsLesson"));
+const NumbersTopicLesson = lazy(() => import("./pages/topic/NumbersTopicLesson"));
+const ShapesLesson = lazy(() => import("./pages/topic/ShapesLesson"));
+const AdjectivesLesson = lazy(() => import("./pages/topic/AdjectivesLesson"));
+const Adjectives2Lesson = lazy(() => import("./pages/topic/Adjectives2Lesson"));
+const VerbsLesson = lazy(() => import("./pages/topic/VerbsLesson"));
+const WeekdaysLesson = lazy(() => import("./pages/topic/WeekdaysLesson"));
+const FoodDrinksLesson = lazy(() => import("./pages/topic/FoodDrinksLesson"));
+const RestaurantLesson = lazy(() => import("./pages/topic/RestaurantLesson"));
+const DirectionsLesson = lazy(() => import("./pages/topic/DirectionsLesson"));
+const DirectionsBeginnerLesson = lazy(() => import("./pages/topic/DirectionsBeginnerLesson"));
+const DirectionsIntermediateLesson = lazy(() => import("./pages/topic/DirectionsIntermediateLesson"));
+const DirectionsAdvancedLesson = lazy(() => import("./pages/topic/DirectionsAdvancedLesson"));
+const WeatherLesson = lazy(() => import("./pages/topic/WeatherLesson"));
+const AnimalsLesson = lazy(() => import("./pages/topic/AnimalsLesson"));
+const JobsLesson = lazy(() => import("./pages/topic/JobsLesson"));
+const FamilyLesson = lazy(() => import("./pages/topic/FamilyLesson"));
+const RestaurantOrderingLesson = lazy(() => import("./pages/topic/RestaurantOrderingLesson"));
+const SynonymsLesson = lazy(() => import("./pages/topic/SynonymsLesson"));
+const DialogueBattleGame = lazy(() => import("./pages/DialogueBattleGame"));
+const PronounsLesson = lazy(() => import("./pages/topic/PronounsLesson"));
+const EssentialVerbsLesson = lazy(() => import("./pages/topic/EssentialVerbsLesson"));
+const SurvivalPhrasesLesson = lazy(() => import("./pages/topic/SurvivalPhrasesLesson"));
+const FoodDrinksStarterLesson = lazy(() => import("./pages/topic/FoodDrinksStarterLesson"));
+const ParticlesBeginnerLesson = lazy(() => import("./pages/topic/ParticlesBeginnerLesson"));
+const ParticlesIntermediateLesson = lazy(() => import("./pages/topic/ParticlesIntermediateLesson"));
+const ParticlesAdvancedLesson = lazy(() => import("./pages/topic/ParticlesAdvancedLesson"));
+const CyrillicLettersLesson = lazy(() => import("./pages/topic/CyrillicLettersLesson").then((m) => ({ default: m.CyrillicLettersLesson })));
 // Spanish Lessons
-import SpanishAlphabetLesson from "./pages/spanish/SpanishAlphabetLesson";
-import SpanishGreetingsLesson from "./pages/spanish/SpanishGreetingsLesson";
-import SpanishNumbersLesson from "./pages/spanish/SpanishNumbersLesson";
-import SpanishColorsLesson from "./pages/spanish/SpanishColorsLesson";
-import SpanishAnimalsLesson from "./pages/spanish/SpanishAnimalsLesson";
-import SpanishFamilyLesson from "./pages/spanish/SpanishFamilyLesson";
-import SpanishFoodLesson from "./pages/spanish/SpanishFoodLesson";
+const SpanishAlphabetLesson = lazy(() => import("./pages/spanish/SpanishAlphabetLesson"));
+const SpanishGreetingsLesson = lazy(() => import("./pages/spanish/SpanishGreetingsLesson"));
+const SpanishNumbersLesson = lazy(() => import("./pages/spanish/SpanishNumbersLesson"));
+const SpanishColorsLesson = lazy(() => import("./pages/spanish/SpanishColorsLesson"));
+const SpanishAnimalsLesson = lazy(() => import("./pages/spanish/SpanishAnimalsLesson"));
+const SpanishFamilyLesson = lazy(() => import("./pages/spanish/SpanishFamilyLesson"));
+const SpanishFoodLesson = lazy(() => import("./pages/spanish/SpanishFoodLesson"));
 // Quiz
-import QuizPage from "./pages/QuizPage";
-import QuizDiscover from "./pages/QuizDiscover";
+const QuizPage = lazy(() => import("./pages/QuizPage"));
+const QuizDiscover = lazy(() => import("./pages/QuizDiscover"));
 // Flashcards
-import Flashcards from "./pages/Flashcards";
-import FlashcardStudy from "./pages/FlashcardStudy";
+const Flashcards = lazy(() => import("./pages/Flashcards"));
+const FlashcardStudy = lazy(() => import("./pages/FlashcardStudy"));
 // Lesson Screen
-import LessonScreen from "./pages/LessonScreen";
-import CourseLesson from "./pages/CourseLesson";
+const LessonScreen = lazy(() => import("./pages/LessonScreen"));
+const CourseLesson = lazy(() => import("./pages/CourseLesson"));
 // Forum
-import Forum from "./pages/Forum";
-import ForumCategory from "./pages/ForumCategory";
-import ForumThread from "./pages/ForumThread";
+const Forum = lazy(() => import("./pages/Forum"));
+const ForumCategory = lazy(() => import("./pages/ForumCategory"));
+const ForumThread = lazy(() => import("./pages/ForumThread"));
 // Mini Games
-import ShpokoFruitGame from "./pages/ShpokoFruitGame";
-import RapidFireGame from "./pages/RapidFireGame";
-import ShpokoEndlessWord from "./pages/ShpokoEndlessWord";
+const ShpokoFruitGame = lazy(() => import("./pages/ShpokoFruitGame"));
+const RapidFireGame = lazy(() => import("./pages/RapidFireGame"));
+const ShpokoEndlessWord = lazy(() => import("./pages/ShpokoEndlessWord"));
 // Profile & Quests
-import Profile from "./pages/Profile";
-import Quests from "./pages/Quests";
-import AchievementsPage from "./pages/AchievementsPage";
-import Friends from "./pages/Friends";
-import Shop from "./pages/Shop";
-import TradeHistory from "./pages/TradeHistory";
-import ImageAnalyzer from "./pages/ImageAnalyzer";
+const Profile = lazy(() => import("./pages/Profile"));
+const Quests = lazy(() => import("./pages/Quests"));
+const AchievementsPage = lazy(() => import("./pages/AchievementsPage"));
+const Friends = lazy(() => import("./pages/Friends"));
+const Shop = lazy(() => import("./pages/Shop"));
+const TradeHistory = lazy(() => import("./pages/TradeHistory"));
+const ImageAnalyzer = lazy(() => import("./pages/ImageAnalyzer"));
 // Admin
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminForum from "./pages/admin/AdminForum";
-import AdminQuizzes from "./pages/admin/AdminQuizzes";
-import AdminLeagues from "./pages/admin/AdminLeagues";
-import AdminAnalytics from "./pages/admin/AdminAnalytics";
-import AdminLessons from "./pages/admin/AdminLessons";
-import AdminVocabulary from "./pages/admin/AdminVocabulary";
-import AdminSkins from "./pages/admin/AdminSkins";
-import AdminShop from "./pages/admin/AdminShop";
-import AdminPremium from "./pages/admin/AdminPremium";
-import AdminHallOfFame from "./pages/admin/AdminHallOfFame";
-import AdminSettings from "./pages/admin/AdminSettings";
-import AdminQuests from "./pages/admin/AdminQuests";
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminForum = lazy(() => import("./pages/admin/AdminForum"));
+const AdminQuizzes = lazy(() => import("./pages/admin/AdminQuizzes"));
+const AdminLeagues = lazy(() => import("./pages/admin/AdminLeagues"));
+const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
+const AdminLessons = lazy(() => import("./pages/admin/AdminLessons"));
+const AdminVocabulary = lazy(() => import("./pages/admin/AdminVocabulary"));
+const AdminSkins = lazy(() => import("./pages/admin/AdminSkins"));
+const AdminShop = lazy(() => import("./pages/admin/AdminShop"));
+const AdminPremium = lazy(() => import("./pages/admin/AdminPremium"));
+const AdminHallOfFame = lazy(() => import("./pages/admin/AdminHallOfFame"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const AdminQuests = lazy(() => import("./pages/admin/AdminQuests"));
 
 const queryClient = new QueryClient();
+
+// Shown for a moment while a page's code is downloaded.
+const PageLoader = () => (
+  <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="w-10 h-10 rounded-full border-4 border-primary/25 border-t-primary animate-spin" />
+  </div>
+);
 
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
@@ -118,13 +126,14 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <AuthProvider>
             <GuestProvider>
             <SoundSettingsProvider>
             <InputModeProvider>
             <LanguageModeProvider>
             <RouteGate>
+            <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/welcome" element={<Landing />} />
@@ -236,6 +245,7 @@ const App = () => (
               <Route path="/admin/settings" element={<AdminSettings />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </Suspense>
             </RouteGate>
             </LanguageModeProvider>
             </InputModeProvider>

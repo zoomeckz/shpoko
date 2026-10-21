@@ -14,6 +14,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { DuoButton } from "@/components/duolingo/DuoButton";
 import { cn } from "@/lib/utils";
+import { daysAgo, localDateKey } from "@/lib/dates";
 import { AdminLayout } from "./AdminLayout";
 
 interface ProfileRow {
@@ -39,12 +40,9 @@ interface Stats {
   topUsers: { username: string; xp: number }[];
 }
 
-const dayKey = (d: Date) => d.toISOString().split("T")[0];
-const daysAgo = (n: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d;
-};
+const dayKey = localDateKey;
+// Sign-up times are stored in UTC; compare them as local dates.
+const joinedKey = (r: ProfileRow) => (r.created_at ? localDateKey(new Date(r.created_at)) : "");
 const shortDate = (key: string) =>
   new Date(key + "T00:00:00").toLocaleDateString(undefined, { day: "numeric", month: "short" });
 
@@ -54,7 +52,7 @@ function buildStats(rows: ProfileRow[], totalUsers: number): Stats {
 
   const signups = Array.from({ length: 14 }, (_, i) => {
     const key = dayKey(daysAgo(13 - i));
-    return { date: shortDate(key), count: rows.filter((r) => r.created_at?.slice(0, 10) === key).length };
+    return { date: shortDate(key), count: rows.filter((r) => joinedKey(r) === key).length };
   });
   const lastActive = Array.from({ length: 7 }, (_, i) => {
     const key = dayKey(daysAgo(6 - i));
@@ -84,7 +82,7 @@ function buildStats(rows: ProfileRow[], totalUsers: number): Stats {
     totalUsers,
     activeToday: rows.filter((r) => r.last_activity_date === today).length,
     activeWeek: rows.filter((r) => r.last_activity_date && r.last_activity_date >= weekAgo).length,
-    newWeek: rows.filter((r) => r.created_at && r.created_at.slice(0, 10) >= weekAgo).length,
+    newWeek: rows.filter((r) => joinedKey(r) >= weekAgo).length,
     totalXp: rows.reduce((sum, r) => sum + (r.xp || 0), 0),
     onStreak: rows.filter((r) => r.streak > 0).length,
     signups,

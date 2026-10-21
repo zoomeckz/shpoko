@@ -18,7 +18,7 @@ import {
   IntroExercise,
   MatchExercise,
 } from "@/components/course/exercises";
-import shpokoMascot from "@/assets/shpoko-mascot.png";
+import shpokoMascot from "@/assets/shpoko-mascot.webp";
 
 const PRAISE = ["Nice!", "Great job!", "Correct!", "Awesome!", "You got it!"];
 const EMPTY_ANSWER: AnswerState = { ready: false, correct: false, solution: "" };
@@ -31,7 +31,7 @@ function LessonPlayer({ lesson, onRetry }: { lesson: Lesson; onRetry: () => void
   const isTest = lesson.kind === "test";
   const passMark = lesson.passAccuracy ?? 80;
   const navigate = useNavigate();
-  const { user, updateXP } = useAuth();
+  const { user, updateXP, recordActivity } = useAuth();
   const { isGuest, initGuest, addXP, markLessonCompleted, isGuestLessonCompleted } = useGuest();
   const { saveProgress } = useUserProgress();
   const sfx = useSfx();
@@ -48,6 +48,7 @@ function LessonPlayer({ lesson, onRetry }: { lesson: Lesson; onRetry: () => void
   const [praise, setPraise] = useState(PRAISE[0]);
   const [confirmExit, setConfirmExit] = useState(false);
   const [streak, setStreak] = useState(0);
+  const [xpEarned, setXpEarned] = useState<number | null>(null);
   const startedAt = useRef(Date.now());
   const finishedAt = useRef(0);
   const saved = useRef(false);
@@ -133,10 +134,20 @@ function LessonPlayer({ lesson, onRetry }: { lesson: Lesson; onRetry: () => void
       return; // A failed test isn't saved.
     }
     sfx.complete();
+    // Full XP the first time, half XP for practising a finished lesson again.
+    const practiceXp = Math.ceil(lesson.xp / 2);
     if (user) {
-      saveProgress(lesson.id, accuracy, graded - mistakes.size, graded, () => updateXP(lesson.xp));
+      saveProgress(lesson.id, accuracy, graded - mistakes.size, graded, () => updateXP(lesson.xp))
+        .then(async ({ xpAwarded }) => {
+          if (!xpAwarded) await updateXP(practiceXp);
+          setXpEarned(xpAwarded ? lesson.xp : practiceXp);
+          await recordActivity();
+        })
+        .catch(() => setXpEarned(0));
     } else {
-      if (!isGuestLessonCompleted(lesson.id)) addXP(lesson.xp);
+      const earned = isGuestLessonCompleted(lesson.id) ? practiceXp : lesson.xp;
+      addXP(earned);
+      setXpEarned(earned);
       markLessonCompleted(lesson.id, accuracy);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -149,7 +160,7 @@ function LessonPlayer({ lesson, onRetry }: { lesson: Lesson; onRetry: () => void
     const seconds = Math.round(((finishedAt.current || Date.now()) - startedAt.current) / 1000);
     return (
       <LessonComplete
-        xp={lesson.xp}
+        xp={xpEarned}
         isTest={isTest}
         learned={lesson.description}
         accuracy={accuracy}
@@ -329,7 +340,8 @@ function LessonComplete({
   isTest,
   onContinue,
 }: {
-  xp: number;
+  /** XP actually earned; null while it's being saved. */
+  xp: number | null;
   /** The lesson's letters, space separated. */
   learned: string;
   isTest: boolean;
@@ -376,7 +388,7 @@ function LessonComplete({
           ))}
         </div>
         <div className="mt-8 w-full max-w-md flex gap-3">
-          <StatTile label="Total XP" value={`${xp}`} tone="yellow" />
+          <StatTile label="Total XP" value={xp === null ? "…" : `+${xp}`} tone="yellow" />
           <StatTile label="Accuracy" value={`${accuracy}%`} tone="blue" />
           <StatTile label="Time" value={time} tone="pink" />
         </div>

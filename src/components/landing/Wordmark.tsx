@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import shpokoMascot from "@/assets/shpoko-mascot.png";
+import shpokoMascot from "@/assets/shpoko-mascot.webp";
 
 interface WordmarkProps {
   className?: string;

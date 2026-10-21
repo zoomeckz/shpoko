@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { User, Session } from "@supabase/supabase-js";
+import { User, Session, AuthError } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateLevel } from "@/lib/levelUtils";
+import { daysAgo, localDateKey } from "@/lib/dates";
 
 interface Profile {
   id: string;
@@ -22,11 +23,12 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
-  signUp: (email: string, password: string, username: string) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, username: string) => Promise<{ error: AuthError | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   updateXP: (amount: number) => Promise<void>;
+  recordActivity: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -85,6 +87,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!error) {
       await refreshProfile();
     }
+  };
+
+  // Called when a lesson is finished: marks today as active and keeps the
+  // streak going (+1 if the last lesson was yesterday, otherwise back to 1).
+  const recordActivity = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("streak, last_activity_date")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (error || !data) return;
+
+    const today = localDateKey();
+    if (data.last_activity_date === today) return;
+    const continued = data.last_activity_date === localDateKey(daysAgo(1));
+    const streak = continued ? (data.streak || 0) + 1 : 1;
+
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({ last_activity_date: today, streak })
+      .eq("id", user.id);
+    if (!updateError) await refreshProfile();
   };
 
   useEffect(() => {
@@ -166,6 +191,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         signOut,
         refreshProfile,
         updateXP,
+        recordActivity,
       }}
     >
       {children}
