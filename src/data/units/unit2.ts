@@ -1,5 +1,6 @@
 import type { CourseUnit, Exercise } from "../course";
-import scholar from "@/assets/units/unit2-scholar.webp";
+// Temporary: same picture as Unit 1 until the new unit artwork is ready.
+import scholar from "@/assets/shpoko-mascot.webp";
 
 const wordAudio = (name: string) => `/audio/words/${name}.mp3`;
 

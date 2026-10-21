@@ -1,5 +1,6 @@
 import type { CourseUnit, Exercise } from "../course";
-import writer from "@/assets/units/unit3-writer.webp";
+// Temporary: same picture as Unit 1 until the new unit artwork is ready.
+import writer from "@/assets/shpoko-mascot.webp";
 
 // Unit 3: italics and handwriting. Several lowercase letters change shape:
 // т looks like m, и like u, п like n, д like ∂ / g and ш like w.
