@@ -4,6 +4,8 @@ import { useUserProgress } from "@/hooks/useUserProgress";
 import { DuoButton } from "@/components/duolingo/DuoButton";
 import { course } from "@/data/course";
 
+const BAR = { blue: "bg-primary", pink: "bg-accent-strong", green: "bg-success" } as const;
+
 // Right-hand column on the Learn page (wide screens only).
 export const LearnSidePanel = () => {
   const { user } = useAuth();
@@ -34,7 +36,7 @@ export const LearnSidePanel = () => {
           <p className="mt-1 text-lg font-extrabold text-foreground">{unit.title}</p>
           <div className="mt-4 h-4 rounded-full bg-muted overflow-hidden">
             <div
-              className="h-full rounded-full bg-primary transition-all"
+              className={`h-full rounded-full transition-all ${BAR[unit.color]}`}
               style={{ width: `${(completed / unit.lessons.length) * 100}%` }}
             />
           </div>

@@ -1,4 +1,5 @@
 import type { CourseUnit, Exercise } from "../course";
+import scholar from "@/assets/units/unit2-scholar.webp";
 
 const wordAudio = (name: string) => `/audio/words/${name}.mp3`;
 
@@ -595,6 +596,7 @@ export const unit2: CourseUnit = {
   unit: 2,
   title: "Read the world",
   color: "pink",
+  mascot: scholar,
   lessons: [
     { id: "read-1", title: "Words you know", description: "ТАКСИ, ХОТЕЛ, МУЗИКА", xp: 10, exercises: cognates },
     { id: "read-2", title: "Signs", description: "ВХОД, ИЗХОД, АПТЕКА", xp: 10, exercises: signs },

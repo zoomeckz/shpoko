@@ -5,7 +5,6 @@ import { Check, Lock, Star, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { course, type CourseLesson, type CourseUnit } from "@/data/course";
 import { useUserProgress } from "@/hooks/useUserProgress";
-import shpokoMascot from "@/assets/shpoko-mascot.webp";
 
 // Horizontal offsets (px) that make the path wind left and right.
 const OFFSETS = [0, 45, 70, 45, 0, -45, -70, -45];
@@ -88,12 +87,12 @@ export const CoursePath = () => {
 
             <div className="relative mt-20 flex flex-col items-center gap-7">
               <img
-                src={shpokoMascot}
+                src={unit.mascot}
                 alt=""
                 aria-hidden="true"
                 className={cn(
                   "pointer-events-none absolute top-24 w-28 sm:w-36 object-contain opacity-95",
-                  unitIndex % 2 === 0 ? "right-0 sm:right-4" : "left-0 sm:left-4 -scale-x-100",
+                  unitIndex % 2 === 0 ? "right-0 sm:right-4" : "left-0 sm:left-4",
                   unitLocked && "grayscale opacity-40"
                 )}
               />

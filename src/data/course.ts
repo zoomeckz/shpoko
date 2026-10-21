@@ -137,12 +137,15 @@ export interface CourseUnit {
   title: string;
   /** Each unit has its own colour on the path, like Duolingo. */
   color: "blue" | "pink" | "green";
+  /** Picture shown beside the unit's path. */
+  mascot: string;
   lessons: CourseLesson[];
 }
 
 /** Exercise types that only teach; they are read and continued, not graded. */
 export const TEACHING_TYPES: Exercise["type"][] = ["intro", "familiar", "tip", "word", "shape"];
 
+import shpokoMascot from "@/assets/shpoko-mascot.webp";
 import { unit2 } from "./units/unit2";
 import { unit3 } from "./units/unit3";
 
@@ -1062,6 +1065,7 @@ export const course: CourseUnit[] = [
     unit: 1,
     title: "Read your first letters",
     color: "blue",
+    mascot: shpokoMascot,
     lessons: [
       { id: "alphabet-1", title: "First letters", description: "В Н Р С У Х", xp: 10, exercises: lesson1 },
       { id: "alphabet-2", title: "New shapes", description: "Б Г Д З И Л П", xp: 10, exercises: lesson2 },

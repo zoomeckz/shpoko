@@ -1,4 +1,5 @@
 import type { CourseUnit, Exercise } from "../course";
+import writer from "@/assets/units/unit3-writer.webp";
 
 // Unit 3: italics and handwriting. Several lowercase letters change shape:
 // т looks like m, и like u, п like n, д like ∂ / g and ш like w.
@@ -448,6 +449,7 @@ export const unit3: CourseUnit = {
   unit: 3,
   title: "Read handwriting",
   color: "green",
+  mascot: writer,
   lessons: [
     { id: "hand-1", title: "Italic letters", description: "т и п д ш", descriptionFont: "italic", xp: 10, exercises: italics },
     { id: "hand-2", title: "Handwritten letters", description: "т д и п б", descriptionFont: "handwriting", xp: 10, exercises: handLetters },
