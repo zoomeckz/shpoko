@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
+import { SoundToggle } from "@/components/SoundToggle";
 import { motion, AnimatePresence } from "framer-motion";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
@@ -316,6 +317,10 @@ export const TopBar = ({ className }: TopBarProps) => {
                 <div className="flex items-center justify-between px-4 py-3">
                   <span className="font-semibold">Dark Mode</span>
                   <DarkModeToggle />
+                </div>
+                <div className="flex items-center justify-between px-4 py-3">
+                  <span className="font-semibold">Sound effects</span>
+                  <SoundToggle />
                 </div>
                 {user ? (
                 <button

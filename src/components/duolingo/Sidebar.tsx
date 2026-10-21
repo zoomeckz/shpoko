@@ -12,6 +12,7 @@ import { HelpTourModal } from "@/components/onboarding/HelpTourModal";
 import { Wordmark } from "@/components/landing/Wordmark";
 import { DuoButton } from "@/components/duolingo/DuoButton";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
+import { SoundToggle } from "@/components/SoundToggle";
 import { SHOW_LEGACY, isLive } from "@/config/features";
 
 interface SidebarProps {
@@ -412,6 +413,10 @@ export const Sidebar = ({ className }: SidebarProps) => {
         <div className="flex items-center justify-between rounded-2xl border-2 border-border px-4 py-2">
           <span className="text-sm font-bold text-muted-foreground">Dark mode</span>
           <DarkModeToggle />
+        </div>
+        <div className="flex items-center justify-between rounded-2xl border-2 border-border px-4 py-2">
+          <span className="text-sm font-bold text-muted-foreground">Sound effects</span>
+          <SoundToggle />
         </div>
         {user ? (
           <button
