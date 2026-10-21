@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Lock, Star } from "lucide-react";
+import { Check, Lock, Star, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { course, type CourseLesson } from "@/data/course";
 import { useUserProgress } from "@/hooks/useUserProgress";
@@ -57,6 +57,8 @@ export const CoursePath = () => {
               {unit.lessons.map((lesson, i) => {
                 const status = statusOf(lesson, i);
                 const open = openId === lesson.id;
+                const isTest = lesson.kind === "test";
+                const playable = status === "current" || status === "completed";
                 return (
                   <div
                     key={lesson.id}
@@ -65,7 +67,10 @@ export const CoursePath = () => {
                   >
                     {status === "current" && !open && (
                       <motion.span
-                        className="absolute -top-12 z-10 rounded-xl border-2 border-border bg-background px-3 py-2 text-sm font-extrabold uppercase tracking-wide text-primary whitespace-nowrap"
+                        className={cn(
+                          "absolute -top-12 z-10 rounded-xl border-2 border-border bg-background px-3 py-2 text-sm font-extrabold uppercase tracking-wide whitespace-nowrap",
+                          isTest ? "text-warning" : "text-primary"
+                        )}
                         animate={{ y: [0, -5, 0] }}
                         transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
                       >
@@ -80,16 +85,24 @@ export const CoursePath = () => {
                       aria-expanded={open}
                       className={cn(
                         "relative w-[72px] h-[64px] rounded-[50%] flex items-center justify-center transition-transform active:translate-y-1.5",
-                        (status === "current" || status === "completed") &&
+                        playable && !isTest &&
                           "bg-primary text-primary-foreground shadow-[0_7px_0_0_hsl(var(--primary-dark))] active:shadow-none",
-                        status === "current" && "ring-[10px] ring-primary/20",
+                        playable && isTest &&
+                          "bg-warning text-warning-foreground shadow-[0_7px_0_0_hsl(var(--warning-dark))] active:shadow-none",
+                        status === "current" && (isTest ? "ring-[10px] ring-warning/25" : "ring-[10px] ring-primary/20"),
                         (status === "locked" || status === "soon") &&
                           "bg-muted text-muted-foreground/60 border-2 border-border shadow-[0_7px_0_0_hsl(var(--border))] active:shadow-none"
                       )}
                     >
-                      {status === "completed" && <Check className="w-8 h-8" strokeWidth={4} />}
-                      {status === "current" && <Star className="w-8 h-8 fill-current" />}
-                      {(status === "locked" || status === "soon") && <Lock className="w-7 h-7" />}
+                      {isTest ? (
+                        <Trophy className={cn("w-8 h-8", status === "completed" && "fill-current")} />
+                      ) : (
+                        <>
+                          {status === "completed" && <Check className="w-8 h-8" strokeWidth={4} />}
+                          {status === "current" && <Star className="w-8 h-8 fill-current" />}
+                          {(status === "locked" || status === "soon") && <Lock className="w-7 h-7" />}
+                        </>
+                      )}
                     </button>
 
                     <AnimatePresence>
@@ -97,7 +110,7 @@ export const CoursePath = () => {
                         <LessonCard
                           lesson={lesson}
                           number={i + 1}
-                          total={unit.lessons.length}
+                          total={unit.lessons.filter((l) => l.kind !== "test").length}
                           status={status}
                           onStart={() => navigate(`/course/${lesson.id}`)}
                         />
@@ -128,6 +141,7 @@ function LessonCard({
   onStart: () => void;
 }) {
   const playable = status === "current" || status === "completed";
+  const isTest = lesson.kind === "test";
   return (
     <motion.div
       initial={{ opacity: 0, y: -6, scale: 0.96 }}
@@ -136,25 +150,44 @@ function LessonCard({
       transition={{ duration: 0.15 }}
       className={cn(
         "absolute top-[84px] z-30 w-[280px] rounded-2xl p-4 text-left",
-        playable ? "bg-primary text-primary-foreground" : "bg-muted border-2 border-border text-muted-foreground"
+        playable
+          ? isTest
+            ? "bg-warning text-warning-foreground"
+            : "bg-primary text-primary-foreground"
+          : "bg-muted border-2 border-border text-muted-foreground"
       )}
     >
       <p className={cn("text-lg font-extrabold", !playable && "text-foreground")}>{lesson.title}</p>
       <p className="mt-0.5 font-bold opacity-90">
-        Lesson {number} of {total} · {lesson.description}
+        {isTest
+          ? `${lesson.description} · Get ${lesson.passAccuracy ?? 80}% to pass`
+          : `Lesson ${number} of ${total} · ${lesson.description}`}
       </p>
       {playable ? (
         <button
           type="button"
           onClick={onStart}
-          className="mt-4 w-full h-12 rounded-2xl bg-white text-primary font-extrabold uppercase tracking-wide shadow-[0_4px_0_0_hsl(0_0%_0%/0.15)] active:translate-y-1 active:shadow-none transition-transform"
+          className={cn(
+            "mt-4 w-full h-12 rounded-2xl bg-white font-extrabold uppercase tracking-wide shadow-[0_4px_0_0_hsl(0_0%_0%/0.15)] active:translate-y-1 active:shadow-none transition-transform",
+            isTest ? "text-warning-dark" : "text-primary"
+          )}
         >
-          {status === "completed" ? "Practice again" : `Start +${lesson.xp} XP`}
+          {status === "completed"
+            ? isTest
+              ? "Retake test"
+              : "Practice again"
+            : isTest
+              ? `Start test +${lesson.xp} XP`
+              : `Start +${lesson.xp} XP`}
         </button>
       ) : (
         <>
           <p className="mt-3 text-sm font-bold">
-            {status === "soon" ? "This lesson is coming soon!" : "Complete all lessons above to unlock this!"}
+            {status === "soon"
+              ? "This lesson is coming soon!"
+              : isTest
+                ? "Finish every lesson in this unit to unlock the test!"
+                : "Complete all lessons above to unlock this!"}
           </p>
           <div className="mt-4 w-full h-12 rounded-2xl bg-border/60 flex items-center justify-center font-extrabold uppercase tracking-wide text-muted-foreground">
             Locked

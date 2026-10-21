@@ -25,8 +25,11 @@ const EMPTY_ANSWER: AnswerState = { ready: false, correct: false, solution: "" }
 
 type Phase = "answering" | "checked" | "finished";
 
-function LessonPlayer({ lesson }: { lesson: Lesson }) {
+function LessonPlayer({ lesson, onRetry }: { lesson: Lesson; onRetry: () => void }) {
   const exercises = lesson.exercises!;
+  // Unit tests: no second chances, and a pass mark.
+  const isTest = lesson.kind === "test";
+  const passMark = lesson.passAccuracy ?? 80;
   const navigate = useNavigate();
   const { user, updateXP } = useAuth();
   const { isGuest, initGuest, addXP, markLessonCompleted, isGuestLessonCompleted } = useGuest();
@@ -46,6 +49,7 @@ function LessonPlayer({ lesson }: { lesson: Lesson }) {
   const [confirmExit, setConfirmExit] = useState(false);
   const [streak, setStreak] = useState(0);
   const startedAt = useRef(Date.now());
+  const finishedAt = useRef(0);
   const saved = useRef(false);
 
   const index = queue[pos];
@@ -78,11 +82,13 @@ function LessonPlayer({ lesson }: { lesson: Lesson }) {
         setStreak(0);
         sfx.wrong();
         setMistakes((m) => new Set(m).add(index));
-        setQueue((q) => [...q, index]);
+        // In a lesson the question comes back at the end; in a test it doesn't.
+        if (isTest) setDone((d) => new Set(d).add(index));
+        else setQueue((q) => [...q, index]);
       }
       setPhase("checked");
     },
-    [index, streak, sfx, phase]
+    [index, streak, sfx, phase, isTest]
   );
 
   const next = useCallback(() => {
@@ -121,6 +127,11 @@ function LessonPlayer({ lesson }: { lesson: Lesson }) {
   useEffect(() => {
     if (phase !== "finished" || saved.current) return;
     saved.current = true;
+    finishedAt.current = Date.now();
+    if (isTest && accuracy < passMark) {
+      sfx.miss();
+      return; // A failed test isn't saved.
+    }
     sfx.complete();
     if (user) {
       saveProgress(lesson.id, accuracy, graded - mistakes.size, graded, () => updateXP(lesson.xp));
@@ -132,10 +143,14 @@ function LessonPlayer({ lesson }: { lesson: Lesson }) {
   }, [phase]);
 
   if (phase === "finished") {
-    const seconds = Math.round((Date.now() - startedAt.current) / 1000);
+    if (isTest && accuracy < passMark) {
+      return <TestFailed accuracy={accuracy} passMark={passMark} onRetry={onRetry} onExit={() => navigate("/")} />;
+    }
+    const seconds = Math.round(((finishedAt.current || Date.now()) - startedAt.current) / 1000);
     return (
       <LessonComplete
         xp={lesson.xp}
+        isTest={isTest}
         learned={lesson.description}
         accuracy={accuracy}
         time={`${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`}
@@ -311,11 +326,13 @@ function LessonComplete({
   accuracy,
   time,
   learned,
+  isTest,
   onContinue,
 }: {
   xp: number;
   /** The lesson's letters, space separated. */
   learned: string;
+  isTest: boolean;
   accuracy: number;
   time: string;
   onContinue: () => void;
@@ -337,10 +354,16 @@ function LessonComplete({
           animate={{ scale: 1, opacity: 1, y: [0, -10, 0] }}
           transition={{ scale: { type: "spring", stiffness: 200 }, y: { duration: 2, repeat: Infinity } }}
         />
-        <h1 className="mt-6 text-3xl font-extrabold text-warning">Lesson complete!</h1>
-        <p className="mt-2 text-lg font-bold text-muted-foreground">New letters you can read now:</p>
+        <h1 className="mt-6 text-3xl font-extrabold text-warning">{isTest ? "Unit complete! 🏆" : "Lesson complete!"}</h1>
+        {isTest ? (
+          <p className="mt-2 max-w-sm text-lg font-bold text-muted-foreground">
+            You passed the test. You can read and write all 30 letters of the Bulgarian alphabet!
+          </p>
+        ) : (
+          <p className="mt-2 text-lg font-bold text-muted-foreground">New letters you can read now:</p>
+        )}
         <div className="mt-3 flex flex-wrap justify-center gap-2">
-          {learned.split(" ").map((letter, i) => (
+          {!isTest && learned.split(" ").map((letter, i) => (
             <motion.span
               key={letter}
               initial={{ scale: 0, opacity: 0 }}
@@ -369,11 +392,68 @@ function LessonComplete({
   );
 }
 
+function TestFailed({
+  accuracy,
+  passMark,
+  onRetry,
+  onExit,
+}: {
+  accuracy: number;
+  passMark: number;
+  onRetry: () => void;
+  onExit: () => void;
+}) {
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 text-center">
+        <motion.img
+          src={shpokoMascot}
+          alt=""
+          className="w-36 h-36 object-contain"
+          initial={{ scale: 0.7, opacity: 0, rotate: -6 }}
+          animate={{ scale: 1, opacity: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 200, damping: 14 }}
+        />
+        <h1 className="mt-6 text-3xl font-extrabold text-foreground">So close!</h1>
+        <p className="mt-2 max-w-sm text-lg font-bold text-muted-foreground">
+          You got <span className="text-primary">{accuracy}%</span>. You need {passMark}% to pass. Have another go, you've got this.
+        </p>
+        <div className="mt-6 w-full max-w-xs h-4 rounded-full bg-muted overflow-hidden relative">
+          <motion.div
+            className="h-full rounded-full bg-primary"
+            initial={{ width: 0 }}
+            animate={{ width: `${accuracy}%` }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          />
+          <span className="absolute top-0 bottom-0 w-1 bg-warning" style={{ left: `${passMark}%` }} aria-hidden="true" />
+        </div>
+      </main>
+      <footer className="border-t-2 border-border">
+        <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-5 sm:py-8 flex flex-col-reverse sm:flex-row gap-3 sm:justify-between">
+          <DuoButton variant="white" size="xl" className="w-full sm:w-[200px]" onClick={onExit}>
+            Back to path
+          </DuoButton>
+          <DuoButton size="xl" className="w-full sm:w-[200px]" onClick={onRetry}>
+            Try again
+          </DuoButton>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
 const CourseLesson = () => {
   const { lessonId } = useParams();
   const found = lessonId ? findLesson(lessonId) : null;
+  const [attempt, setAttempt] = useState(0);
   if (!found || !found.lesson.exercises) return <Navigate to="/" replace />;
-  return <LessonPlayer key={found.lesson.id} lesson={found.lesson} />;
+  return (
+    <LessonPlayer
+      key={`${found.lesson.id}-${attempt}`}
+      lesson={found.lesson}
+      onRetry={() => setAttempt((a) => a + 1)}
+    />
+  );
 };
 
 export default CourseLesson;
