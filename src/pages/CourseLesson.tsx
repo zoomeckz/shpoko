@@ -65,6 +65,8 @@ function LessonPlayer({ lesson }: { lesson: Lesson }) {
 
   const markResult = useCallback(
     (correct: boolean) => {
+      // Each question is graded once; ignore any repeat report.
+      if (phase !== "answering") return;
       setLastCorrect(correct);
       setPraise(PRAISE[Math.floor(Math.random() * PRAISE.length)]);
       if (correct) {
@@ -80,7 +82,7 @@ function LessonPlayer({ lesson }: { lesson: Lesson }) {
       }
       setPhase("checked");
     },
-    [index, streak, sfx]
+    [index, streak, sfx, phase]
   );
 
   const next = useCallback(() => {

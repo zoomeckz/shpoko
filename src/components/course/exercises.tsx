@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { Exercise } from "@/data/course";
@@ -237,6 +237,9 @@ export function MatchExercise({
   const [matched, setMatched] = useState<string[]>([]);
   const [flash, setFlash] = useState<{ left: string; right: string; ok: boolean } | null>(null);
   const sfx = useSfx();
+  const reported = useRef(false);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   const partnerOf = (l: string) => exercise.pairs.find((p) => p.left === l)?.right;
   const pickLeft = (l: string) => {
@@ -269,11 +272,13 @@ export function MatchExercise({
   }, [pickedLeft, pickedRight]);
 
   useEffect(() => {
-    if (matched.length === exercise.pairs.length) {
-      const t = setTimeout(onComplete, 300);
+    // Report completion exactly once, even if the parent passes a new callback.
+    if (matched.length === exercise.pairs.length && !reported.current) {
+      reported.current = true;
+      const t = setTimeout(() => onCompleteRef.current(), 300);
       return () => clearTimeout(t);
     }
-  }, [matched, exercise.pairs.length, onComplete]);
+  }, [matched, exercise.pairs.length]);
 
   const leftState = (l: string): TileState => {
     if (matched.includes(l)) return "done";
