@@ -7,9 +7,17 @@
  * src/config/features.ts, so missing clips never show up for learners.
  */
 
+/** How a piece of Cyrillic text is drawn: normal print, true italics or handwriting. */
+export type TextFont = "print" | "italic" | "handwriting";
+
+/** Colours for text drawn as a real-world sign. */
+export type SignColor = "green" | "blue" | "red" | "yellow" | "white";
+
 export interface ChoiceOption {
   label: string;
   audio?: string;
+  /** With optionStyle "signs": the sign's colour. */
+  sign?: SignColor;
 }
 
 export interface FamiliarLetter {
@@ -22,6 +30,34 @@ export interface FamiliarLetter {
 }
 
 export type Exercise =
+  | {
+      /** A short teaching screen, optionally with a list of examples. */
+      type: "tip";
+      title: string;
+      text: string;
+      items?: { big: string; small: string; font?: TextFont }[];
+    }
+  | {
+      /** Teaches one word: how it's read and what it means. */
+      type: "word";
+      word: string;
+      reading: string;
+      meaning: string;
+      emoji?: string;
+      /** Draw the word as a sign of this colour. */
+      sign?: SignColor;
+      font?: TextFont;
+      audio?: string;
+    }
+  | {
+      /** Shows how a print letter looks in italics or handwriting. */
+      type: "shape";
+      letter: string;
+      font: Exclude<TextFont, "print">;
+      /** What the styled letter looks like, e.g. "an English m". */
+      looksLike: string;
+      note?: string;
+    }
   | {
       /** A short overview of letters that are written just like English ones. */
       type: "familiar";
@@ -47,8 +83,12 @@ export type Exercise =
       /** Big text shown above the options (a letter or a word). */
       display?: string;
       displayAudio?: string;
-      /** "letters" renders options as large tiles. */
-      optionStyle?: "letters" | "text";
+      displayFont?: TextFont;
+      /** Draw the display as a sign of this colour. */
+      displaySign?: SignColor;
+      /** "letters" renders options as large tiles, "signs" as little signs. */
+      optionStyle?: "letters" | "text" | "signs";
+      optionFont?: TextFont;
       options: ChoiceOption[];
       answer: string;
       explain?: string;
@@ -56,6 +96,7 @@ export type Exercise =
   | {
       type: "match";
       prompt: string;
+      leftFont?: TextFont;
       pairs: { left: string; right: string; audio?: string }[];
     }
   | {
@@ -63,6 +104,7 @@ export type Exercise =
       prompt: string;
       /** Latin spelling / meaning shown as the thing to write. */
       target: string;
+      targetFont?: TextFont;
       answer: string[];
       tiles: string[];
       explain?: string;
@@ -80,6 +122,10 @@ export interface CourseLesson {
    */
   kind?: "lesson" | "test";
   passAccuracy?: number;
+  /** Shown when a unit test is passed. */
+  completeMessage?: string;
+  /** Font for the description's chips on the finish screen. */
+  descriptionFont?: TextFont;
   /** null = not built yet, shown as locked on the path. */
   exercises: Exercise[] | null;
 }
@@ -89,8 +135,16 @@ export interface CourseUnit {
   section: number;
   unit: number;
   title: string;
+  /** Each unit has its own colour on the path, like Duolingo. */
+  color: "blue" | "pink" | "green";
   lessons: CourseLesson[];
 }
+
+/** Exercise types that only teach; they are read and continued, not graded. */
+export const TEACHING_TYPES: Exercise["type"][] = ["intro", "familiar", "tip", "word", "shape"];
+
+import { unit2 } from "./units/unit2";
+import { unit3 } from "./units/unit3";
 
 const letterAudio = (name: string) => `/audio/letters/${name}.mp3`;
 const wordAudio = (name: string) => `/audio/words/${name}.mp3`;
@@ -1007,6 +1061,7 @@ export const course: CourseUnit[] = [
     section: 1,
     unit: 1,
     title: "Read your first letters",
+    color: "blue",
     lessons: [
       { id: "alphabet-1", title: "First letters", description: "В Н Р С У Х", xp: 10, exercises: lesson1 },
       { id: "alphabet-2", title: "New shapes", description: "Б Г Д З И Л П", xp: 10, exercises: lesson2 },
@@ -1014,15 +1069,18 @@ export const course: CourseUnit[] = [
       { id: "alphabet-4", title: "Last letters", description: "Я Ю Й Ъ Ь", xp: 10, exercises: lesson4 },
       {
         id: "unit-1-test",
-        title: "Unit test",
+        title: "Unit 1 test",
         description: "All 30 letters",
         xp: 30,
         kind: "test",
         passAccuracy: 80,
+        completeMessage: "You can read and write all 30 letters of the Bulgarian alphabet!",
         exercises: unit1Test,
       },
     ],
   },
+  unit2,
+  unit3,
 ];
 
 export const findLesson = (lessonId: string) => {

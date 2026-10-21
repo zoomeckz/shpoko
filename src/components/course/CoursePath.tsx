@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Lock, Star, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { course, type CourseLesson } from "@/data/course";
+import { course, type CourseLesson, type CourseUnit } from "@/data/course";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import shpokoMascot from "@/assets/shpoko-mascot.webp";
 
@@ -11,6 +11,36 @@ import shpokoMascot from "@/assets/shpoko-mascot.webp";
 const OFFSETS = [0, 45, 70, 45, 0, -45, -70, -45];
 
 type NodeStatus = "completed" | "current" | "soon" | "locked";
+
+// Each unit has its own colour, like Duolingo.
+const THEMES: Record<CourseUnit["color"], { solid: string; shadow: string; ring: string; text: string; buttonText: string }> = {
+  blue: {
+    solid: "bg-primary text-primary-foreground",
+    shadow: "hsl(var(--primary-dark))",
+    ring: "ring-primary/20",
+    text: "text-primary",
+    buttonText: "text-primary",
+  },
+  pink: {
+    solid: "bg-accent-strong text-white",
+    shadow: "hsl(var(--accent-dark))",
+    ring: "ring-accent-strong/20",
+    text: "text-accent-strong",
+    buttonText: "text-accent-dark",
+  },
+  green: {
+    solid: "bg-success text-success-foreground",
+    shadow: "hsl(var(--success-dark))",
+    ring: "ring-success/20",
+    text: "text-success",
+    buttonText: "text-success-dark",
+  },
+};
+const GOLD = { solid: "bg-warning text-warning-foreground", shadow: "hsl(var(--warning-dark))", ring: "ring-warning/25", text: "text-warning", buttonText: "text-warning-dark" };
+
+// Lessons unlock in order across the whole course: a unit opens once the
+// previous unit (including its test) is done.
+const ALL_LESSONS = course.flatMap((unit) => unit.lessons);
 
 export const CoursePath = () => {
   const navigate = useNavigate();
@@ -27,19 +57,29 @@ export const CoursePath = () => {
     return () => document.removeEventListener("mousedown", onDown);
   }, []);
 
+  const statusOf = (lesson: CourseLesson): NodeStatus => {
+    if (isLessonCompleted(lesson.id)) return "completed";
+    const index = ALL_LESSONS.findIndex((l) => l.id === lesson.id);
+    const unlocked = ALL_LESSONS.slice(0, index).every((l) => isLessonCompleted(l.id));
+    if (!unlocked) return "locked";
+    return lesson.exercises ? "current" : "soon";
+  };
+
   return (
-    <div className="py-6 space-y-12" ref={pathRef}>
-      {course.map((unit) => {
-        const statusOf = (lesson: CourseLesson, i: number): NodeStatus => {
-          if (isLessonCompleted(lesson.id)) return "completed";
-          const unlocked = unit.lessons.slice(0, i).every((l) => isLessonCompleted(l.id));
-          if (!unlocked) return "locked";
-          return lesson.exercises ? "current" : "soon";
-        };
+    <div className="py-6 space-y-16" ref={pathRef}>
+      {course.map((unit, unitIndex) => {
+        const theme = THEMES[unit.color];
+        const unitLocked = statusOf(unit.lessons[0]) === "locked";
 
         return (
           <section key={unit.id}>
-            <div className="sticky top-16 lg:top-6 z-20 rounded-2xl bg-primary px-5 py-4 text-primary-foreground shadow-[0_4px_0_0_hsl(var(--primary-dark))]">
+            <div
+              className={cn(
+                "sticky top-16 lg:top-6 z-20 rounded-2xl px-5 py-4",
+                unitLocked ? "bg-muted text-muted-foreground border-2 border-border" : theme.solid
+              )}
+              style={unitLocked ? undefined : { boxShadow: `0 4px 0 0 ${theme.shadow}` }}
+            >
               <p className="text-sm font-extrabold uppercase tracking-widest opacity-80">
                 Section {unit.section}, Unit {unit.unit}
               </p>
@@ -51,14 +91,19 @@ export const CoursePath = () => {
                 src={shpokoMascot}
                 alt=""
                 aria-hidden="true"
-                className="pointer-events-none absolute right-0 sm:right-4 top-24 w-28 sm:w-36 object-contain opacity-95"
+                className={cn(
+                  "pointer-events-none absolute top-24 w-28 sm:w-36 object-contain opacity-95",
+                  unitIndex % 2 === 0 ? "right-0 sm:right-4" : "left-0 sm:left-4 -scale-x-100",
+                  unitLocked && "grayscale opacity-40"
+                )}
               />
 
               {unit.lessons.map((lesson, i) => {
-                const status = statusOf(lesson, i);
+                const status = statusOf(lesson);
                 const open = openId === lesson.id;
                 const isTest = lesson.kind === "test";
                 const playable = status === "current" || status === "completed";
+                const nodeTheme = isTest ? GOLD : theme;
                 return (
                   <div
                     key={lesson.id}
@@ -69,7 +114,7 @@ export const CoursePath = () => {
                       <motion.span
                         className={cn(
                           "absolute -top-12 z-10 rounded-xl border-2 border-border bg-background px-3 py-2 text-sm font-extrabold uppercase tracking-wide whitespace-nowrap",
-                          isTest ? "text-warning" : "text-primary"
+                          nodeTheme.text
                         )}
                         animate={{ y: [0, -5, 0] }}
                         transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
@@ -84,15 +129,12 @@ export const CoursePath = () => {
                       aria-label={`${lesson.title}${status === "locked" || status === "soon" ? " (locked)" : ""}`}
                       aria-expanded={open}
                       className={cn(
-                        "relative w-[72px] h-[64px] rounded-[50%] flex items-center justify-center transition-transform active:translate-y-1.5",
-                        playable && !isTest &&
-                          "bg-primary text-primary-foreground shadow-[0_7px_0_0_hsl(var(--primary-dark))] active:shadow-none",
-                        playable && isTest &&
-                          "bg-warning text-warning-foreground shadow-[0_7px_0_0_hsl(var(--warning-dark))] active:shadow-none",
-                        status === "current" && (isTest ? "ring-[10px] ring-warning/25" : "ring-[10px] ring-primary/20"),
-                        (status === "locked" || status === "soon") &&
-                          "bg-muted text-muted-foreground/60 border-2 border-border shadow-[0_7px_0_0_hsl(var(--border))] active:shadow-none"
+                        "relative w-[72px] h-[64px] rounded-[50%] flex items-center justify-center transition-transform active:translate-y-1.5 active:shadow-none",
+                        playable && nodeTheme.solid,
+                        status === "current" && cn("ring-[10px]", nodeTheme.ring),
+                        !playable && "bg-muted text-muted-foreground/60 border-2 border-border"
                       )}
+                      style={{ boxShadow: `0 7px 0 0 ${playable ? nodeTheme.shadow : "hsl(var(--border))"}` }}
                     >
                       {isTest ? (
                         <Trophy className={cn("w-8 h-8", status === "completed" && "fill-current")} />
@@ -100,7 +142,7 @@ export const CoursePath = () => {
                         <>
                           {status === "completed" && <Check className="w-8 h-8" strokeWidth={4} />}
                           {status === "current" && <Star className="w-8 h-8 fill-current" />}
-                          {(status === "locked" || status === "soon") && <Lock className="w-7 h-7" />}
+                          {!playable && <Lock className="w-7 h-7" />}
                         </>
                       )}
                     </button>
@@ -112,6 +154,7 @@ export const CoursePath = () => {
                           number={i + 1}
                           total={unit.lessons.filter((l) => l.kind !== "test").length}
                           status={status}
+                          theme={nodeTheme}
                           onStart={() => navigate(`/course/${lesson.id}`)}
                         />
                       )}
@@ -132,12 +175,14 @@ function LessonCard({
   number,
   total,
   status,
+  theme,
   onStart,
 }: {
   lesson: CourseLesson;
   number: number;
   total: number;
   status: NodeStatus;
+  theme: typeof GOLD;
   onStart: () => void;
 }) {
   const playable = status === "current" || status === "completed";
@@ -150,11 +195,7 @@ function LessonCard({
       transition={{ duration: 0.15 }}
       className={cn(
         "absolute top-[84px] z-30 w-[280px] rounded-2xl p-4 text-left",
-        playable
-          ? isTest
-            ? "bg-warning text-warning-foreground"
-            : "bg-primary text-primary-foreground"
-          : "bg-muted border-2 border-border text-muted-foreground"
+        playable ? theme.solid : "bg-muted border-2 border-border text-muted-foreground"
       )}
     >
       <p className={cn("text-lg font-extrabold", !playable && "text-foreground")}>{lesson.title}</p>
@@ -169,7 +210,7 @@ function LessonCard({
           onClick={onStart}
           className={cn(
             "mt-4 w-full h-12 rounded-2xl bg-white font-extrabold uppercase tracking-wide shadow-[0_4px_0_0_hsl(0_0%_0%/0.15)] active:translate-y-1 active:shadow-none transition-transform",
-            isTest ? "text-warning-dark" : "text-primary"
+            theme.buttonText
           )}
         >
           {status === "completed"
@@ -187,7 +228,9 @@ function LessonCard({
               ? "This lesson is coming soon!"
               : isTest
                 ? "Finish every lesson in this unit to unlock the test!"
-                : "Complete all lessons above to unlock this!"}
+                : number === 1
+                  ? "Pass the unit test above to unlock this unit!"
+                  : "Complete all lessons above to unlock this!"}
           </p>
           <div className="mt-4 w-full h-12 rounded-2xl bg-border/60 flex items-center justify-center font-extrabold uppercase tracking-wide text-muted-foreground">
             Locked

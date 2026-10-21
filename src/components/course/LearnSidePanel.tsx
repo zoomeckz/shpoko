@@ -8,7 +8,8 @@ import { course } from "@/data/course";
 export const LearnSidePanel = () => {
   const { user } = useAuth();
   const { isLessonCompleted } = useUserProgress();
-  const unit = course[0];
+  // The unit the learner is working on: the first one with lessons left.
+  const unit = course.find((u) => u.lessons.some((l) => !isLessonCompleted(l.id))) ?? course[course.length - 1];
   const completed = unit.lessons.filter((l) => isLessonCompleted(l.id)).length;
 
   return (

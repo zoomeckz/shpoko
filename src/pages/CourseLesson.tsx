@@ -3,7 +3,7 @@ import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Volume2, VolumeX, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { findLesson, type CourseLesson as Lesson } from "@/data/course";
+import { findLesson, TEACHING_TYPES, type CourseLesson as Lesson, type TextFont } from "@/data/course";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuest } from "@/contexts/GuestContext";
 import { useUserProgress } from "@/hooks/useUserProgress";
@@ -15,6 +15,10 @@ import {
   BuildExercise,
   ChoiceExercise,
   FamiliarExercise,
+  ShapeExercise,
+  TipExercise,
+  WordExercise,
+  fontClass,
   IntroExercise,
   MatchExercise,
 } from "@/components/course/exercises";
@@ -56,8 +60,8 @@ function LessonPlayer({ lesson, onRetry }: { lesson: Lesson; onRetry: () => void
   const index = queue[pos];
   const exercise = exercises[index];
   // Teaching screens are just read and continued, not graded.
-  const isIntro = exercise?.type === "intro" || exercise?.type === "familiar";
-  const graded = exercises.filter((e) => e.type !== "intro" && e.type !== "familiar").length;
+  const isIntro = !!exercise && TEACHING_TYPES.includes(exercise.type);
+  const graded = Math.max(1, exercises.filter((e) => !TEACHING_TYPES.includes(e.type)).length);
   const accuracy = Math.round(((graded - mistakes.size) / graded) * 100);
 
   // Visitors who land here directly still get their progress remembered.
@@ -163,6 +167,8 @@ function LessonPlayer({ lesson, onRetry }: { lesson: Lesson; onRetry: () => void
         xp={xpEarned}
         isTest={isTest}
         learned={lesson.description}
+        learnedFont={lesson.descriptionFont}
+        testMessage={lesson.completeMessage}
         accuracy={accuracy}
         time={`${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`}
         onContinue={() => navigate("/")}
@@ -225,6 +231,9 @@ function LessonPlayer({ lesson, onRetry }: { lesson: Lesson; onRetry: () => void
             transition={{ duration: 0.18 }}
           >
             {exercise.type === "familiar" && <FamiliarExercise exercise={exercise} {...props} />}
+            {exercise.type === "tip" && <TipExercise exercise={exercise} {...props} />}
+            {exercise.type === "word" && <WordExercise exercise={exercise} {...props} />}
+            {exercise.type === "shape" && <ShapeExercise exercise={exercise} {...props} />}
             {exercise.type === "intro" && <IntroExercise exercise={exercise} {...props} />}
             {exercise.type === "choice" && <ChoiceExercise exercise={exercise} {...props} />}
             {exercise.type === "match" && <MatchExercise exercise={exercise} {...props} />}
@@ -337,18 +346,25 @@ function LessonComplete({
   accuracy,
   time,
   learned,
+  learnedFont,
   isTest,
+  testMessage,
   onContinue,
 }: {
   /** XP actually earned; null while it's being saved. */
   xp: number | null;
-  /** The lesson's letters, space separated. */
+  /** The lesson's letters (space separated) or words (comma separated). */
   learned: string;
+  learnedFont?: TextFont;
   isTest: boolean;
+  testMessage?: string;
   accuracy: number;
   time: string;
   onContinue: () => void;
 }) {
+  const chips = (learned.includes(",") ? learned.split(",") : learned.split(" ")).map((s) => s.trim()).filter(Boolean);
+  const onlyLetters = chips.every((c) => c.length === 1);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Enter" && (e.target as HTMLElement)?.tagName !== "BUTTON" && onContinue();
     window.addEventListener("keydown", onKey);
@@ -369,19 +385,31 @@ function LessonComplete({
         <h1 className="mt-6 text-3xl font-extrabold text-warning">{isTest ? "Unit complete! 🏆" : "Lesson complete!"}</h1>
         {isTest ? (
           <p className="mt-2 max-w-sm text-lg font-bold text-muted-foreground">
-            You passed the test. You can read and write all 30 letters of the Bulgarian alphabet!
+            You passed the test. {testMessage ?? "Great work!"}
           </p>
         ) : (
-          <p className="mt-2 text-lg font-bold text-muted-foreground">New letters you can read now:</p>
+          <p className="mt-2 text-lg font-bold text-muted-foreground">
+            {learnedFont === "italic"
+              ? "You can read these in italics now:"
+              : learnedFont === "handwriting"
+                ? "You can read these handwritten now:"
+                : onlyLetters
+                  ? "New letters you can read now:"
+                  : "You can read these now:"}
+          </p>
         )}
         <div className="mt-3 flex flex-wrap justify-center gap-2">
-          {!isTest && learned.split(" ").map((letter, i) => (
+          {!isTest && chips.map((letter, i) => (
             <motion.span
               key={letter}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.4 + i * 0.08, type: "spring", stiffness: 320, damping: 16 }}
-              className="w-11 h-12 rounded-xl border-2 border-border bg-card flex items-center justify-center text-2xl font-black text-foreground shadow-[0_3px_0_0_hsl(var(--border))]"
+              className={cn(
+                "h-12 rounded-xl border-2 border-border bg-card flex items-center justify-center text-2xl text-foreground shadow-[0_3px_0_0_hsl(var(--border))]",
+                onlyLetters ? "w-11" : "px-3",
+                learnedFont && learnedFont !== "print" ? fontClass(learnedFont) : "font-black"
+              )}
             >
               {letter}
             </motion.span>

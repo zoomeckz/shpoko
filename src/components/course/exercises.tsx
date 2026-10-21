@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import type { Exercise } from "@/data/course";
+import type { Exercise, SignColor, TextFont } from "@/data/course";
 import { useSfx } from "@/hooks/useSfx";
 import { SoundButton } from "./SoundButton";
 
@@ -43,6 +43,170 @@ const shuffle = <T,>(items: T[]) => {
 
 function Prompt({ children }: { children: React.ReactNode }) {
   return <h1 className="text-2xl sm:text-[28px] font-extrabold text-foreground">{children}</h1>;
+}
+
+/** CSS class for drawing Cyrillic in italics or handwriting. */
+export const fontClass = (font?: TextFont) =>
+  font === "italic" ? "font-cyr-italic" : font === "handwriting" ? "font-cyr-hand" : "";
+
+/** Big display text: bold print, or a styled font that keeps its own weight. */
+const displayClass = (text: string, font?: TextFont) =>
+  cn(
+    font && font !== "print"
+      ? cn(fontClass(font), text.length > 8 ? "text-5xl sm:text-6xl" : "text-6xl sm:text-7xl")
+      : cn("font-black tracking-wide", text.length > 6 ? "text-4xl sm:text-6xl" : "text-6xl sm:text-7xl"),
+    "text-foreground"
+  );
+
+const SIGN_STYLES: Record<SignColor, { outer: string; inner: string }> = {
+  green: { outer: "bg-[#15803d] text-white", inner: "border-white/60" },
+  blue: { outer: "bg-[#1d4ed8] text-white", inner: "border-white/60" },
+  red: { outer: "bg-[#dc2626] text-white", inner: "border-white/60" },
+  yellow: { outer: "bg-[#facc15] text-[#1a1a1a]", inner: "border-black/25" },
+  white: { outer: "bg-white text-[#1a1a1a] ring-2 ring-black/10", inner: "border-black/20" },
+};
+
+/** Text drawn as a real-world sign. */
+export function Sign({ text, color, size = "lg" }: { text: string; color: SignColor; size?: "sm" | "lg" }) {
+  const s = SIGN_STYLES[color];
+  return (
+    <span className={cn("inline-flex rounded-xl p-1.5 shadow-[0_6px_16px_-6px_rgba(0,0,0,0.45)]", s.outer)}>
+      <span
+        className={cn(
+          "rounded-lg border-2 font-black uppercase tracking-[0.12em] whitespace-nowrap",
+          s.inner,
+          size === "lg" ? (text.length > 7 ? "px-5 py-3 text-2xl sm:text-4xl" : "px-6 py-3 text-3xl sm:text-4xl") : "px-3 py-1.5 text-base sm:text-lg"
+        )}
+      >
+        {text}
+      </span>
+    </span>
+  );
+}
+
+function TeachingPill({ children, tone = "pink" }: { children: React.ReactNode; tone?: "pink" | "blue" }) {
+  return (
+    <span
+      className={cn(
+        "rounded-full px-4 py-1.5 text-sm font-extrabold uppercase tracking-widest",
+        tone === "pink" ? "bg-accent-strong/15 text-accent-strong" : "bg-primary/15 text-primary"
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+/* ---------- Tip ---------- */
+
+export function TipExercise({ exercise, onChange }: BaseProps & { exercise: Extract<Exercise, { type: "tip" }> }) {
+  const sfx = useSfx();
+  useEffect(() => {
+    onChange({ ready: true, correct: true, solution: "" });
+    sfx.reveal();
+  }, [onChange, sfx]);
+
+  return (
+    <div>
+      <TeachingPill tone="blue">Tip</TeachingPill>
+      <h1 className="mt-4 text-2xl sm:text-[28px] font-extrabold text-foreground">{exercise.title}</h1>
+      <p className="mt-2 text-lg font-bold text-muted-foreground">{exercise.text}</p>
+      {exercise.items && (
+        <div className="mt-6 space-y-3">
+          {exercise.items.map((item, i) => (
+            <motion.div
+              key={item.big + i}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08 * i }}
+              className="duo-card flex flex-wrap items-baseline gap-x-4 gap-y-1 px-5 py-4"
+            >
+              <span className={cn("text-3xl text-foreground", item.font && item.font !== "print" ? fontClass(item.font) : "font-black")}>
+                {item.big}
+              </span>
+              <span className="font-bold text-muted-foreground">{item.small}</span>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------- New word ---------- */
+
+export function WordExercise({ exercise, onChange }: BaseProps & { exercise: Extract<Exercise, { type: "word" }> }) {
+  const sfx = useSfx();
+  useEffect(() => {
+    onChange({ ready: true, correct: true, solution: "" });
+    sfx.reveal();
+  }, [onChange, sfx]);
+
+  return (
+    <div className="flex flex-col items-center text-center">
+      <TeachingPill>New word</TeachingPill>
+      <motion.div
+        initial={{ scale: 0.85, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 260, damping: 18 }}
+        className="mt-8 w-full max-w-sm flex flex-col items-center"
+      >
+        {exercise.sign ? (
+          <Sign text={exercise.word} color={exercise.sign} />
+        ) : (
+          <div className="duo-card w-full px-6 py-6">
+            <p className={displayClass(exercise.word, exercise.font)}>{exercise.word}</p>
+          </div>
+        )}
+        <div className="mt-6 flex items-center justify-center gap-3">
+          <SoundButton src={exercise.audio} />
+          <p className="text-2xl font-extrabold text-primary">“{exercise.reading}”</p>
+        </div>
+        <p className="mt-3 text-2xl font-extrabold text-foreground">
+          {exercise.emoji && <span className="mr-2" aria-hidden="true">{exercise.emoji}</span>}
+          {exercise.meaning}
+        </p>
+      </motion.div>
+    </div>
+  );
+}
+
+/* ---------- Same letter, new look ---------- */
+
+export function ShapeExercise({ exercise, onChange }: BaseProps & { exercise: Extract<Exercise, { type: "shape" }> }) {
+  const sfx = useSfx();
+  useEffect(() => {
+    onChange({ ready: true, correct: true, solution: "" });
+    sfx.reveal();
+  }, [onChange, sfx]);
+
+  const styleName = exercise.font === "italic" ? "In italics" : "Handwritten";
+
+  return (
+    <div className="flex flex-col items-center text-center">
+      <TeachingPill>Same letter, new look</TeachingPill>
+      <div className="mt-8 flex items-center gap-4">
+        <div className="duo-card w-32 sm:w-36 py-5">
+          <p className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Print</p>
+          <p className="mt-1 text-7xl font-black text-foreground">{exercise.letter}</p>
+        </div>
+        <span className="text-3xl font-black text-muted-foreground" aria-hidden="true">→</span>
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0, rotate: -4 }}
+          animate={{ scale: 1, opacity: 1, rotate: 0 }}
+          transition={{ delay: 0.25, type: "spring", stiffness: 260, damping: 16 }}
+          className="duo-card w-32 sm:w-36 py-5 border-primary/60 shadow-[0_4px_0_0_hsl(var(--primary)/0.6)]"
+        >
+          <p className="text-xs font-extrabold uppercase tracking-widest text-primary">{styleName}</p>
+          <p className={cn("mt-1 text-7xl text-foreground", fontClass(exercise.font))}>{exercise.letter}</p>
+        </motion.div>
+      </div>
+      <p className="mt-6 text-xl font-extrabold text-foreground">
+        {exercise.font === "italic" ? "In italics" : "When handwritten"}, {exercise.letter} looks like {exercise.looksLike}.
+      </p>
+      {exercise.note && <p className="mt-1 text-lg font-bold text-muted-foreground">{exercise.note}</p>}
+    </div>
+  );
 }
 
 /* ---------- Letters you already know ---------- */
@@ -156,6 +320,7 @@ export function ChoiceExercise({
 }: BaseProps & { exercise: Extract<Exercise, { type: "choice" }> }) {
   const [selected, setSelected] = useState<string | null>(null);
   const letters = exercise.optionStyle === "letters";
+  const signs = exercise.optionStyle === "signs";
   const sfx = useSfx();
 
   const choose = (label: string) => {
@@ -186,24 +351,23 @@ export function ChoiceExercise({
       <Prompt>{exercise.prompt}</Prompt>
 
       {exercise.display && (
-        <div className="mt-8 flex items-center justify-center gap-4">
+        <div className="mt-8 flex items-center justify-center gap-4 text-center">
           <SoundButton src={exercise.displayAudio} />
-          <p
-            className={cn(
-              "font-black tracking-wide text-foreground",
-              // Shrink long words so they fit on a phone.
-              exercise.display.length > 6 ? "text-4xl sm:text-6xl" : "text-6xl sm:text-7xl"
-            )}
-          >
-            {exercise.display}
-          </p>
+          {exercise.displaySign ? (
+            <Sign text={exercise.display} color={exercise.displaySign} />
+          ) : (
+            // Long words shrink so they fit on a phone.
+            <p className={displayClass(exercise.display, exercise.displayFont)}>{exercise.display}</p>
+          )}
         </div>
       )}
 
       <div
         className={cn(
           "mt-8 grid gap-3",
-          letters ? (exercise.options.length > 3 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3") : "grid-cols-1"
+          letters && (exercise.options.length > 3 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3"),
+          signs && "grid-cols-1 sm:grid-cols-3",
+          !letters && !signs && "grid-cols-1"
         )}
       >
         {exercise.options.map((option, i) => (
@@ -215,15 +379,21 @@ export function ChoiceExercise({
             onClick={() => choose(option.label)}
             className={cn(
               tileClass(stateFor(option.label)),
-              letters ? "h-28 text-5xl flex flex-col items-center justify-center gap-2" : "h-16 px-4 text-xl flex items-center gap-4"
+              letters && "h-28 text-5xl flex flex-col items-center justify-center gap-2",
+              signs && "h-20 sm:h-24 px-3 flex items-center justify-center",
+              !letters && !signs && "h-16 px-4 text-xl flex items-center gap-4"
             )}
           >
-            {!letters && (
+            {!letters && !signs && (
               <span className="w-8 h-8 shrink-0 rounded-lg border-2 border-current text-sm flex items-center justify-center opacity-60">
                 {i + 1}
               </span>
             )}
-            <span>{option.label}</span>
+            {signs ? (
+              <Sign text={option.label} color={option.sign ?? "white"} size="sm" />
+            ) : (
+              <span className={fontClass(exercise.optionFont)}>{option.label}</span>
+            )}
           </button>
         ))}
       </div>
@@ -310,7 +480,11 @@ export function MatchExercise({
               type="button"
               disabled={leftState(l) === "done" || !!flash}
               onClick={() => pickLeft(l)}
-              className={cn(tileClass(leftState(l)), "w-full h-16 text-2xl")}
+              className={cn(
+                tileClass(leftState(l)),
+                "w-full h-16",
+                exercise.leftFont && exercise.leftFont !== "print" ? cn(fontClass(exercise.leftFont), "text-3xl") : "text-2xl"
+              )}
             >
               {l}
             </button>
@@ -371,7 +545,16 @@ export function BuildExercise({
 
       <div className="mt-6 flex items-center gap-3">
         <SoundButton src={exercise.audio} size="sm" />
-        <p className="rounded-2xl border-2 border-border px-4 py-2 text-lg font-bold text-foreground">{exercise.target}</p>
+        <p
+          className={cn(
+            "rounded-2xl border-2 border-border px-4 py-2 text-foreground",
+            exercise.targetFont && exercise.targetFont !== "print"
+              ? cn(fontClass(exercise.targetFont), "text-4xl px-5")
+              : "text-lg font-bold"
+          )}
+        >
+          {exercise.target}
+        </p>
       </div>
 
       {/* Answer line */}

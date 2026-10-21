@@ -191,6 +191,23 @@
     box-shadow: 0 4px 0 0 hsl(var(--border));
   }
 
+  /* Cyrillic in true italics (т looks like m, и like u, п like n) */
+  .font-cyr-italic {
+    font-family: 'Lora', Georgia, serif !important;
+    font-style: italic !important;
+    font-weight: 600 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+  }
+
+  /* Cyrillic handwriting */
+  .font-cyr-hand {
+    font-family: 'Marck Script', cursive !important;
+    font-weight: 400 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+  }
+
   /* Bordered card with a flat bottom lip, used for options and tiles */
   .duo-card {
     @apply rounded-2xl border-2 border-border bg-card;
