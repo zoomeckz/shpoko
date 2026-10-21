@@ -256,12 +256,12 @@ const lesson1: Exercise[] = [
   },
   {
     type: "match",
-    prompt: "Match the words with their meaning",
+    prompt: "Match each word with how it's read",
     pairs: [
-      { left: "НОС", right: "nose", audio: wordAudio("nos") },
-      { left: "УХО", right: "ear", audio: wordAudio("uho") },
-      { left: "СОК", right: "juice", audio: wordAudio("sok") },
-      { left: "РАК", right: "crab", audio: wordAudio("rak") },
+      { left: "НОС", right: "nos", audio: wordAudio("nos") },
+      { left: "УХО", right: "uho", audio: wordAudio("uho") },
+      { left: "СОК", right: "sok", audio: wordAudio("sok") },
+      { left: "РАК", right: "rak", audio: wordAudio("rak") },
     ],
   },
   {
