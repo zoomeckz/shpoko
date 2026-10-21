@@ -2,16 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-/* SHPOKO Design System — bright white canvas, chunky 3D buttons,
-   sky blue primary, lime green for "correct", baby pink accent. */
+/* SHPOKO Design System — dark-first, chunky 3D buttons, sky blue primary,
+   green only for "correct", pink and yellow for decoration. */
 
 @layer base {
   :root {
     /* Sky blue primary */
-    --primary: 94 98% 40%;
+    --primary: 199 92% 54%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 87 80% 49%;
-    --primary-dark: 88 100% 33%;
+    --primary-light: 199 95% 64%;
+    --primary-dark: 199 80% 46%;
 
     /* Blue — secondary actions, selected answers, active nav */
     --info: 199 92% 54%;
@@ -29,11 +29,11 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 24%;
 
-    /* Lime green — correct answers, streaks, progress */
-    --success: 94 98% 40%;
+    /* Green — correct answers and completed lessons only */
+    --success: 145 63% 42%;
     --success-foreground: 0 0% 100%;
-    --success-light: 95 87% 89%;
-    --success-dark: 88 100% 33%;
+    --success-light: 145 70% 92%;
+    --success-dark: 145 66% 32%;
 
     --error: 0 100% 65%;
     --error-foreground: 0 0% 100%;
@@ -45,15 +45,15 @@
     --warning-foreground: 0 0% 24%;
     --warning-dark: 40 100% 44%;
 
-    /* Baby pink */
-    --secondary: 336 100% 95%;
-    --secondary-foreground: 336 60% 40%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 24%;
 
     --muted: 0 0% 97%;
     --muted-foreground: 0 0% 47%;
 
-    --accent: 336 100% 92%;
-    --accent-foreground: 336 60% 36%;
+    /* Neutral hover surface; accent-strong is the decorative pink */
+    --accent: 0 0% 95%;
+    --accent-foreground: 0 0% 24%;
     --accent-strong: 336 90% 66%;
     --accent-dark: 336 70% 54%;
 
@@ -74,7 +74,7 @@
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 0 0% 24%;
-    --sidebar-primary: 94 98% 40%;
+    --sidebar-primary: 199 92% 54%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 199 100% 95%;
     --sidebar-accent-foreground: 199 80% 38%;
@@ -83,10 +83,10 @@
   }
 
   .dark {
-    --primary: 85 63% 51%;
+    --primary: 199 92% 58%;
     --primary-foreground: 197 30% 11%;
-    --primary-light: 85 70% 60%;
-    --primary-dark: 88 57% 40%;
+    --primary-light: 199 92% 68%;
+    --primary-dark: 199 80% 44%;
 
     --info: 199 93% 63%;
     --info-foreground: 197 30% 11%;
@@ -96,16 +96,16 @@
     --background: 197 30% 11%;
     --foreground: 200 40% 96%;
 
-    --card: 199 26% 17%;
+    --card: 198 28% 14%;
     --card-foreground: 200 40% 96%;
 
-    --popover: 199 26% 17%;
+    --popover: 198 28% 16%;
     --popover-foreground: 200 40% 96%;
 
-    --success: 94 80% 46%;
+    --success: 145 58% 50%;
     --success-foreground: 197 30% 11%;
-    --success-light: 94 40% 20%;
-    --success-dark: 88 90% 32%;
+    --success-light: 145 35% 16%;
+    --success-dark: 145 60% 36%;
 
     --error: 0 100% 68%;
     --error-foreground: 197 30% 11%;
@@ -116,14 +116,14 @@
     --warning-foreground: 197 30% 11%;
     --warning-dark: 40 100% 40%;
 
-    --secondary: 336 30% 22%;
-    --secondary-foreground: 336 90% 88%;
+    --secondary: 199 26% 18%;
+    --secondary-foreground: 200 40% 96%;
 
     --muted: 199 26% 15%;
     --muted-foreground: 200 12% 62%;
 
-    --accent: 336 35% 26%;
-    --accent-foreground: 336 90% 90%;
+    --accent: 199 26% 18%;
+    --accent-foreground: 200 40% 96%;
     --accent-strong: 336 90% 70%;
     --accent-dark: 336 60% 50%;
 
@@ -136,7 +136,7 @@
 
     --sidebar-background: 197 30% 11%;
     --sidebar-foreground: 200 40% 96%;
-    --sidebar-primary: 85 63% 51%;
+    --sidebar-primary: 199 92% 58%;
     --sidebar-primary-foreground: 197 30% 11%;
     --sidebar-accent: 199 40% 20%;
     --sidebar-accent-foreground: 199 92% 70%;

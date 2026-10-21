@@ -45,7 +45,7 @@ function PathVisual() {
 
   return (
     <div className="relative mx-auto w-full max-w-sm py-4 flex flex-col items-center gap-6" aria-hidden="true">
-      <span className="absolute top-0 right-2 inline-flex items-center gap-1.5 rounded-full bg-success-light text-success-dark px-3 py-1.5 text-sm font-extrabold">
+      <span className="absolute top-0 right-2 inline-flex items-center gap-1.5 rounded-full bg-primary/15 text-primary px-3 py-1.5 text-sm font-extrabold">
         <Timer className="w-4 h-4" /> ~3 min
       </span>
       {nodes.map((node, i) => (
@@ -62,8 +62,8 @@ function PathVisual() {
           <span
             className={cn(
               "w-[72px] h-[64px] rounded-[50%] flex items-center justify-center",
-              node.state === "done" && "bg-success text-white shadow-[0_7px_0_0_hsl(var(--success-dark))]",
-              node.state === "current" && "bg-primary text-white shadow-[0_7px_0_0_hsl(var(--primary-dark))] ring-8 ring-primary/15",
+              node.state === "done" && "bg-primary text-primary-foreground shadow-[0_7px_0_0_hsl(var(--primary-dark))]",
+              node.state === "current" && "bg-primary text-primary-foreground shadow-[0_7px_0_0_hsl(var(--primary-dark))] ring-8 ring-primary/20",
               node.state === "locked" && "bg-muted text-muted-foreground/60 shadow-[0_7px_0_0_hsl(var(--border))] border-2 border-border"
             )}
           >
@@ -86,8 +86,8 @@ function FreeVisual() {
         <ul className="space-y-3">
           {items.map((item) => (
             <li key={item} className="flex items-center gap-3 text-lg font-extrabold text-foreground">
-              <span className="w-8 h-8 shrink-0 rounded-full bg-success flex items-center justify-center shadow-[0_3px_0_0_hsl(var(--success-dark))]">
-                <Check className="w-5 h-5 text-white" strokeWidth={4} />
+              <span className="w-8 h-8 shrink-0 rounded-full bg-primary flex items-center justify-center shadow-[0_3px_0_0_hsl(var(--primary-dark))]">
+                <Check className="w-5 h-5 text-primary-foreground" strokeWidth={4} />
               </span>
               {item}
             </li>
@@ -109,23 +109,23 @@ export function FeatureRows({ onStart }: FeatureRowsProps) {
   return (
     <section className="max-w-5xl mx-auto px-4 sm:px-6 py-16 sm:py-24 space-y-24 sm:space-y-32">
       <Row
-        title="fun."
+        title="free. fun. fast."
         titleClass="text-primary"
-        body="Every module is a quick little game. Tap, match, listen and type your way through the alphabet and your first words. Go on, try it."
-        visual={<TryItCard onStart={onStart} />}
+        body="Learning with Shpoko is 100% free, at all times. Bite-sized modules teach you the letters, how they sound and how to write them, and you read real Bulgarian words in your very first lesson."
+        visual={<FreeVisual />}
       />
       <Row
         flip
-        title="fast."
-        titleClass="text-success"
-        body="Lessons take about three minutes. Learn the letters, then read real Bulgarian words the very same day."
-        visual={<PathVisual />}
+        title="learn by playing"
+        titleClass="text-primary"
+        body="Every module is a quick little game: tap, match and build words from letter tiles. Go on, try it."
+        visual={<TryItCard onStart={onStart} />}
       />
       <Row
-        title="free."
-        titleClass="text-accent-strong"
-        body="100% free, at all times. No paywall, no trial that runs out. Just you, Shpoko and the Cyrillic alphabet."
-        visual={<FreeVisual />}
+        title="a little every day"
+        titleClass="text-primary"
+        body="Lessons take about three minutes, and your path grows with every letter you learn."
+        visual={<PathVisual />}
       />
     </section>
   );

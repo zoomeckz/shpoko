@@ -161,7 +161,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
         <div className={cn(
           "flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 font-bold text-base",
           isActive
-            ? "bg-primary/10 text-primary border-2 border-primary"
+            ? "bg-primary/10 text-primary border-2 border-primary/50"
             : "text-muted-foreground hover:bg-accent border-2 border-transparent"
         )}>
           <div className="flex items-center gap-4">
@@ -220,7 +220,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
 
   return (
     <aside className={cn(
-      "hidden lg:flex flex-col w-64 h-screen sticky top-0 bg-card border-r border-border p-4",
+      "hidden lg:flex flex-col w-64 h-screen sticky top-0 bg-background border-r-2 border-border p-4",
       className
     )}>
       {/* Logo */}
@@ -242,9 +242,9 @@ export const Sidebar = ({ className }: SidebarProps) => {
               to={item.path}
               data-onboarding={item.onboardingId}
               className={cn(
-                "flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-base",
+                "flex items-center gap-4 px-4 py-2.5 rounded-xl transition-colors duration-150 font-extrabold text-[15px] uppercase tracking-wide",
                 isActive
-                  ? "bg-primary/10 text-primary border-2 border-primary"
+                  ? "bg-primary/10 text-primary border-2 border-primary/50"
                   : "text-muted-foreground hover:bg-accent border-2 border-transparent"
               )}
             >
@@ -283,9 +283,9 @@ export const Sidebar = ({ className }: SidebarProps) => {
               to={item.path}
               data-onboarding={item.onboardingId}
               className={cn(
-                "flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-base",
+                "flex items-center gap-4 px-4 py-2.5 rounded-xl transition-colors duration-150 font-extrabold text-[15px] uppercase tracking-wide",
                 isActive
-                  ? "bg-primary/10 text-primary border-2 border-primary"
+                  ? "bg-primary/10 text-primary border-2 border-primary/50"
                   : "text-muted-foreground hover:bg-accent border-2 border-transparent"
               )}
             >
@@ -357,7 +357,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
             <Link
               to="/admin"
               className={cn(
-                "flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-bold text-base",
+                "flex items-center gap-4 px-4 py-2.5 rounded-xl transition-colors duration-150 font-extrabold text-[15px] uppercase tracking-wide",
                 location.pathname.startsWith("/admin")
                   ? "bg-gradient-to-r from-red-500/20 to-orange-500/20 text-red-500 border-2 border-red-500"
                   : "text-red-500/70 hover:bg-red-500/10 border-2 border-transparent"
@@ -405,7 +405,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
       {/* Account */}
       <div className="mt-4 space-y-3">
         {!user && (
-          <DuoButton asChild size="md" fullWidth>
+          <DuoButton asChild size="md" fullWidth className="xl:hidden">
             <Link to="/auth?mode=signup">Create a profile</Link>
           </DuoButton>
         )}

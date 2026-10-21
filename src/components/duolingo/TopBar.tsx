@@ -79,7 +79,7 @@ export const TopBar = ({ className }: TopBarProps) => {
     <>
       {/* Mobile Top Bar */}
       <header className={cn(
-        "lg:hidden sticky top-0 z-50 bg-card border-b border-border",
+        "lg:hidden sticky top-0 z-50 bg-background border-b-2 border-border",
         className
       )}>
         <div className="flex items-center justify-between px-4 h-14">

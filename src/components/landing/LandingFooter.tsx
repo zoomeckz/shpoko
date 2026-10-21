@@ -18,12 +18,12 @@ export function LandingFooter({ onStart }: LandingFooterProps) {
             Your first Bulgarian word is three minutes away.
           </h2>
           <DuoButton size="xl" className="mt-8 w-full max-w-[330px]" onClick={onStart}>
-            Start learning
+            Get started
           </DuoButton>
         </div>
       </section>
 
-      <footer className="bg-primary">
+      <footer className="bg-primary dark:bg-card dark:border-t-2 dark:border-border">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
           <Wordmark inverted />
           <nav className="flex items-center gap-6 text-sm font-extrabold text-white/90">

@@ -7,7 +7,7 @@ import shpokoMascot from "@/assets/shpoko-mascot.png";
 const tiles = [
   { letter: "Ж", className: "top-2 left-0 bg-accent-strong shadow-[0_4px_0_0_hsl(var(--accent-dark))] -rotate-12", delay: 0 },
   { letter: "Щ", className: "top-0 right-2 bg-primary shadow-[0_4px_0_0_hsl(var(--primary-dark))] rotate-6", delay: 0.6 },
-  { letter: "Ю", className: "bottom-10 -left-2 bg-success shadow-[0_4px_0_0_hsl(var(--success-dark))] rotate-6", delay: 1.2 },
+  { letter: "Ю", className: "bottom-10 -left-2 bg-error shadow-[0_4px_0_0_hsl(var(--error-dark))] rotate-6", delay: 1.2 },
   { letter: "Б", className: "bottom-4 right-0 bg-warning shadow-[0_4px_0_0_hsl(var(--warning-dark))] -rotate-6", delay: 0.3 },
 ];
 
@@ -52,13 +52,12 @@ export function HeroSection({ onStart }: HeroSectionProps) {
         className="text-center"
       >
         <h1 className="text-[28px] sm:text-[34px] leading-tight font-extrabold text-foreground max-w-md mx-auto">
-          Learn to read and write Bulgarian. Fast, fun and{" "}
-          <span className="text-success">100% free.</span>
+          The free, fun and fast way to read and write Bulgarian!
         </h1>
 
         <div className="mt-8 flex flex-col gap-3 max-w-[330px] mx-auto">
           <DuoButton size="xl" fullWidth onClick={onStart}>
-            Start learning
+            Get started
           </DuoButton>
           <DuoButton asChild variant="white" size="xl" fullWidth>
             <Link to="/auth">I already have an account</Link>

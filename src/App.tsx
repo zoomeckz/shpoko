@@ -77,6 +77,7 @@ import Flashcards from "./pages/Flashcards";
 import FlashcardStudy from "./pages/FlashcardStudy";
 // Lesson Screen
 import LessonScreen from "./pages/LessonScreen";
+import CourseLesson from "./pages/CourseLesson";
 // Forum
 import Forum from "./pages/Forum";
 import ForumCategory from "./pages/ForumCategory";
@@ -128,6 +129,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/welcome" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/course/:lessonId" element={<CourseLesson />} />
               <Route path="/about" element={<About />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/premium" element={<Premium />} />

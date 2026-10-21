@@ -10,7 +10,8 @@ import { useLeagueReset } from "@/hooks/useLeagueReset";
 import { OnboardingGuide } from "@/components/onboarding/OnboardingGuide";
 import { UsernameSetup } from "@/components/onboarding/UsernameSetup";
 import Landing from "./Landing";
-import { ComingSoonPath } from "@/components/duolingo/ComingSoonPath";
+import { CoursePath } from "@/components/course/CoursePath";
+import { LearnSidePanel } from "@/components/course/LearnSidePanel";
 import { SHOW_LEGACY } from "@/config/features";
 
 const Index = () => {
@@ -78,13 +79,13 @@ const Index = () => {
 
         {/* Main content - lesson path */}
         <main className="flex-1 lg:ml-0 pb-20 lg:pb-0">
-          <div className="max-w-lg mx-auto px-4">
-            {SHOW_LEGACY ? <LessonPath /> : <ComingSoonPath />}
+          <div className="max-w-[600px] mx-auto px-4 sm:px-6">
+            {SHOW_LEGACY ? <LessonPath /> : <CoursePath />}
           </div>
         </main>
 
         {/* Right sidebar - hidden on mobile */}
-        {SHOW_LEGACY && <RightSidebar />}
+        {SHOW_LEGACY ? <RightSidebar /> : <LearnSidePanel />}
       </div>
     </div>
   );

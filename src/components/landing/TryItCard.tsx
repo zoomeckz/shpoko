@@ -77,7 +77,7 @@ export function TryItCard({ onStart }: TryItCardProps) {
       <div className="px-5 pt-5">
         <div className="h-4 rounded-full bg-muted overflow-hidden" role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100}>
           <motion.div
-            className="h-full rounded-full bg-success"
+            className="h-full rounded-full bg-primary"
             initial={false}
             animate={{ width: `${phase === "done" ? 100 : progress}%` }}
             transition={{ type: "spring", stiffness: 200, damping: 25 }}
@@ -123,9 +123,9 @@ export function TryItCard({ onStart }: TryItCardProps) {
                       "h-16 rounded-2xl border-2 text-2xl font-extrabold transition-all duration-100",
                       "active:translate-y-1 active:shadow-none disabled:active:translate-y-0",
                       showCorrect
-                        ? "border-success bg-success-light text-success-dark shadow-[0_4px_0_0_hsl(var(--success))]"
+                        ? "border-success bg-success-light text-success shadow-[0_4px_0_0_hsl(var(--success))]"
                         : showWrong
-                        ? "border-error bg-error-light text-error-dark shadow-[0_4px_0_0_hsl(var(--error))]"
+                        ? "border-error bg-error-light text-error shadow-[0_4px_0_0_hsl(var(--error))]"
                         : isSelected
                         ? "border-primary bg-primary/10 text-primary shadow-[0_4px_0_0_hsl(var(--primary))]"
                         : "border-border bg-card text-foreground shadow-[0_4px_0_0_hsl(var(--border))] hover:bg-muted"
@@ -156,7 +156,7 @@ export function TryItCard({ onStart }: TryItCardProps) {
                   animate={{ opacity: 1, y: 0 }}
                   className={cn(
                     "flex items-center gap-3 mb-3 font-extrabold",
-                    isCorrect ? "text-success-dark" : "text-error-dark"
+                    isCorrect ? "text-success" : "text-error"
                   )}
                   role="status"
                 >
@@ -176,7 +176,7 @@ export function TryItCard({ onStart }: TryItCardProps) {
                 Continue
               </DuoButton>
             ) : (
-              <DuoButton variant="success" size="lg" fullWidth disabled={!selected} onClick={check}>
+              <DuoButton size="lg" fullWidth disabled={!selected} onClick={check}>
                 Check
               </DuoButton>
             )}

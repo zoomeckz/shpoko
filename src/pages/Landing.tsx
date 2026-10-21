@@ -18,7 +18,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <LandingHeader />
+      <LandingHeader onStart={start} />
       <main className="flex-1">
         <HeroSection onStart={start} />
         <AlphabetStrip />
