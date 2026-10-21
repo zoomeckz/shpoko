@@ -136,6 +136,7 @@ function LessonPlayer({ lesson }: { lesson: Lesson }) {
     return (
       <LessonComplete
         xp={lesson.xp}
+        learned={lesson.description}
         accuracy={accuracy}
         time={`${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`}
         onContinue={() => navigate("/")}
@@ -309,9 +310,12 @@ function LessonComplete({
   xp,
   accuracy,
   time,
+  learned,
   onContinue,
 }: {
   xp: number;
+  /** The lesson's letters, space separated. */
+  learned: string;
   accuracy: number;
   time: string;
   onContinue: () => void;
@@ -334,7 +338,20 @@ function LessonComplete({
           transition={{ scale: { type: "spring", stiffness: 200 }, y: { duration: 2, repeat: Infinity } }}
         />
         <h1 className="mt-6 text-3xl font-extrabold text-warning">Lesson complete!</h1>
-        <p className="mt-2 text-lg font-bold text-muted-foreground">You can read your first Bulgarian words.</p>
+        <p className="mt-2 text-lg font-bold text-muted-foreground">New letters you can read now:</p>
+        <div className="mt-3 flex flex-wrap justify-center gap-2">
+          {learned.split(" ").map((letter, i) => (
+            <motion.span
+              key={letter}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.4 + i * 0.08, type: "spring", stiffness: 320, damping: 16 }}
+              className="w-11 h-12 rounded-xl border-2 border-border bg-card flex items-center justify-center text-2xl font-black text-foreground shadow-[0_3px_0_0_hsl(var(--border))]"
+            >
+              {letter}
+            </motion.span>
+          ))}
+        </div>
         <div className="mt-8 w-full max-w-md flex gap-3">
           <StatTile label="Total XP" value={`${xp}`} tone="yellow" />
           <StatTile label="Accuracy" value={`${accuracy}%`} tone="blue" />

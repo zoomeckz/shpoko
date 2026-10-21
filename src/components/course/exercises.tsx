@@ -139,7 +139,7 @@ export function IntroExercise({
       </motion.div>
       {exercise.looksLike && (
         <p className="mt-6 text-lg font-extrabold text-foreground">
-          Looks like an English {exercise.looksLike}, but it isn't one.
+          Looks like {exercise.looksLikeName ?? `an English ${exercise.looksLike}`}, but it isn't one.
         </p>
       )}
       <p className={cn("text-lg font-bold text-muted-foreground", exercise.looksLike ? "mt-1" : "mt-6")}>{exercise.hint}</p>
@@ -188,7 +188,15 @@ export function ChoiceExercise({
       {exercise.display && (
         <div className="mt-8 flex items-center justify-center gap-4">
           <SoundButton src={exercise.displayAudio} />
-          <p className="text-6xl sm:text-7xl font-black tracking-wide text-foreground">{exercise.display}</p>
+          <p
+            className={cn(
+              "font-black tracking-wide text-foreground",
+              // Shrink long words so they fit on a phone.
+              exercise.display.length > 6 ? "text-4xl sm:text-6xl" : "text-6xl sm:text-7xl"
+            )}
+          >
+            {exercise.display}
+          </p>
         </div>
       )}
 

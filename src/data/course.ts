@@ -35,8 +35,10 @@ export type Exercise =
       lower: string;
       sound: string;
       hint: string;
-      /** The English letter this one is easily mistaken for. */
+      /** What this letter is easily mistaken for, shown as a "Not P!" sticker. */
       looksLike?: string;
+      /** How to say it in a sentence; defaults to "an English P". */
+      looksLikeName?: string;
       audio?: string;
     }
   | {
@@ -275,6 +277,195 @@ const lesson1: Exercise[] = [
   },
 ];
 
+// Lesson 2: letters with shapes English doesn't have. Every word uses only
+// letters from lessons 1 and 2, so learners can actually read it.
+const lesson2: Exercise[] = [
+  {
+    type: "intro",
+    letter: "Б",
+    lower: "б",
+    sound: "b",
+    hint: "“b” as in boy. Small б looks a bit like a 6.",
+    audio: letterAudio("b"),
+  },
+  {
+    type: "intro",
+    letter: "Д",
+    lower: "д",
+    sound: "d",
+    hint: "“d” as in dog. Small д is a little Д.",
+    audio: letterAudio("d"),
+  },
+  {
+    type: "choice",
+    prompt: "What sound does this letter make?",
+    display: "Б",
+    displayAudio: letterAudio("b"),
+    options: [{ label: "v" }, { label: "b" }, { label: "p" }],
+    answer: "b",
+    explain: "Careful: В is “v”, Б is “b”.",
+  },
+  {
+    type: "choice",
+    prompt: "What sound does this letter make?",
+    display: "Д",
+    displayAudio: letterAudio("d"),
+    options: [{ label: "d" }, { label: "g" }, { label: "l" }],
+    answer: "d",
+  },
+  {
+    type: "choice",
+    prompt: "How do you read this word?",
+    display: "ДОМ",
+    displayAudio: wordAudio("dom"),
+    options: [{ label: "bom" }, { label: "dom" }, { label: "tom" }],
+    answer: "dom",
+    explain: "ДОМ means home 🏠",
+  },
+  {
+    type: "intro",
+    letter: "П",
+    lower: "п",
+    sound: "p",
+    hint: "“p” as in pen. Don't mix it up with Р, which is “r”!",
+    audio: letterAudio("p"),
+  },
+  {
+    type: "intro",
+    letter: "Л",
+    lower: "л",
+    sound: "l",
+    hint: "“l” as in lamp.",
+    audio: letterAudio("l"),
+  },
+  {
+    type: "match",
+    prompt: "Tap the matching pairs",
+    pairs: [
+      { left: "Б", right: "b", audio: letterAudio("b") },
+      { left: "Д", right: "d", audio: letterAudio("d") },
+      { left: "П", right: "p", audio: letterAudio("p") },
+      { left: "Л", right: "l", audio: letterAudio("l") },
+    ],
+  },
+  {
+    type: "choice",
+    prompt: "How do you read this sign?",
+    display: "ПАРК",
+    displayAudio: wordAudio("park"),
+    options: [{ label: "rapk" }, { label: "park" }, { label: "pank" }],
+    answer: "park",
+    explain: "ПАРК means park 🌳",
+  },
+  {
+    type: "choice",
+    prompt: "How do you read this word?",
+    display: "ЛАМПА",
+    displayAudio: wordAudio("lampa"),
+    options: [{ label: "lampa" }, { label: "dampa" }, { label: "lamra" }],
+    answer: "lampa",
+    explain: "ЛАМПА means lamp 💡",
+  },
+  {
+    type: "build",
+    prompt: "Write this word in Cyrillic",
+    target: "dom (home)",
+    answer: ["Д", "О", "М"],
+    tiles: ["М", "Б", "Д", "О", "Л", "А"],
+    audio: wordAudio("dom"),
+  },
+  {
+    type: "intro",
+    letter: "Г",
+    lower: "г",
+    sound: "g",
+    hint: "Always a hard “g” as in go, never like the g in gem.",
+    audio: letterAudio("g"),
+  },
+  {
+    type: "intro",
+    letter: "З",
+    lower: "з",
+    sound: "z",
+    looksLike: "3",
+    looksLikeName: "the number 3",
+    hint: "“z” as in zoo.",
+    audio: letterAudio("z"),
+  },
+  {
+    type: "intro",
+    letter: "И",
+    lower: "и",
+    sound: "i",
+    looksLike: "N",
+    looksLikeName: "a backwards N",
+    hint: "“ee” as in meet, but short.",
+    audio: letterAudio("i"),
+  },
+  {
+    type: "choice",
+    prompt: "Select the letter that sounds like “z”",
+    optionStyle: "letters",
+    options: [
+      { label: "Г", audio: letterAudio("g") },
+      { label: "З", audio: letterAudio("z") },
+      { label: "Б", audio: letterAudio("b") },
+      { label: "Д", audio: letterAudio("d") },
+    ],
+    answer: "З",
+  },
+  {
+    type: "choice",
+    prompt: "Select the letter that sounds like “ee”",
+    optionStyle: "letters",
+    options: [
+      { label: "Н", audio: letterAudio("n") },
+      { label: "И", audio: letterAudio("i") },
+      { label: "П", audio: letterAudio("p") },
+      { label: "Л", audio: letterAudio("l") },
+    ],
+    answer: "И",
+    explain: "Н is “n”, И is “i”.",
+  },
+  {
+    type: "choice",
+    prompt: "How do you read this word?",
+    display: "ЗИМА",
+    displayAudio: wordAudio("zima"),
+    options: [{ label: "3ima" }, { label: "zina" }, { label: "zima" }],
+    answer: "zima",
+    explain: "ЗИМА means winter ❄️",
+  },
+  {
+    type: "choice",
+    prompt: "How do you read this word?",
+    display: "КРОКОДИЛ",
+    displayAudio: wordAudio("krokodil"),
+    options: [{ label: "krokodil" }, { label: "kpokodil" }, { label: "krokobil" }],
+    answer: "krokodil",
+    explain: "КРОКОДИЛ means crocodile 🐊",
+  },
+  {
+    type: "match",
+    prompt: "Match each word with how it's read",
+    pairs: [
+      { left: "ГРАД", right: "grad", audio: wordAudio("grad") },
+      { left: "ВОДА", right: "voda", audio: wordAudio("voda") },
+      { left: "БИРА", right: "bira", audio: wordAudio("bira") },
+      { left: "ЛИМОН", right: "limon", audio: wordAudio("limon") },
+    ],
+  },
+  {
+    type: "build",
+    prompt: "Write this word in Cyrillic",
+    target: "magazin (shop)",
+    answer: ["М", "А", "Г", "А", "З", "И", "Н"],
+    tiles: ["Г", "А", "Н", "М", "И", "З", "А", "П", "Д"],
+    explain: "МАГАЗИН means shop 🛒",
+    audio: wordAudio("magazin"),
+  },
+];
+
 export const course: CourseUnit[] = [
   {
     id: "unit-1",
@@ -283,7 +474,7 @@ export const course: CourseUnit[] = [
     title: "Read your first letters",
     lessons: [
       { id: "alphabet-1", title: "First letters", description: "В Н Р С У Х", xp: 10, exercises: lesson1 },
-      { id: "alphabet-2", title: "New shapes", description: "Б Г Д З И Л П", xp: 10, exercises: null },
+      { id: "alphabet-2", title: "New shapes", description: "Б Г Д З И Л П", xp: 10, exercises: lesson2 },
       { id: "alphabet-3", title: "Tricky sounds", description: "Ж Ш Щ Ц Ч Ф", xp: 10, exercises: null },
       { id: "alphabet-4", title: "Last letters", description: "Й Ъ Ь Ю Я", xp: 10, exercises: null },
     ],
