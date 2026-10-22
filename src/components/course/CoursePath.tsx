@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Lock, Star, Trophy } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Lock, Star, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { course, type CourseLesson, type CourseUnit } from "@/data/course";
 import { useUserProgress } from "@/hooks/useUserProgress";
@@ -45,7 +45,10 @@ export const CoursePath = () => {
   const navigate = useNavigate();
   const { isLessonCompleted } = useUserProgress();
   const [openId, setOpenId] = useState<string | null>(null);
+  // Finished units are folded away; these are the ones opened again to review.
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const pathRef = useRef<HTMLDivElement>(null);
+  const scrolledTo = useRef<string | null>(null);
 
   // Close the lesson card when clicking anywhere else.
   useEffect(() => {
@@ -64,27 +67,72 @@ export const CoursePath = () => {
     return lesson.exercises ? "current" : "soon";
   };
 
+  // Bring the learner's current lesson into view (once per lesson), so they
+  // never have to scroll past what they've already finished.
+  const currentId = ALL_LESSONS.find((l) => statusOf(l) === "current")?.id;
+  useEffect(() => {
+    if (!currentId || scrolledTo.current === currentId) return;
+    scrolledTo.current = currentId;
+    const node = document.querySelector(`[data-lesson="${currentId}"]`);
+    if (!node) return;
+    const r = node.getBoundingClientRect();
+    if (r.top < 120 || r.bottom > window.innerHeight - 40) node.scrollIntoView({ block: "center" });
+  }, [currentId]);
+
+  const toggleUnit = (id: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
   return (
-    <div className="py-6 space-y-16" ref={pathRef}>
+    <div className="py-6 flex flex-col gap-6" ref={pathRef}>
       {course.map((unit, unitIndex) => {
         const theme = THEMES[unit.color];
         const unitLocked = statusOf(unit.lessons[0]) === "locked";
+        const unitDone = unit.lessons.every((l) => isLessonCompleted(l.id));
+        const collapsed = unitDone && !expanded.has(unit.id);
 
         return (
-          <section key={unit.id}>
+          <section key={unit.id} className={collapsed ? undefined : "pb-10"}>
             <div
               className={cn(
-                "sticky top-16 lg:top-6 z-20 rounded-2xl px-5 py-4",
+                "relative rounded-2xl py-4 text-center",
+                unitDone ? "px-14 sm:px-28" : "px-5",
+                !collapsed && "sticky top-16 lg:top-6 z-20",
                 unitLocked ? "bg-muted text-muted-foreground border-2 border-border" : theme.solid
               )}
               style={unitLocked ? undefined : { boxShadow: `0 4px 0 0 ${theme.shadow}` }}
             >
-              <p className="text-sm font-extrabold uppercase tracking-widest opacity-80">
-                Section {unit.section}, Unit {unit.unit}
-              </p>
-              <p className="text-xl font-extrabold">{unit.title}</p>
+              <div className="min-w-0">
+                <p className="text-sm font-extrabold uppercase tracking-widest opacity-80">
+                  Section {unit.section}, Unit {unit.unit}
+                  {unitDone && (
+                    <>
+                      <Check className="sm:hidden inline w-4 h-4 ml-1.5 -mt-0.5" strokeWidth={4} aria-label="complete" />
+                      <span className="hidden sm:inline"> · Complete</span>
+                    </>
+                  )}
+                </p>
+                <p className="text-xl font-extrabold truncate">{unit.title}</p>
+              </div>
+              {unitDone && (
+                <button
+                  type="button"
+                  onClick={() => toggleUnit(unit.id)}
+                  aria-expanded={!collapsed}
+                  aria-label={collapsed ? `Review Unit ${unit.unit}` : `Hide Unit ${unit.unit}`}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 rounded-xl bg-white/20 px-3 py-2 text-sm font-extrabold uppercase tracking-wide hover:bg-white/30 transition-colors"
+                >
+                  {collapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                  <span className="hidden sm:inline">{collapsed ? "Review" : "Hide"}</span>
+                </button>
+              )}
             </div>
 
+            {!collapsed && (
             <div className="relative mt-20 flex flex-col items-center gap-7">
               <img
                 src={unit.mascot}
@@ -106,7 +154,9 @@ export const CoursePath = () => {
                 return (
                   <div
                     key={lesson.id}
-                    className="relative flex flex-col items-center"
+                    data-lesson={lesson.id}
+                    // Extra room above the current lesson for its START bubble.
+                    className={cn("relative flex flex-col items-center", status === "current" && i > 0 && "mt-10")}
                     style={{ transform: `translateX(${OFFSETS[i % OFFSETS.length]}px)`, zIndex: open ? 40 : 1 }}
                   >
                     {status === "current" && !open && (
@@ -162,6 +212,7 @@ export const CoursePath = () => {
                 );
               })}
             </div>
+            )}
           </section>
         );
       })}
