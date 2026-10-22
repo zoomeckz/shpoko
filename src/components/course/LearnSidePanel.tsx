@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { DuoButton } from "@/components/duolingo/DuoButton";
-import { course } from "@/data/course";
+import { useCourseAccess } from "@/hooks/useCourseAccess";
 
 const BAR = { blue: "bg-primary", pink: "bg-accent-strong", green: "bg-success" } as const;
 
@@ -10,8 +10,10 @@ const BAR = { blue: "bg-primary", pink: "bg-accent-strong", green: "bg-success" 
 export const LearnSidePanel = () => {
   const { user } = useAuth();
   const { isLessonCompleted } = useUserProgress();
+  const { units } = useCourseAccess();
   // The unit the learner is working on: the first one with lessons left.
-  const unit = course.find((u) => u.lessons.some((l) => !isLessonCompleted(l.id))) ?? course[course.length - 1];
+  const unit = units.find((u) => u.lessons.some((l) => !isLessonCompleted(l.id))) ?? units[units.length - 1];
+  if (!unit) return null;
   const completed = unit.lessons.filter((l) => isLessonCompleted(l.id)).length;
 
   return (

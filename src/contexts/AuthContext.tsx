@@ -3,6 +3,16 @@ import { User, Session, AuthError } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateLevel } from "@/lib/levelUtils";
 import { daysAgo, localDateKey } from "@/lib/dates";
+import { loginEmailFor } from "@/lib/accounts";
+import { toast } from "sonner";
+
+/** Access rules an admin set for this account (null = normal account, no limits). */
+export interface AccountAccess {
+  expires_at: string | null;
+  units: string[] | null;
+  unlock_all: boolean;
+  disabled: boolean;
+}
 
 interface Profile {
   id: string;
@@ -22,9 +32,11 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
+  access: AccountAccess | null;
   loading: boolean;
   signUp: (email: string, password: string, username: string) => Promise<{ error: AuthError | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  /** Accepts an email address or, for admin-made accounts, a username. */
+  signIn: (emailOrUsername: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   updateXP: (amount: number) => Promise<void>;
@@ -45,6 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [access, setAccess] = useState<AccountAccess | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
@@ -148,6 +161,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Load the account's access rules, and re-check now and then so changes an
+  // admin makes (or a running-out timer) take effect without a reload.
+  useEffect(() => {
+    if (!user) {
+      setAccess(null);
+      return;
+    }
+    let cancelled = false;
+    const load = async () => {
+      const { data, error } = await supabase
+        .from("account_access")
+        .select("expires_at, units, unlock_all, disabled")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!cancelled) setAccess(error ? null : data);
+    };
+    load();
+    const reload = setInterval(load, 5 * 60 * 1000);
+    return () => {
+      cancelled = true;
+      clearInterval(reload);
+    };
+  }, [user]);
+
+  // Expired or disabled accounts are logged out straight away.
+  useEffect(() => {
+    if (!user || !access) return;
+    const check = () => {
+      const expired = !!access.expires_at && Date.parse(access.expires_at) <= Date.now();
+      if (!access.disabled && !expired) return;
+      toast.error(access.disabled ? "This account has been disabled." : "This account has expired.");
+      supabase.auth.signOut();
+      setProfile(null);
+      setAccess(null);
+    };
+    check();
+    const timer = setInterval(check, 30 * 1000);
+    return () => clearInterval(timer);
+  }, [user, access]);
+
   // Standard sign up with email, password, and username
   const signUp = async (email: string, password: string, username: string) => {
     const redirectUrl = `${window.location.origin}/`;
@@ -165,10 +218,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error };
   };
 
-  // Standard sign in with email and password
-  const signIn = async (email: string, password: string) => {
+  // Sign in with an email address, or with a username for admin-made accounts
+  const signIn = async (emailOrUsername: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: loginEmailFor(emailOrUsername),
       password,
     });
     return { error };
@@ -185,6 +238,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         user,
         session,
         profile,
+        access,
         loading,
         signUp,
         signIn,

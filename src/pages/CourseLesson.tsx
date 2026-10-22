@@ -9,6 +9,7 @@ import { useGuest } from "@/contexts/GuestContext";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useSfx } from "@/hooks/useSfx";
 import { useSoundSettings } from "@/contexts/SoundSettingsContext";
+import { useCourseAccess } from "@/hooks/useCourseAccess";
 import { DuoButton } from "@/components/duolingo/DuoButton";
 import {
   AnswerState,
@@ -499,7 +500,9 @@ const CourseLesson = () => {
   const preview = searchParams.get("preview") === "1";
   const found = lessonId ? findLesson(lessonId) : null;
   const [attempt, setAttempt] = useState(0);
-  if (!found || !found.lesson.exercises) return <Navigate to="/" replace />;
+  const { isAllowedLesson } = useCourseAccess();
+  // Lessons outside the account's allowed units can't be opened by address either.
+  if (!found || !found.lesson.exercises || !isAllowedLesson(found.lesson.id)) return <Navigate to="/" replace />;
   return (
     <LessonPlayer
       key={`${found.lesson.id}-${attempt}`}

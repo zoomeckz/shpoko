@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_access: {
+        Row: {
+          created_at: string
+          disabled: boolean
+          expires_at: string | null
+          managed: boolean
+          note: string | null
+          unlock_all: boolean
+          units: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          disabled?: boolean
+          expires_at?: string | null
+          managed?: boolean
+          note?: string | null
+          unlock_all?: boolean
+          units?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          disabled?: boolean
+          expires_at?: string | null
+          managed?: boolean
+          note?: string | null
+          unlock_all?: boolean
+          units?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       audio_cache: {
         Row: {
           audio_base64: string

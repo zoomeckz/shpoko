@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { supabase } from "@/integrations/supabase/client";
+import { listAccounts } from "@/lib/adminApi";
 import { DuoButton } from "@/components/duolingo/DuoButton";
 import { cn } from "@/lib/utils";
 import { daysAgo, localDateKey } from "@/lib/dates";
@@ -135,18 +135,18 @@ const tooltip = {
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     try {
-      const [countRes, rowsRes] = await Promise.all([
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase.from("profiles").select("username, xp, level, streak, last_activity_date, created_at"),
-      ]);
-      const rows = (rowsRes.data ?? []) as ProfileRow[];
-      setStats(buildStats(rows, countRes.count ?? rows.length));
+      // Read through the admin function: the database only lets each user
+      // read their own profile, so a direct query would only see you.
+      const rows: ProfileRow[] = await listAccounts();
+      setStats(buildStats(rows, rows.length));
     } catch (error) {
-      console.error("Error loading admin stats:", error);
+      setLoadError(error instanceof Error ? error.message : "Couldn't load statistics");
     } finally {
       setLoading(false);
     }
@@ -170,6 +170,9 @@ export default function AdminDashboard() {
       }
     >
       <div className="space-y-6">
+        {loadError && (
+          <div className="rounded-2xl border-2 border-error/40 bg-error/10 px-5 py-4 font-bold text-error">{loadError}</div>
+        )}
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
           <StatTile label="Total users" value={n(stats?.totalUsers)} icon={Users} tone="bg-primary/15 text-primary" />
           <StatTile label="Active today" value={n(stats?.activeToday)} icon={Activity} tone="bg-success/15 text-success" />

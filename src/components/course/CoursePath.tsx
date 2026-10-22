@@ -1,18 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, ChevronUp, Lock, LockOpen, Star, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { course, type CourseLesson, type CourseUnit } from "@/data/course";
+import type { CourseLesson, CourseUnit } from "@/data/course";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useUnlockAll } from "@/hooks/useUnlockAll";
+import { useCourseAccess } from "@/hooks/useCourseAccess";
 import { Switch } from "@/components/ui/switch";
 
 // Horizontal offsets (px) that make the path wind left and right.
 const OFFSETS = [0, 45, 70, 45, 0, -45, -70, -45];
 
 // "preview": a locked lesson opened by the owner-only "Unlock all lessons" switch.
-type NodeStatus = "completed" | "current" | "preview" | "soon" | "locked";
+// "open": opened by the account's own "unlock every lesson" access rule (saves progress).
+type NodeStatus = "completed" | "current" | "open" | "preview" | "soon" | "locked";
 
 // Each unit has its own colour, like Duolingo.
 const THEMES: Record<CourseUnit["color"], { solid: string; shadow: string; ring: string; text: string; buttonText: string }> = {
@@ -40,14 +42,15 @@ const THEMES: Record<CourseUnit["color"], { solid: string; shadow: string; ring:
 };
 const GOLD = { solid: "bg-warning text-warning-foreground", shadow: "hsl(var(--warning-dark))", ring: "ring-warning/25", text: "text-warning", buttonText: "text-warning-dark" };
 
-// Lessons unlock in order across the whole course: a unit opens once the
-// previous unit (including its test) is done.
-const ALL_LESSONS = course.flatMap((unit) => unit.lessons);
 
 export const CoursePath = () => {
   const navigate = useNavigate();
   const { isLessonCompleted } = useUserProgress();
   const { isOwner, unlockAll, setUnlockAll } = useUnlockAll();
+  const { units, unlockAll: accountUnlockAll } = useCourseAccess();
+  // Lessons unlock in order across the units this account can see: a unit
+  // opens once the previous one (including its test) is done.
+  const allLessons = useMemo(() => units.flatMap((unit) => unit.lessons), [units]);
   const [openId, setOpenId] = useState<string | null>(null);
   // Finished units are folded away; these are the ones opened again to review.
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -65,15 +68,18 @@ export const CoursePath = () => {
 
   const statusOf = (lesson: CourseLesson): NodeStatus => {
     if (isLessonCompleted(lesson.id)) return "completed";
-    const index = ALL_LESSONS.findIndex((l) => l.id === lesson.id);
-    const unlocked = ALL_LESSONS.slice(0, index).every((l) => isLessonCompleted(l.id));
-    if (!unlocked) return unlockAll && lesson.exercises ? "preview" : "locked";
+    const index = allLessons.findIndex((l) => l.id === lesson.id);
+    const unlocked = allLessons.slice(0, index).every((l) => isLessonCompleted(l.id));
+    if (!unlocked) {
+      if (accountUnlockAll && lesson.exercises) return "open";
+      return unlockAll && lesson.exercises ? "preview" : "locked";
+    }
     return lesson.exercises ? "current" : "soon";
   };
 
   // Bring the learner's current lesson into view (once per lesson), so they
   // never have to scroll past what they've already finished.
-  const currentId = ALL_LESSONS.find((l) => statusOf(l) === "current")?.id;
+  const currentId = allLessons.find((l) => statusOf(l) === "current")?.id;
   useEffect(() => {
     if (!currentId || scrolledTo.current === currentId) return;
     scrolledTo.current = currentId;
@@ -105,7 +111,7 @@ export const CoursePath = () => {
           <Switch checked={unlockAll} onCheckedChange={setUnlockAll} aria-label="Unlock all lessons" />
         </label>
       )}
-      {course.map((unit, unitIndex) => {
+      {units.map((unit, unitIndex) => {
         const theme = THEMES[unit.color];
         const unitLocked = statusOf(unit.lessons[0]) === "locked";
         const unitDone = unit.lessons.every((l) => isLessonCompleted(l.id));
@@ -165,7 +171,7 @@ export const CoursePath = () => {
                 const status = statusOf(lesson);
                 const open = openId === lesson.id;
                 const isTest = lesson.kind === "test";
-                const playable = status === "current" || status === "completed" || status === "preview";
+                const playable = status === "current" || status === "completed" || status === "preview" || status === "open";
                 const nodeTheme = isTest ? GOLD : theme;
                 return (
                   <div
@@ -207,7 +213,7 @@ export const CoursePath = () => {
                         <>
                           {status === "completed" && <Check className="w-8 h-8" strokeWidth={4} />}
                           {status === "current" && <Star className="w-8 h-8 fill-current" />}
-                          {status === "preview" && <Star className="w-8 h-8" strokeWidth={2.5} />}
+                          {(status === "preview" || status === "open") && <Star className="w-8 h-8" strokeWidth={2.5} />}
                           {!playable && <Lock className="w-7 h-7" />}
                         </>
                       )}
@@ -252,7 +258,7 @@ function LessonCard({
   theme: typeof GOLD;
   onStart: () => void;
 }) {
-  const playable = status === "current" || status === "completed" || status === "preview";
+  const playable = status === "current" || status === "completed" || status === "preview" || status === "open";
   const isTest = lesson.kind === "test";
   return (
     <motion.div

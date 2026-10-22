@@ -24,7 +24,8 @@ const signUpSchema = z.object({
 });
 
 const signInSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  // Email, or the username of an account made in the admin panel.
+  email: z.string().trim().min(3, "Enter your email or username"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -144,7 +145,9 @@ const Auth = () => {
         if (error) {
           toast({
             title: "Login Failed",
-            description: "Invalid email or password. Please try again.",
+            description: /banned/i.test(error.message)
+            ? "This account has been disabled or has expired."
+            : "Wrong email, username or password. Please try again.",
             variant: "destructive",
           });
         } else {
@@ -288,15 +291,17 @@ const Auth = () => {
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-3" noValidate>
             <div>
-              <Label htmlFor="auth-email" className="sr-only">Email</Label>
+              <Label htmlFor="auth-email" className="sr-only">{isLogin ? "Email or username" : "Email"}</Label>
               <input
                 id="auth-email"
-                type="email"
-                placeholder="Email"
+                type={isLogin ? "text" : "email"}
+                placeholder={isLogin ? "Email or username" : "Email"}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={fieldClass(!!errors.email)}
-                autoComplete="email"
+                autoComplete={isLogin ? "username" : "email"}
+                autoCapitalize="none"
+                spellCheck={false}
                 aria-invalid={!!errors.email}
               />
               {errors.email && <p className="mt-1.5 ml-1 text-sm font-semibold text-error">{errors.email}</p>}
