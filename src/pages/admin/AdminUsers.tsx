@@ -530,7 +530,7 @@ export default function AdminUsers() {
       }
     >
       {/* Account-type tabs */}
-      <div role="tablist" aria-label="Account type" className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+      <div role="tablist" aria-label="Account type" className="flex flex-wrap gap-2">
         {FILTERS.map((f) => (
           <button
             key={f.id}
