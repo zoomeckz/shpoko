@@ -10,7 +10,8 @@ import { LanguageModeProvider } from "@/contexts/LanguageModeContext";
 import { SoundSettingsProvider } from "@/contexts/SoundSettingsContext";
 import { ThemeProvider } from "next-themes";
 import { RouteGate } from "@/components/RouteGate";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
+import { initSmoothScroll } from "@/lib/smoothScroll";
 import Index from "./pages/Index";
 const Landing = lazy(() => import("./pages/Landing"));
 const Auth = lazy(() => import("./pages/Auth"));
@@ -113,6 +114,12 @@ const AdminQuests = lazy(() => import("./pages/admin/AdminQuests"));
 
 const queryClient = new QueryClient();
 
+// Smooth mouse-wheel scrolling everywhere (see src/lib/smoothScroll.ts).
+const SmoothScroll = () => {
+  useEffect(() => initSmoothScroll(), []);
+  return null;
+};
+
 // Shown for a moment while a page's code is downloaded.
 const PageLoader = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
@@ -124,6 +131,7 @@ const App = () => (
   <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <SmoothScroll />
         <Toaster />
         <Sonner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronDown, ChevronUp, Lock, LockOpen, Star, Trophy } from "lucide-react";
+import { Check, ChevronDown, Lock, LockOpen, Star, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CourseLesson, CourseUnit } from "@/data/course";
 import { useUserProgress } from "@/hooks/useUserProgress";
@@ -86,7 +86,10 @@ export const CoursePath = () => {
     const node = document.querySelector(`[data-lesson="${currentId}"]`);
     if (!node) return;
     const r = node.getBoundingClientRect();
-    if (r.top < 120 || r.bottom > window.innerHeight - 40) node.scrollIntoView({ block: "center" });
+    if (r.top < 120 || r.bottom > window.innerHeight - 40) node.scrollIntoView({
+        block: "center",
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      });
   }, [currentId]);
 
   const toggleUnit = (id: string) =>
@@ -118,7 +121,7 @@ export const CoursePath = () => {
         const collapsed = unitDone && !expanded.has(unit.id);
 
         return (
-          <section key={unit.id} className={collapsed ? undefined : "pb-10"}>
+          <section key={unit.id}>
             <div
               className={cn(
                 "relative rounded-2xl py-4 text-center",
@@ -148,14 +151,23 @@ export const CoursePath = () => {
                   aria-label={collapsed ? `Review Unit ${unit.unit}` : `Hide Unit ${unit.unit}`}
                   className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 rounded-xl bg-white/20 px-3 py-2 text-sm font-extrabold uppercase tracking-wide hover:bg-white/30 transition-colors"
                 >
-                  {collapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                  <ChevronDown className={cn("w-4 h-4 transition-transform duration-300", !collapsed && "rotate-180")} />
                   <span className="hidden sm:inline">{collapsed ? "Review" : "Hide"}</span>
                 </button>
               )}
             </div>
 
+            {/* Folding a finished unit slides its path up; opening it slides it down. */}
+            <AnimatePresence initial={false}>
             {!collapsed && (
-            <div className="relative mt-20 flex flex-col items-center gap-7">
+            <motion.div
+              key="path"
+              initial={{ height: 0, opacity: 0, overflow: "hidden" }}
+              animate={{ height: "auto", opacity: 1, transitionEnd: { overflow: "visible" } }}
+              exit={{ height: 0, opacity: 0, overflow: "hidden" }}
+              transition={{ height: { duration: 0.45, ease: [0.22, 1, 0.36, 1] }, opacity: { duration: 0.3 } }}
+            >
+            <div className="relative mt-20 pb-10 flex flex-col items-center gap-7">
               <img
                 src={unit.mascot}
                 alt=""
@@ -235,7 +247,9 @@ export const CoursePath = () => {
                 );
               })}
             </div>
+            </motion.div>
             )}
+            </AnimatePresence>
           </section>
         );
       })}
