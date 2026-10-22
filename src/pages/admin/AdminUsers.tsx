@@ -13,16 +13,19 @@ import { AdminLayout } from "./AdminLayout";
 const fieldClass =
   "w-full h-12 rounded-2xl border-2 border-border bg-muted px-4 font-semibold text-foreground outline-none focus:border-primary focus:bg-card transition-colors";
 
+// The admin panel is in English, so dates are too.
+const LOCALE = "en-GB";
+
 const formatDate = (value: string | null) =>
-  value ? new Date(value).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "—";
+  value ? new Date(value).toLocaleDateString(LOCALE, { day: "numeric", month: "short", year: "numeric" }) : "—";
 
 const formatDateTime = (value: string) =>
-  new Date(value).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  new Date(value).toLocaleString(LOCALE, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
 /** "in 3 days", "2 hours ago"… */
 const relative = (iso: string) => {
   const diff = Date.parse(iso) - Date.now();
-  const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+  const rtf = new Intl.RelativeTimeFormat(LOCALE, { numeric: "auto" });
   const abs = Math.abs(diff);
   if (abs < 3600_000) return rtf.format(Math.round(diff / 60_000), "minute");
   if (abs < 86_400_000) return rtf.format(Math.round(diff / 3600_000), "hour");
@@ -412,6 +415,39 @@ function AccountDialog({
   );
 }
 
+/* ---------- Filters and sorting ---------- */
+
+type FilterId = "all" | "email" | "username" | "temporary" | "expired" | "disabled" | "admins";
+const FILTERS: { id: FilterId; label: string; test: (u: AdminAccount) => boolean }[] = [
+  { id: "all", label: "All", test: () => true },
+  { id: "email", label: "Email accounts", test: (u) => !u.login },
+  { id: "username", label: "Username accounts", test: (u) => !!u.login },
+  { id: "temporary", label: "Temporary", test: (u) => !!u.access?.expires_at && !isExpired(u) },
+  { id: "expired", label: "Expired", test: (u) => isExpired(u) },
+  { id: "disabled", label: "Disabled", test: (u) => !!u.access?.disabled },
+  { id: "admins", label: "Admins", test: (u) => u.is_admin },
+];
+
+type SortId = "newest" | "oldest" | "name" | "xp" | "active" | "expiry";
+const time = (v: string | null | undefined) => (v ? Date.parse(v) : 0);
+const SORTS: { id: SortId; label: string; compare: (a: AdminAccount, b: AdminAccount) => number }[] = [
+  { id: "newest", label: "Newest", compare: (a, b) => time(b.created_at) - time(a.created_at) },
+  { id: "oldest", label: "Oldest", compare: (a, b) => time(a.created_at) - time(b.created_at) },
+  { id: "name", label: "Name A–Z", compare: (a, b) => a.username.localeCompare(b.username) },
+  { id: "xp", label: "Most XP", compare: (a, b) => b.xp - a.xp },
+  {
+    id: "active",
+    label: "Recently active",
+    compare: (a, b) => time(b.last_activity_date ?? b.last_sign_in_at) - time(a.last_activity_date ?? a.last_sign_in_at),
+  },
+  {
+    id: "expiry",
+    label: "Expires soonest",
+    // Accounts without an end date go last.
+    compare: (a, b) => (time(a.access?.expires_at) || Infinity) - (time(b.access?.expires_at) || Infinity),
+  },
+];
+
 /* ---------- Page ---------- */
 
 export default function AdminUsers() {
@@ -419,6 +455,8 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filter, setFilter] = useState<FilterId>("all");
+  const [sort, setSort] = useState<SortId>("newest");
   const [dialog, setDialog] = useState<{ open: boolean; account: AdminAccount | null }>({ open: false, account: null });
 
   const fetchUsers = useCallback(async () => {
@@ -426,7 +464,6 @@ export default function AdminUsers() {
     setLoadError(null);
     try {
       const rows = await listAccounts();
-      rows.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
       setUsers(rows);
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : "Couldn't load accounts");
@@ -440,17 +477,25 @@ export default function AdminUsers() {
   }, [fetchUsers]);
 
   const query = searchQuery.trim().toLowerCase();
-  const filteredUsers = useMemo(
-    () =>
-      users.filter(
+  const counts = useMemo(
+    () => Object.fromEntries(FILTERS.map((f) => [f.id, users.filter(f.test).length])) as Record<FilterId, number>,
+    [users]
+  );
+  const filteredUsers = useMemo(() => {
+    const test = FILTERS.find((f) => f.id === filter)!.test;
+    const compare = SORTS.find((s) => s.id === sort)!.compare;
+    return users
+      .filter(test)
+      .filter(
         (u) =>
+          !query ||
           u.username.toLowerCase().includes(query) ||
           u.email?.toLowerCase().includes(query) ||
           u.login?.toLowerCase().includes(query) ||
           u.access?.note?.toLowerCase().includes(query)
-      ),
-    [users, query]
-  );
+      )
+      .sort(compare);
+  }, [users, query, filter, sort]);
 
   const handleDelete = async (user: AdminAccount) => {
     if (!confirm(`Delete ${user.username}? Their login and all their progress are removed for good.`)) return;
@@ -469,7 +514,7 @@ export default function AdminUsers() {
     <AdminLayout
       title="Users"
       description={
-        loading ? "Loading…" : `${users.length.toLocaleString()} accounts · ${temporary} temporary, newest first`
+        loading ? "Loading…" : `${users.length.toLocaleString()} accounts · ${temporary} temporary`
       }
       actions={
         <>
@@ -484,16 +529,79 @@ export default function AdminUsers() {
         </>
       }
     >
-      <div className="relative max-w-md">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <input
-          placeholder="Search by username, email or note"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className={cn(fieldClass, "pl-12")}
-          aria-label="Search users"
-        />
+      {/* Account-type tabs */}
+      <div role="tablist" aria-label="Account type" className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+        {FILTERS.map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            role="tab"
+            aria-selected={filter === f.id}
+            onClick={() => setFilter(f.id)}
+            className={cn(
+              "shrink-0 inline-flex items-center gap-2 rounded-xl border-2 px-3.5 py-2 text-sm font-extrabold transition-colors",
+              filter === f.id ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"
+            )}
+          >
+            {f.label}
+            <span
+              className={cn(
+                "rounded-md px-1.5 text-xs",
+                filter === f.id ? "bg-primary/20" : "bg-muted text-muted-foreground"
+              )}
+            >
+              {loading ? "…" : counts[f.id]}
+            </span>
+          </button>
+        ))}
       </div>
+
+      {/* Search and sort */}
+      <div className="mt-4 flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <input
+            placeholder="Search by username, email or note"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={cn(fieldClass, "pl-12")}
+            aria-label="Search users"
+          />
+        </div>
+        <label className="flex items-center gap-2">
+          <span className="text-sm font-extrabold text-muted-foreground whitespace-nowrap">Sort by</span>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortId)}
+            className={cn(fieldClass, "w-auto pr-8 cursor-pointer")}
+            aria-label="Sort accounts"
+          >
+            {SORTS.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      {!loading && (filter !== "all" || query) && (
+        <p className="mt-3 text-sm font-bold text-muted-foreground">
+          Showing {filteredUsers.length} of {users.length}
+          {(filter !== "all" || query) && (
+            <button
+              type="button"
+              onClick={() => {
+                setFilter("all");
+                setSearchQuery("");
+              }}
+              className="ml-2 font-extrabold text-primary hover:underline"
+            >
+              Clear filters
+            </button>
+          )}
+        </p>
+      )}
 
       {loadError && (
         <div className="mt-6 rounded-2xl border-2 border-error/40 bg-error/10 px-5 py-4 font-bold text-error">{loadError}</div>
