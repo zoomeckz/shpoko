@@ -85,7 +85,7 @@ const Forum = lazy(() => import("./pages/Forum"));
 const ForumCategory = lazy(() => import("./pages/ForumCategory"));
 const ForumThread = lazy(() => import("./pages/ForumThread"));
 // Mini Games
-const ShpokoFruitGame = lazy(() => import("./pages/ShpokoFruitGame"));
+const FruitSlicer = lazy(() => import("./pages/FruitSlicer"));
 const RapidFireGame = lazy(() => import("./pages/RapidFireGame"));
 const ShpokoEndlessWord = lazy(() => import("./pages/ShpokoEndlessWord"));
 // Profile & Quests
@@ -227,7 +227,7 @@ const App = () => (
               <Route path="/forum/:categoryId" element={<ForumCategory />} />
               <Route path="/forum/thread/:threadId" element={<ForumThread />} />
               {/* Mini Games */}
-              <Route path="/game/fruit-slicer" element={<ShpokoFruitGame />} />
+              <Route path="/game/fruit-slicer" element={<FruitSlicer />} />
               {/* Profile & Quests */}
               <Route path="/profile" element={<Profile />} />
               <Route path="/quests" element={<Quests />} />

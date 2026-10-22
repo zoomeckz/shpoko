@@ -65,7 +65,7 @@ const Index = () => {
         <Sidebar />
 
         {/* Main content - lesson path */}
-        <main className="flex-1 min-w-0 pb-10">
+        <main className="flex-1 min-w-0 pb-24 lg:pb-10">
           <div className="max-w-[600px] mx-auto px-4 sm:px-6">
             {SHOW_LEGACY ? (
               <Suspense fallback={null}>

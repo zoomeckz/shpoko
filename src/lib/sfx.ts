@@ -137,6 +137,15 @@ function noise(at: number, { dur = 0.04, vol = 0.15, freq = 2500, q = 1.2, sweep
 const now = () => ctx!.currentTime + 0.005;
 
 export const sfx = {
+  /** A blade swish through fruit: a fast airy sweep with a wet little pop. */
+  slice() {
+    if (!audio()) return;
+    const t = now();
+    noise(t, { dur: 0.13, vol: 0.14, freq: 1400, q: 0.9, sweepTo: 6500 });
+    noise(t + 0.05, { dur: 0.07, vol: 0.09, freq: 700, q: 1.4, sweepTo: 300 });
+    partial("sine", 520, t + 0.05, 0.12, 0.09, master!, 240);
+  },
+
   /** Selecting an option or tile: a soft wooden "tock". */
   tap() {
     if (!audio()) return;
