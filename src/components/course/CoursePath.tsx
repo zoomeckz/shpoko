@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronDown, ChevronUp, Lock, Star, Trophy } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Lock, LockOpen, Star, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { course, type CourseLesson, type CourseUnit } from "@/data/course";
 import { useUserProgress } from "@/hooks/useUserProgress";
+import { useUnlockAll } from "@/hooks/useUnlockAll";
+import { Switch } from "@/components/ui/switch";
 
 // Horizontal offsets (px) that make the path wind left and right.
 const OFFSETS = [0, 45, 70, 45, 0, -45, -70, -45];
 
-type NodeStatus = "completed" | "current" | "soon" | "locked";
+// "preview": a locked lesson opened by the owner-only "Unlock all lessons" switch.
+type NodeStatus = "completed" | "current" | "preview" | "soon" | "locked";
 
 // Each unit has its own colour, like Duolingo.
 const THEMES: Record<CourseUnit["color"], { solid: string; shadow: string; ring: string; text: string; buttonText: string }> = {
@@ -44,6 +47,7 @@ const ALL_LESSONS = course.flatMap((unit) => unit.lessons);
 export const CoursePath = () => {
   const navigate = useNavigate();
   const { isLessonCompleted } = useUserProgress();
+  const { isOwner, unlockAll, setUnlockAll } = useUnlockAll();
   const [openId, setOpenId] = useState<string | null>(null);
   // Finished units are folded away; these are the ones opened again to review.
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -63,7 +67,7 @@ export const CoursePath = () => {
     if (isLessonCompleted(lesson.id)) return "completed";
     const index = ALL_LESSONS.findIndex((l) => l.id === lesson.id);
     const unlocked = ALL_LESSONS.slice(0, index).every((l) => isLessonCompleted(l.id));
-    if (!unlocked) return "locked";
+    if (!unlocked) return unlockAll && lesson.exercises ? "preview" : "locked";
     return lesson.exercises ? "current" : "soon";
   };
 
@@ -89,6 +93,18 @@ export const CoursePath = () => {
 
   return (
     <div className="py-6 flex flex-col gap-6" ref={pathRef}>
+      {isOwner && (
+        <label className="flex items-center gap-3 rounded-2xl border-2 border-dashed border-warning/60 bg-warning/10 px-4 py-3 cursor-pointer">
+          <LockOpen className="w-5 h-5 shrink-0 text-warning" />
+          <span className="flex-1 min-w-0">
+            <span className="block font-extrabold text-foreground">Unlock all lessons</span>
+            <span className="block text-sm font-semibold text-muted-foreground">
+              Only you can see this. Locked lessons open as previews and don't save progress.
+            </span>
+          </span>
+          <Switch checked={unlockAll} onCheckedChange={setUnlockAll} aria-label="Unlock all lessons" />
+        </label>
+      )}
       {course.map((unit, unitIndex) => {
         const theme = THEMES[unit.color];
         const unitLocked = statusOf(unit.lessons[0]) === "locked";
@@ -149,7 +165,7 @@ export const CoursePath = () => {
                 const status = statusOf(lesson);
                 const open = openId === lesson.id;
                 const isTest = lesson.kind === "test";
-                const playable = status === "current" || status === "completed";
+                const playable = status === "current" || status === "completed" || status === "preview";
                 const nodeTheme = isTest ? GOLD : theme;
                 return (
                   <div
@@ -191,6 +207,7 @@ export const CoursePath = () => {
                         <>
                           {status === "completed" && <Check className="w-8 h-8" strokeWidth={4} />}
                           {status === "current" && <Star className="w-8 h-8 fill-current" />}
+                          {status === "preview" && <Star className="w-8 h-8" strokeWidth={2.5} />}
                           {!playable && <Lock className="w-7 h-7" />}
                         </>
                       )}
@@ -204,7 +221,7 @@ export const CoursePath = () => {
                           total={unit.lessons.filter((l) => l.kind !== "test").length}
                           status={status}
                           theme={nodeTheme}
-                          onStart={() => navigate(`/course/${lesson.id}`)}
+                          onStart={() => navigate(`/course/${lesson.id}${status === "preview" ? "?preview=1" : ""}`)}
                         />
                       )}
                     </AnimatePresence>
@@ -235,7 +252,7 @@ function LessonCard({
   theme: typeof GOLD;
   onStart: () => void;
 }) {
-  const playable = status === "current" || status === "completed";
+  const playable = status === "current" || status === "completed" || status === "preview";
   const isTest = lesson.kind === "test";
   return (
     <motion.div
@@ -254,6 +271,9 @@ function LessonCard({
           ? `${lesson.description} · Get ${lesson.passAccuracy ?? 80}% to pass`
           : `Lesson ${number} of ${total} · ${lesson.description}`}
       </p>
+      {status === "preview" && (
+        <p className="mt-2 text-sm font-bold opacity-90">Preview: your progress won't be saved.</p>
+      )}
       {playable ? (
         <button
           type="button"
@@ -263,7 +283,11 @@ function LessonCard({
             theme.buttonText
           )}
         >
-          {status === "completed"
+          {status === "preview"
+            ? isTest
+              ? "Preview test"
+              : "Preview lesson"
+            : status === "completed"
             ? isTest
               ? `Retake test +${Math.ceil(lesson.xp / 2)} XP`
               : `Practice +${Math.ceil(lesson.xp / 2)} XP`

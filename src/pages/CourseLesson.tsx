@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Volume2, VolumeX, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -29,7 +29,7 @@ const EMPTY_ANSWER: AnswerState = { ready: false, correct: false, solution: "" }
 
 type Phase = "answering" | "checked" | "finished";
 
-function LessonPlayer({ lesson, onRetry }: { lesson: Lesson; onRetry: () => void }) {
+function LessonPlayer({ lesson, onRetry, preview = false }: { lesson: Lesson; onRetry: () => void; preview?: boolean }) {
   const exercises = lesson.exercises!;
   // Unit tests: no second chances, and a pass mark.
   const isTest = lesson.kind === "test";
@@ -138,6 +138,11 @@ function LessonPlayer({ lesson, onRetry }: { lesson: Lesson; onRetry: () => void
       return; // A failed test isn't saved.
     }
     sfx.complete();
+    // Owner previews (opened via "Unlock all lessons") never touch real progress.
+    if (preview) {
+      setXpEarned(0);
+      return;
+    }
     // Full XP the first time, half XP for practising a finished lesson again.
     const practiceXp = Math.ceil(lesson.xp / 2);
     if (user) {
@@ -165,6 +170,7 @@ function LessonPlayer({ lesson, onRetry }: { lesson: Lesson; onRetry: () => void
     return (
       <LessonComplete
         xp={xpEarned}
+        preview={preview}
         isTest={isTest}
         learned={lesson.description}
         learnedFont={lesson.descriptionFont}
@@ -209,6 +215,9 @@ function LessonPlayer({ lesson, onRetry }: { lesson: Lesson; onRetry: () => void
             <span className="absolute left-2 right-2 top-1 h-1 rounded-full bg-white/30" />
           </motion.div>
         </div>
+        {preview && (
+          <span className="rounded-lg bg-warning/15 px-2 py-1 text-xs font-extrabold uppercase tracking-wide text-warning">Preview</span>
+        )}
         <button
           type="button"
           onClick={toggleSound}
@@ -349,8 +358,10 @@ function LessonComplete({
   learnedFont,
   isTest,
   testMessage,
+  preview = false,
   onContinue,
 }: {
+  preview?: boolean;
   /** XP actually earned; null while it's being saved. */
   xp: number | null;
   /** The lesson's letters (space separated) or words (comma separated). */
@@ -416,7 +427,7 @@ function LessonComplete({
           ))}
         </div>
         <div className="mt-8 w-full max-w-md flex gap-3">
-          <StatTile label="Total XP" value={xp === null ? "…" : `+${xp}`} tone="yellow" />
+          <StatTile label="Total XP" value={preview ? "Preview" : xp === null ? "…" : `+${xp}`} tone="yellow" />
           <StatTile label="Accuracy" value={`${accuracy}%`} tone="blue" />
           <StatTile label="Time" value={time} tone="pink" />
         </div>
@@ -484,6 +495,8 @@ function TestFailed({
 
 const CourseLesson = () => {
   const { lessonId } = useParams();
+  const [searchParams] = useSearchParams();
+  const preview = searchParams.get("preview") === "1";
   const found = lessonId ? findLesson(lessonId) : null;
   const [attempt, setAttempt] = useState(0);
   if (!found || !found.lesson.exercises) return <Navigate to="/" replace />;
@@ -492,6 +505,7 @@ const CourseLesson = () => {
       key={`${found.lesson.id}-${attempt}`}
       lesson={found.lesson}
       onRetry={() => setAttempt((a) => a + 1)}
+      preview={preview}
     />
   );
 };
