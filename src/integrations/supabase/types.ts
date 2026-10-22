@@ -21,8 +21,8 @@ export type Database = {
           expires_at: string | null
           managed: boolean
           note: string | null
-          unlock_all: boolean
           units: string[] | null
+          unlock_all: boolean
           updated_at: string
           user_id: string
         }
@@ -32,8 +32,8 @@ export type Database = {
           expires_at?: string | null
           managed?: boolean
           note?: string | null
-          unlock_all?: boolean
           units?: string[] | null
+          unlock_all?: boolean
           updated_at?: string
           user_id: string
         }
@@ -43,8 +43,8 @@ export type Database = {
           expires_at?: string | null
           managed?: boolean
           note?: string | null
-          unlock_all?: boolean
           units?: string[] | null
+          unlock_all?: boolean
           updated_at?: string
           user_id?: string
         }
@@ -1118,6 +1118,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      account_is_active: { Args: { _user_id: string }; Returns: boolean }
       get_leaderboard: {
         Args: { limit_count?: number }
         Returns: {
