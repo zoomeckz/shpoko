@@ -205,7 +205,7 @@ function LessonPlayer({ lesson, onRetry, preview = false }: { lesson: Lesson; on
   const props = { checked: phase === "checked", onChange, onComplete: onMatchComplete };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col overflow-x-clip">
       {/* Top: close + progress */}
       <header className="w-full max-w-[1000px] mx-auto px-4 sm:px-6 pt-6 sm:pt-10 flex items-center gap-4">
         <button

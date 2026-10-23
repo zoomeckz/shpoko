@@ -125,6 +125,8 @@ export type Exercise =
       words: { bg: string; en: string; isNew?: boolean }[];
       note?: string;
       audio?: string;
+      /** Asks the learner to say it out loud three times, tapping after each. */
+      repeat?: boolean;
     }
   | {
       /** Pick the word that fills the gap (written ___) in a sentence. */
@@ -176,6 +178,7 @@ export const TEACHING_TYPES: Exercise["type"][] = ["intro", "familiar", "tip", "
 import shpokoMascot from "@/assets/shpoko-mascot.webp";
 import { unit2 } from "./units/unit2";
 import { unit3 } from "./units/unit3";
+import { unit4 } from "./units/unit4";
 import { bonusHandwriting } from "./units/handwriting";
 
 const letterAudio = (name: string) => `/audio/letters/${name}.mp3`;
@@ -1114,6 +1117,7 @@ export const course: CourseUnit[] = [
   },
   unit2,
   unit3,
+  unit4,
   bonusHandwriting,
 ];
 

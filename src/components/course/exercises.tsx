@@ -222,7 +222,7 @@ export function PhraseExercise({ exercise, onChange }: BaseProps & { exercise: E
                 <motion.span
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded-xl bg-foreground px-3 py-1.5 text-base font-extrabold text-background shadow-lg"
+                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[10rem] text-center leading-tight rounded-xl bg-foreground px-3 py-1.5 text-base font-extrabold text-background shadow-lg"
                 >
                   {w.en}
                   <span className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-foreground" aria-hidden="true" />
@@ -254,6 +254,51 @@ export function PhraseExercise({ exercise, onChange }: BaseProps & { exercise: E
         ))}
       </div>
       {exercise.note && <p className="mt-4 text-lg font-bold text-muted-foreground">{exercise.note}</p>}
+      {exercise.repeat && <SayItThreeTimes key={exercise.text} />}
+    </div>
+  );
+}
+
+/** "Say it out loud" with three taps, one after each time the learner says it. */
+function SayItThreeTimes() {
+  const [said, setSaid] = useState(0);
+  const sfx = useSfx();
+  const say = () => {
+    if (said >= 3) return;
+    const next = said + 1;
+    setSaid(next);
+    if (next === 3) sfx.correct(3);
+    else sfx.tap();
+  };
+  return (
+    <div className="mt-6 w-full rounded-2xl border-2 border-dashed border-warning/60 bg-warning/10 px-4 py-4">
+      <p className="font-extrabold text-foreground">
+        {said >= 3 ? "Nice and smooth! 🎉" : "🗣️ Say it out loud, 3 times"}
+      </p>
+      <p className="text-sm font-bold text-muted-foreground">
+        {said >= 3 ? "Keep going, it gets easier every time." : "Tap after each time. A little faster every time!"}
+      </p>
+      <div className="mt-3 flex justify-center gap-3">
+        {[0, 1, 2].map((i) => (
+          <motion.button
+            key={i}
+            type="button"
+            onClick={say}
+            disabled={said >= 3}
+            animate={{ scale: i < said ? [1, 1.25, 1] : 1 }}
+            transition={{ duration: 0.25 }}
+            aria-label={i < said ? `Said ${i + 1} time${i ? "s" : ""}` : "I said it"}
+            className={cn(
+              "w-12 h-12 rounded-full border-2 text-xl font-black flex items-center justify-center transition-colors",
+              i < said
+                ? "border-warning bg-warning text-warning-foreground shadow-[0_3px_0_0_hsl(var(--warning-dark))]"
+                : "border-border bg-card text-muted-foreground hover:bg-muted"
+            )}
+          >
+            {i < said ? "✓" : i + 1}
+          </motion.button>
+        ))}
+      </div>
     </div>
   );
 }
