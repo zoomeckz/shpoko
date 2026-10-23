@@ -12,6 +12,7 @@ import {
   YAxis,
 } from "recharts";
 import { listAccounts } from "@/lib/adminApi";
+import { supabase } from "@/integrations/supabase/client";
 import { DuoButton } from "@/components/duolingo/DuoButton";
 import { cn } from "@/lib/utils";
 import { daysAgo, localDateKey } from "@/lib/dates";
@@ -132,14 +133,30 @@ const tooltip = {
   labelStyle: { color: "hsl(var(--muted-foreground))" },
 };
 
+/** Learners who earned XP, and how much XP, on each of the last 14 days. */
+type DailyActivity = { date: string; learners: number; xp: number }[];
+
+async function loadActivity(): Promise<DailyActivity | null> {
+  const keys = Array.from({ length: 14 }, (_, i) => dayKey(daysAgo(13 - i)));
+  // Admins may read everyone's XP per day (see the mistakes_and_activity migration).
+  const { data, error } = await supabase.from("daily_xp").select("user_id, day, xp").gte("day", keys[0]);
+  if (error) return null;
+  return keys.map((key) => {
+    const rows = (data ?? []).filter((r) => r.day === key && r.xp > 0);
+    return { date: shortDate(key), learners: new Set(rows.map((r) => r.user_id)).size, xp: rows.reduce((n, r) => n + r.xp, 0) };
+  });
+}
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [activity, setActivity] = useState<DailyActivity | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
+    loadActivity().then(setActivity);
     try {
       // Read through the admin function: the database only lets each user
       // read their own profile, so a direct query would only see you.
@@ -181,6 +198,27 @@ export default function AdminDashboard() {
           <StatTile label="On a streak" value={n(stats?.onStreak)} icon={Flame} tone="bg-warning/15 text-warning" />
           <StatTile label="XP earned" value={n(stats?.totalXp)} icon={Zap} tone="bg-warning/15 text-warning" />
         </div>
+
+        <ChartCard
+          title="Learning activity"
+          description={
+            activity
+              ? `Learners who earned XP each day, last 14 days · ${activity.reduce((n, d) => n + d.xp, 0).toLocaleString()} XP in total`
+              : "Shows up once the latest SQL migration has been run (admin access to XP per day)."
+          }
+        >
+          {activity && (
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={activity}>
+                <CartesianGrid {...grid} />
+                <XAxis dataKey="date" {...axis} interval={1} />
+                <YAxis allowDecimals={false} {...axis} width={32} />
+                <Tooltip {...tooltip} />
+                <Bar dataKey="learners" name="Learners" fill="hsl(var(--success))" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </ChartCard>
 
         {stats && (
           <>
