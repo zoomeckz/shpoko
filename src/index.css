@@ -214,6 +214,15 @@
     box-shadow: 0 4px 0 0 hsl(var(--border));
   }
 
+  /* The classic (Russian-style) small letters many websites and books use:
+     т like a little Т, д like a little Д. Nunito has no Bulgarian forms. */
+  .font-cyr-classic {
+    font-family: 'Nunito', sans-serif !important;
+    font-weight: 900 !important;
+    font-style: normal !important;
+    text-transform: none !important;
+  }
+
   /* Cyrillic in true italics (т looks like m, и like u, п like n) */
   .font-cyr-italic {
     font-family: 'Shpoko Cyrillic Italic', 'Lora', Georgia, serif !important;

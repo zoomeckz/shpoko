@@ -2,39 +2,74 @@ import type { CourseUnit, Exercise } from "../course";
 // Temporary: same picture as Unit 1 until the new unit artwork is ready.
 import writer from "@/assets/shpoko-mascot.webp";
 
-// Unit 3: italics and handwriting. Letters lean and get curlier; with the
-// Bulgarian letter shapes, т looks like m, и like u, п like n, д like g and ш like w.
-// Italic text uses Lora Italic and handwriting uses Marck Script; both draw
-// these real cursive shapes (checked against the fonts).
+// Unit 3: other letter styles. Shpoko draws small letters the Bulgarian way
+// (т like m, и like u, п like n, д like g, л like ʌ), but many websites, books
+// and signs use the classic shapes, which look like little capitals. Lesson 1
+// teaches those classic shapes and italics; lessons 2 and 3 handwriting.
+// Classic uses Nunito (Russian-style Cyrillic), italic a Bulgarian-form Lora
+// Italic and handwriting Marck Script (checked against the fonts).
 
-const italics: Exercise[] = [
+const styles: Exercise[] = [
   {
     type: "tip",
-    title: "Slanted letters",
-    text: "In italics, letters lean and get rounder, and some small letters look even more like English ones. You'll see italics in books, on menus and on shop signs. Capital letters stay the same, and every letter still makes the same sound.",
+    title: "Two ways to write small letters",
+    text: "Shpoko shows small letters the Bulgarian way. Many websites, books and signs use the classic shapes instead, which look more like little capitals. Same letters, same sounds, just a different look. Let's learn to read both!",
+    items: [
+      { big: "дълго", small: "Bulgarian shapes" },
+      { big: "дълго", small: "classic shapes", font: "classic" },
+    ],
   },
-  { type: "shape", letter: "т", font: "italic", looksLike: "an English m", note: "Three little bumps, but it still says “t”." },
-  { type: "shape", letter: "и", font: "italic", looksLike: "an English u", note: "It still says “i”." },
+  { type: "shape", letter: "д", font: "classic", looksLike: "a little Д", note: "It still says “d”." },
+  { type: "shape", letter: "л", font: "classic", looksLike: "a little Л", note: "It still says “l”." },
+  {
+    type: "choice",
+    prompt: "Which letter is this?",
+    display: "д",
+    displayFont: "classic",
+    optionStyle: "letters",
+    options: [{ label: "б" }, { label: "д" }, { label: "г" }],
+    answer: "д",
+    explain: "A classic д is a little Д.",
+  },
+  { type: "shape", letter: "т", font: "classic", looksLike: "a little Т", note: "It still says “t”." },
+  { type: "shape", letter: "и", font: "classic", looksLike: "a backwards N", note: "It's a little И, and still says “i”." },
+  { type: "shape", letter: "п", font: "classic", looksLike: "a little П", note: "It still says “p”." },
   {
     type: "choice",
     prompt: "Which letter is this?",
     display: "т",
-    displayFont: "italic",
+    displayFont: "classic",
     optionStyle: "letters",
-    options: [{ label: "м" }, { label: "т" }, { label: "ш" }],
+    options: [{ label: "т" }, { label: "п" }, { label: "г" }],
     answer: "т",
-    explain: "Italic т looks like m, but it's still т.",
+    explain: "A classic т is a little Т.",
+  },
+  {
+    type: "match",
+    prompt: "Match the classic letters with their sounds",
+    leftFont: "classic",
+    pairs: [
+      { left: "д", right: "d" },
+      { left: "л", right: "l" },
+      { left: "т", right: "t" },
+      { left: "и", right: "i" },
+      { left: "п", right: "p" },
+    ],
   },
   {
     type: "choice",
-    prompt: "Which letter is this?",
-    display: "и",
-    displayFont: "italic",
-    optionStyle: "letters",
-    options: [{ label: "п" }, { label: "у" }, { label: "и" }],
-    answer: "и",
+    prompt: "How do you read this word?",
+    display: "липа",
+    displayFont: "classic",
+    options: [{ label: "nipa" }, { label: "lipa" }, { label: "lina" }],
+    answer: "lipa",
+    explain: "липа is a linden tree 🌳",
   },
-  { type: "shape", letter: "п", font: "italic", looksLike: "an English n", note: "It still says “p”." },
+  {
+    type: "tip",
+    title: "Slanted letters",
+    text: "Italics lean and get a little curlier. You'll see them in books, on menus and on shop signs. They look a lot like the Bulgarian shapes you already know, so they're easy to read.",
+  },
   { type: "shape", letter: "д", font: "italic", looksLike: "a curly g", note: "It still says “d”." },
   {
     type: "choice",
@@ -45,7 +80,6 @@ const italics: Exercise[] = [
     answer: "pita",
     explain: "пита is a round loaf of bread 🫓",
   },
-  { type: "shape", letter: "ш", font: "italic", looksLike: "an English w", note: "It still says “sh”." },
   {
     type: "choice",
     prompt: "How do you read this word?",
@@ -84,14 +118,6 @@ const italics: Exercise[] = [
     answer: ["Т", "У", "К"],
     tiles: ["М", "Т", "У", "К", "Н", "И"],
     explain: "тук means here 📍",
-  },
-  {
-    type: "choice",
-    prompt: "How do you read this word?",
-    display: "път",
-    displayFont: "italic",
-    options: [{ label: "năm" }, { label: "păm" }, { label: "păt" }],
-    answer: "păt",
   },
   {
     type: "build",
@@ -301,11 +327,19 @@ const test: Exercise[] = [
   {
     type: "choice",
     prompt: "Which letter is this?",
-    display: "т",
-    displayFont: "italic",
+    display: "д",
+    displayFont: "classic",
     optionStyle: "letters",
-    options: [{ label: "м" }, { label: "ш" }, { label: "т" }],
-    answer: "т",
+    options: [{ label: "г" }, { label: "б" }, { label: "д" }],
+    answer: "д",
+  },
+  {
+    type: "choice",
+    prompt: "How do you read this word?",
+    display: "път",
+    displayFont: "classic",
+    options: [{ label: "păt" }, { label: "lăt" }, { label: "păsh" }],
+    answer: "păt",
   },
   {
     type: "choice",
@@ -452,7 +486,7 @@ export const unit3: CourseUnit = {
   color: "green",
   mascot: writer,
   lessons: [
-    { id: "hand-1", title: "Italic letters", description: "т и п д ш", descriptionFont: "italic", xp: 10, exercises: italics },
+    { id: "hand-1", title: "Classic and italic", description: "д л т и п", descriptionFont: "classic", xp: 10, exercises: styles },
     { id: "hand-2", title: "Handwritten letters", description: "т д и п б", descriptionFont: "handwriting", xp: 10, exercises: handLetters },
     { id: "hand-3", title: "Notes and cards", description: "Обичам те, Благодаря", descriptionFont: "handwriting", xp: 10, exercises: notes },
     {

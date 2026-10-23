@@ -434,7 +434,9 @@ function LessonComplete({
           </p>
         ) : (
           <p className="mt-2 text-lg font-bold text-muted-foreground">
-            {learnedFont === "italic"
+            {learnedFont === "classic"
+              ? "You can read these in both styles now:"
+              : learnedFont === "italic"
               ? "You can read these in italics now:"
               : learnedFont === "handwriting"
                 ? "You can read these handwritten now:"

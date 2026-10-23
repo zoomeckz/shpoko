@@ -7,8 +7,11 @@
  * src/config/features.ts, so missing clips never show up for learners.
  */
 
-/** How a piece of Cyrillic text is drawn: normal print, true italics or handwriting. */
-export type TextFont = "print" | "italic" | "handwriting";
+/**
+ * How a piece of Cyrillic text is drawn: normal print (Bulgarian shapes), the
+ * classic shapes many websites and books use, true italics or handwriting.
+ */
+export type TextFont = "print" | "classic" | "italic" | "handwriting";
 
 /** Colours for text drawn as a real-world sign. */
 export type SignColor = "green" | "blue" | "red" | "yellow" | "white";
@@ -180,7 +183,7 @@ const lesson1: Exercise[] = [
     optionStyle: "letters",
     options: [{ label: "m" }, { label: "м" }, { label: "n" }],
     answer: "м",
-    explain: "Small м is a little М, never m.",
+    explain: "Small м is a little М. The one that looks like an English m is т!",
   },
   {
     type: "intro",
