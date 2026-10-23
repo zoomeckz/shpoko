@@ -242,7 +242,7 @@ export const CoursePath = () => {
               exit={{ height: 0, opacity: 0, overflow: "hidden" }}
               transition={{ height: { duration: 0.45, ease: [0.22, 1, 0.36, 1] }, opacity: { duration: 0.3 } }}
             >
-            <div className="relative mt-20 pb-10 flex flex-col items-center gap-7">
+            <div className="relative mt-20 pb-10 flex flex-col items-center gap-14">
               <img
                 src={unit.mascot}
                 alt=""
@@ -270,8 +270,8 @@ export const CoursePath = () => {
                   <div
                     key={lesson.id}
                     data-lesson={lesson.id}
-                    // Extra room above the current lesson for its START bubble.
-                    className={cn("relative w-full flex justify-center", status === "current" && i > 0 && "mt-10")}
+                    // Rows are spaced evenly with room for the START bubble, so neither column jumps.
+                    className="relative w-full flex justify-center"
                     style={{ zIndex: open || extraOpen ? 40 : showGuide ? 35 : 1 }}
                   >
                   {/* With extras beside it, the path slides over to the left to make room. */}
