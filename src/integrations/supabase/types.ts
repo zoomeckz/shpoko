@@ -1000,6 +1000,30 @@ export type Database = {
           },
         ]
       }
+      user_mistakes: {
+        Row: {
+          exercise_index: number
+          last_missed_at: string
+          lesson_id: string
+          misses: number
+          user_id: string
+        }
+        Insert: {
+          exercise_index: number
+          last_missed_at?: string
+          lesson_id: string
+          misses?: number
+          user_id?: string
+        }
+        Update: {
+          exercise_index?: number
+          last_missed_at?: string
+          lesson_id?: string
+          misses?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_progress: {
         Row: {
           completed: boolean
@@ -1216,6 +1240,10 @@ export type Database = {
         Returns: boolean
       }
       is_site_admin: { Args: never; Returns: boolean }
+      record_mistake: {
+        Args: { _exercise_index: number; _lesson_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user" | "premium"
