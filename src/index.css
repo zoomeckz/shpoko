@@ -5,29 +5,6 @@
 /* SHPOKO Design System — dark-first, chunky 3D buttons, sky blue primary,
    green only for "correct", pink and yellow for decoration. */
 
-/* Cyrillic letters are drawn the Bulgarian way (д like g, л like ʌ, т like m…),
-   not the Russian way. Only Cyrillic uses these fonts; English stays in Nunito.
-   Upright: Sofia Sans, whose default Cyrillic is Bulgarian. Italic: Lora Italic
-   with its Bulgarian forms made the default (renamed, as its licence asks).
-   Both cut down to Cyrillic only. Licences: src/assets/fonts/OFL-*.txt */
-@font-face {
-  font-family: "Shpoko Cyrillic";
-  src: url("./assets/fonts/shpoko-sans-bg.woff2") format("woff2");
-  font-weight: 1 1000;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0400-052F, U+0300-0301, U+2116;
-}
-
-@font-face {
-  font-family: "Shpoko Cyrillic Italic";
-  src: url("./assets/fonts/shpoko-italic-bg.woff2") format("woff2");
-  font-weight: 400 700;
-  font-style: italic;
-  font-display: swap;
-  unicode-range: U+0400-052F, U+0300-0301, U+2116;
-}
-
 @layer base {
   :root {
     /* Sky blue primary */
@@ -175,11 +152,11 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Shpoko Cyrillic', 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Shpoko Cyrillic', 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 800;
   }
 }
@@ -214,18 +191,9 @@
     box-shadow: 0 4px 0 0 hsl(var(--border));
   }
 
-  /* The classic (Russian-style) small letters many websites and books use:
-     т like a little Т, д like a little Д. Nunito has no Bulgarian forms. */
-  .font-cyr-classic {
-    font-family: 'Nunito', sans-serif !important;
-    font-weight: 900 !important;
-    font-style: normal !important;
-    text-transform: none !important;
-  }
-
   /* Cyrillic in true italics (т looks like m, и like u, п like n) */
   .font-cyr-italic {
-    font-family: 'Shpoko Cyrillic Italic', 'Lora', Georgia, serif !important;
+    font-family: 'Lora', Georgia, serif !important;
     font-style: italic !important;
     font-weight: 600 !important;
     letter-spacing: 0 !important;

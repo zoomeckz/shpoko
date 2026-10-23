@@ -19,7 +19,7 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'nunito': ['Shpoko Cyrillic', 'Nunito', 'sans-serif'],
+				'nunito': ['Nunito', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',

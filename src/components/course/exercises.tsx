@@ -45,15 +45,9 @@ function Prompt({ children }: { children: React.ReactNode }) {
   return <h1 className="text-2xl sm:text-[28px] font-extrabold text-foreground">{children}</h1>;
 }
 
-/** CSS class for drawing Cyrillic in the classic shapes, italics or handwriting. */
+/** CSS class for drawing Cyrillic in italics or handwriting. */
 export const fontClass = (font?: TextFont) =>
-  font === "classic"
-    ? "font-cyr-classic"
-    : font === "italic"
-      ? "font-cyr-italic"
-      : font === "handwriting"
-        ? "font-cyr-hand"
-        : "";
+  font === "italic" ? "font-cyr-italic" : font === "handwriting" ? "font-cyr-hand" : "";
 
 /** Big display text: bold print, or a styled font that keeps its own weight. */
 const displayClass = (text: string, font?: TextFont) =>
@@ -389,8 +383,8 @@ export function ShapeExercise({ exercise, onChange }: BaseProps & { exercise: Ex
     sfx.reveal();
   }, [onChange, sfx]);
 
-  const styleName = { classic: "Classic", italic: "In italics", handwriting: "Handwritten" }[exercise.font];
-  const lead = { classic: "In the classic style", italic: "In italics", handwriting: "When handwritten" }[exercise.font];
+  const styleName = exercise.font === "italic" ? "In italics" : "Handwritten";
+  const lead = exercise.font === "italic" ? "In italics" : "When handwritten";
 
   return (
     <div className="flex flex-col items-center text-center">
@@ -412,9 +406,7 @@ export function ShapeExercise({ exercise, onChange }: BaseProps & { exercise: Ex
         </motion.div>
       </div>
       <p className="mt-6 text-xl font-extrabold text-foreground">
-        {/* "it", not the letter: inline it would be drawn in the print shape, not the style shown above */}
-        {lead}, it looks like{" "}
-        <span className={exercise.font === "classic" ? "font-cyr-classic" : undefined}>{exercise.looksLike}</span>.
+        {lead}, {exercise.letter} looks like {exercise.looksLike}.
       </p>
       {exercise.note && <p className="mt-1 text-lg font-bold text-muted-foreground">{exercise.note}</p>}
     </div>

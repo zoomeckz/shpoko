@@ -7,11 +7,8 @@
  * src/config/features.ts, so missing clips never show up for learners.
  */
 
-/**
- * How a piece of Cyrillic text is drawn: normal print (Bulgarian shapes), the
- * classic shapes many websites and books use, true italics or handwriting.
- */
-export type TextFont = "print" | "classic" | "italic" | "handwriting";
+/** How a piece of Cyrillic text is drawn: normal print, true italics or handwriting. */
+export type TextFont = "print" | "italic" | "handwriting";
 
 /** Colours for text drawn as a real-world sign. */
 export type SignColor = "green" | "blue" | "red" | "yellow" | "white";
@@ -190,7 +187,7 @@ const lesson1: Exercise[] = [
   {
     type: "familiar",
     title: "Letters you already know",
-    note: "Their capitals are written just like in English. A few sound a little different, and a couple of small letters have their own Bulgarian shape.",
+    note: "These are written just like in English. A few sound a little different, but you write them the same way.",
     letters: [
       { upper: "А", lower: "а", sound: "a, as in father", audio: letterAudio("a") },
       { upper: "Е", lower: "е", sound: "e, as in pet (never “ee”)", audio: letterAudio("e") },
@@ -200,10 +197,10 @@ const lesson1: Exercise[] = [
         upper: "М",
         lower: "м",
         sound: "m, as in moon",
-        note: "Small м is just a little М.",
+        note: "Small м is just a little М. It's never written m.",
         audio: letterAudio("m"),
       },
-      { upper: "Т", lower: "т", sound: "t, as in top", note: "Careful: small т looks like an English m. It still says “t”.", audio: letterAudio("t") },
+      { upper: "Т", lower: "т", sound: "t, as in top", note: "Small т is a little Т too.", audio: letterAudio("t") },
     ],
   },
   {
@@ -212,7 +209,7 @@ const lesson1: Exercise[] = [
     optionStyle: "letters",
     options: [{ label: "m" }, { label: "м" }, { label: "n" }],
     answer: "м",
-    explain: "Small м is a little М. The one that looks like an English m is т!",
+    explain: "Small м is a little М, never m.",
   },
   {
     type: "intro",
@@ -272,7 +269,7 @@ const lesson1: Exercise[] = [
     lower: "в",
     sound: "v",
     looksLike: "B",
-    hint: "“v” as in van. Small в has a tall loop, a bit like a b, but it still says “v”.",
+    hint: "“v” as in van. Small в is a little В.",
     audio: letterAudio("v"),
   },
   {
@@ -388,7 +385,7 @@ const lesson2: Exercise[] = [
     letter: "Д",
     lower: "д",
     sound: "d",
-    hint: "“d” as in dog. Small д looks like an English g, but it says “d”.",
+    hint: "“d” as in dog. Small д is a little Д.",
     audio: letterAudio("d"),
   },
   {
@@ -422,7 +419,7 @@ const lesson2: Exercise[] = [
     letter: "П",
     lower: "п",
     sound: "p",
-    hint: "“p” as in pen. Small п looks like an n. Don't mix it up with Р, which is “r”!",
+    hint: "“p” as in pen. Don't mix it up with Р, which is “r”!",
     audio: letterAudio("p"),
   },
   {
@@ -430,7 +427,7 @@ const lesson2: Exercise[] = [
     letter: "Л",
     lower: "л",
     sound: "l",
-    hint: "“l” as in lamp. Small л looks like an upside-down V.",
+    hint: "“l” as in lamp.",
     audio: letterAudio("l"),
   },
   {
@@ -494,7 +491,7 @@ const lesson2: Exercise[] = [
     sound: "i",
     looksLike: "N",
     looksLikeName: "a backwards N",
-    hint: "“ee” as in meet, but short. Small и looks like a u.",
+    hint: "“ee” as in meet, but short.",
     audio: letterAudio("i"),
   },
   {

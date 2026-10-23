@@ -180,8 +180,6 @@ export class FruitSlicerEngine {
 
   constructor(private canvas: HTMLCanvasElement, private opts: Options) {
     this.ctx = canvas.getContext("2d")!;
-    // A canvas doesn't fetch web fonts by itself; ask for the Bulgarian letters up front.
-    document.fonts?.load('900 40px "Shpoko Cyrillic"', "Дд").catch(() => {});
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(canvas);
     this.resize();
@@ -541,7 +539,7 @@ export class FruitSlicerEngine {
 
     for (const t of this.texts) {
       ctx.globalAlpha = Math.min(1, t.life * 2);
-      ctx.font = `900 ${t.size}px "Shpoko Cyrillic", Nunito, sans-serif`;
+      ctx.font = `900 ${t.size}px Nunito, sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.lineWidth = 5;
@@ -627,7 +625,7 @@ export class FruitSlicerEngine {
     // The letter stays upright so it's easy to read.
     ctx.save();
     ctx.translate(f.x, f.y);
-    ctx.font = `900 ${Math.round(f.r * 1.05)}px "Shpoko Cyrillic", Nunito, sans-serif`;
+    ctx.font = `900 ${Math.round(f.r * 1.05)}px Nunito, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.lineWidth = Math.max(4, f.r * 0.14);
