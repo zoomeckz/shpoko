@@ -8,10 +8,10 @@
 export const SHOW_LEGACY = false;
 
 /**
- * Sound buttons in lessons play recorded clips from /public/audio/...
- * Turn this on once the clips are in place (see src/data/course.ts).
+ * Spoken Bulgarian in lessons, My words and the guidebooks (clips in
+ * /public/audio/bg, made by scripts/generate-audio.mjs). False hides it all.
  */
-export const SHOW_SOUND_BUTTONS = false;
+export const SHOW_SOUND_BUTTONS = true;
 
 /** Pages that are part of the new site. */
 const LIVE_PATHS = ["/", "/welcome", "/auth", "/profile", "/words", "/admin", "/admin/users", "/admin/reports", "/game/fruit-slicer"];
