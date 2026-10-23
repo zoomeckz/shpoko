@@ -33,7 +33,7 @@ export function LandingFooter({ onStart }: LandingFooterProps) {
             {isLive("/about") && <Link to="/about" className="hover:text-white">{t("landing.about")}</Link>}
             <Link to="/auth" className="hover:text-white">{t("common.logIn")}</Link>
           </nav>
-          <LanguageSelect className="text-white/90 [&_select]:text-white [&_option]:text-foreground" />
+          <LanguageSelect className="text-white" />
           <p className="text-xs font-bold text-white/80">© {new Date().getFullYear()} Shpoko</p>
         </div>
       </footer>

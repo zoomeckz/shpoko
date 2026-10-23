@@ -1,37 +1,55 @@
 import { lazy, Suspense } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuest } from "@/contexts/GuestContext";
-import { Sidebar } from "@/components/duolingo/Sidebar";
-import { TopBar } from "@/components/duolingo/TopBar";
-import { UsernameSetup } from "@/components/onboarding/UsernameSetup";
-import Landing from "./Landing";
-import { CoursePath } from "@/components/course/CoursePath";
-import { LearnSidePanel } from "@/components/course/LearnSidePanel";
 import { SHOW_LEGACY } from "@/config/features";
 
-// Old-site pieces are only downloaded when SHOW_LEGACY is on.
-const LessonPath = lazy(() => import("@/components/duolingo/LessonPath").then((m) => ({ default: m.LessonPath })));
-const RightSidebar = lazy(() => import("@/components/duolingo/RightSidebar").then((m) => ({ default: m.RightSidebar })));
+// The landing page and the learning path are separate downloads, so new
+// visitors don't fetch the whole course and learners don't fetch the landing page.
+const loadLanding = () => import("./Landing");
+const loadLearnHome = () => import("./LearnHome");
+const Landing = lazy(loadLanding);
+const LearnHome = lazy(loadLearnHome);
 const OnboardingGuide = lazy(() =>
   import("@/components/onboarding/OnboardingGuide").then((m) => ({ default: m.OnboardingGuide }))
 );
-const LegacyHomeExtras = lazy(() => import("@/components/LegacyHomeExtras"));
+
+/** Someone who has been here before: logged in, or learning as a guest. */
+function looksLikeLearner() {
+  try {
+    return (
+      !!localStorage.getItem("shpoko_guest_state") ||
+      Object.keys(localStorage).some((k) => k.startsWith("sb-") && k.endsWith("-auth-token"))
+    );
+  } catch {
+    return false;
+  }
+}
+
+// Start downloading the likely page now, while the login check runs.
+if (looksLikeLearner()) loadLearnHome();
+else loadLanding();
+
+function Spinner() {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="w-10 h-10 rounded-full border-4 border-primary/25 border-t-primary animate-spin" />
+    </div>
+  );
+}
 
 const Index = () => {
   const { user, profile, loading: authLoading } = useAuth();
   const { isGuest, onboardingCompleted, completeOnboarding } = useGuest();
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-10 h-10 rounded-full border-4 border-primary/25 border-t-primary animate-spin" />
-      </div>
-    );
-  }
+  if (authLoading) return <Spinner />;
 
   // New visitors see the landing page until they start as a guest or log in.
   if (!user && !isGuest) {
-    return <Landing />;
+    return (
+      <Suspense fallback={<Spinner />}>
+        <Landing />
+      </Suspense>
+    );
   }
 
   if (SHOW_LEGACY && isGuest && !onboardingCompleted) {
@@ -48,45 +66,9 @@ const Index = () => {
   const needsUsername = !!user && !!profile && profile.username_set === false;
 
   return (
-    <div className="min-h-screen bg-background">
-      {needsUsername && <UsernameSetup />}
-
-      {SHOW_LEGACY && (
-        <Suspense fallback={null}>
-          <LegacyHomeExtras />
-        </Suspense>
-      )}
-
-      {/* Mobile top bar */}
-      <TopBar />
-
-      <div className="flex">
-        {/* Left sidebar - hidden on mobile */}
-        <Sidebar />
-
-        {/* Main content - lesson path */}
-        <main className="flex-1 min-w-0 pb-24 lg:pb-10">
-          <div className="max-w-[600px] mx-auto px-4 sm:px-6">
-            {SHOW_LEGACY ? (
-              <Suspense fallback={null}>
-                <LessonPath />
-              </Suspense>
-            ) : (
-              <CoursePath />
-            )}
-          </div>
-        </main>
-
-        {/* Right column - wide screens only */}
-        {SHOW_LEGACY ? (
-          <Suspense fallback={null}>
-            <RightSidebar />
-          </Suspense>
-        ) : (
-          <LearnSidePanel />
-        )}
-      </div>
-    </div>
+    <Suspense fallback={<Spinner />}>
+      <LearnHome needsUsername={needsUsername} />
+    </Suspense>
   );
 };
 

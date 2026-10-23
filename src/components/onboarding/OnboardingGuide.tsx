@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
-import shpokoGuide from "@/assets/shpoko-guide.png";
+import shpokoGuide from "@/assets/shpoko-guide.webp";
 
 interface OnboardingStep {
   id: string;

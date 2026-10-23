@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import shpokoGuide from "@/assets/shpoko-guide.png";
+import shpokoGuide from "@/assets/shpoko-guide.webp";
 
 interface TourStep {
   id: string;

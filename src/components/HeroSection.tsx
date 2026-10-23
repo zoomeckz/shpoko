@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Play, Trophy, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import raccoonMascot from "@/assets/raccoon-mascot.png";
+import raccoonMascot from "@/assets/raccoon-mascot.webp";
 import heroBackground from "@/assets/hero-background.jpg";
 import { useLanguageMode } from "@/contexts/LanguageModeContext";
 import { getTranslations } from "@/lib/translations";

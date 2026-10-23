@@ -352,7 +352,7 @@ export const TopBar = ({ className }: TopBarProps) => {
                   <SoundToggle />
                 </div>
                 <div className="px-4 py-3">
-                  <LanguageSelect className="text-base" />
+                  <LanguageSelect className="w-full text-base" />
                 </div>
                 {user ? (
                 <button

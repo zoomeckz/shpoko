@@ -31,6 +31,22 @@ function courseCheck(): Plugin {
   };
 }
 
+/** Libraries the first page already needs (plus small ones shared with "charts"). */
+const CORE_LIBRARIES = new RegExp(
+  "node_modules/(" +
+    [
+      "react", "react-dom", "scheduler", "react-is", "prop-types", "use-sync-external-store",
+      "react-router", "react-router-dom", "@remix-run/router",
+      "@supabase/[^/]+", "@tanstack/[^/]+", "framer-motion", "motion-dom", "motion-utils",
+      // Radix building blocks; the bigger widgets only some pages use stay out.
+      "@radix-ui/(?!react-(?:select|scroll-area|navigation-menu|menubar|context-menu|hover-card|slider|radio-group|toggle-group|accordion|aspect-ratio|tabs|alert-dialog|avatar)/)[^/]+",
+      "@floating-ui/[^/]+", "react-remove-scroll[^/]*", "react-style-singleton",
+      "use-callback-ref", "use-sidecar", "aria-hidden", "get-nonce", "detect-node-es",
+      "clsx", "tailwind-merge", "class-variance-authority", "lucide-react", "sonner", "next-themes", "tslib",
+    ].join("|") +
+    ")/"
+);
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
@@ -53,9 +69,10 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        // Libraries in their own files: they change rarely, so phones keep them
-        // cached between updates. Only two groups, and "charts" may use "vendor"
-        // but never the other way round (a loop between files leaves a blank page).
+        // The libraries every page needs go in one long-cached "vendor" file;
+        // anything else (forms, dates, charts…) stays with the pages that use it,
+        // so the first visit doesn't download it. "charts" may use "vendor" but
+        // never the other way round (a loop between files leaves a blank page).
         manualChunks(id) {
           // The bundler's own helpers for older packages; everyone uses them.
           if (id.includes("commonjsHelpers")) return "vendor";
@@ -63,7 +80,7 @@ export default defineConfig(({ mode }) => ({
           // Only the admin pages draw charts; keep them (and lodash, which only
           // they use) out of everyone else's download.
           if (/node_modules\/(recharts|recharts-scale|d3-[^/]+|victory-vendor|react-smooth|decimal\.js-light|lodash)\//.test(id)) return "charts";
-          return "vendor";
+          if (CORE_LIBRARIES.test(id)) return "vendor";
         },
       },
     },

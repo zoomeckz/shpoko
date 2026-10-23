@@ -1,8 +1,13 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import { initialLanguage, loadLanguage } from './i18n'
 
-createRoot(document.getElementById("root")!).render(<App />);
+// Start in the visitor's language straight away (English is built in; other
+// languages are a small download).
+loadLanguage(initialLanguage()).finally(() => {
+  createRoot(document.getElementById("root")!).render(<App />);
+});
 
 // Installable app: register the service worker on the real site only. Lovable's
 // editor preview runs inside an iframe on its own hosts, where caching would

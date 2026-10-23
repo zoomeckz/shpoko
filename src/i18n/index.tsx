@@ -1,24 +1,42 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { en, type MessageKey } from "./locales/en";
-import { sv } from "./locales/sv";
-import { es } from "./locales/es";
-import { fr } from "./locales/fr";
-import { de } from "./locales/de";
-import { nl } from "./locales/nl";
-import { arTN } from "./locales/ar-TN";
 
 /** Interface languages. Lesson content stays English for now. */
 export const LANGUAGES = [
-  { code: "en", name: "English", dict: en },
-  { code: "sv", name: "Svenska", dict: sv },
-  { code: "es", name: "Español", dict: es },
-  { code: "fr", name: "Français", dict: fr },
-  { code: "de", name: "Deutsch", dict: de },
-  { code: "nl", name: "Nederlands", dict: nl },
-  { code: "ar-TN", name: "تونسي", dict: arTN, rtl: true },
+  { code: "en", name: "English" },
+  { code: "sv", name: "Svenska" },
+  { code: "es", name: "Español" },
+  { code: "fr", name: "Français" },
+  { code: "de", name: "Deutsch" },
+  { code: "nl", name: "Nederlands" },
+  { code: "ar-TN", name: "تونسي", rtl: true },
 ] as const;
 
 export type LanguageCode = (typeof LANGUAGES)[number]["code"];
+
+type Dictionary = Record<string, string>;
+
+/** English is built in; the others are downloaded only by people who use them. */
+const LOADERS: Record<Exclude<LanguageCode, "en">, () => Promise<Dictionary>> = {
+  sv: () => import("./locales/sv").then((m) => m.sv),
+  es: () => import("./locales/es").then((m) => m.es),
+  fr: () => import("./locales/fr").then((m) => m.fr),
+  de: () => import("./locales/de").then((m) => m.de),
+  nl: () => import("./locales/nl").then((m) => m.nl),
+  "ar-TN": () => import("./locales/ar-TN").then((m) => m.arTN),
+};
+
+const dictionaries: Partial<Record<LanguageCode, Dictionary>> = { en };
+
+/** Makes sure a language's words are here. Falls back to English if the download fails. */
+export async function loadLanguage(code: LanguageCode) {
+  if (dictionaries[code]) return;
+  try {
+    dictionaries[code] = await LOADERS[code as Exclude<LanguageCode, "en">]();
+  } catch {
+    // Offline or a stale page: English it is, for now.
+  }
+}
 
 // t("key") takes plain keys, and plural keys without their _one/_other ending.
 type PluralBase<K> = K extends `${infer B}_other` ? B : never;
@@ -29,7 +47,7 @@ export type TFunction = (key: TKey, vars?: Vars) => string;
 const STORAGE_KEY = "shpoko-language";
 
 /** The saved choice, or the browser's language if we have it, or English. */
-function initialLanguage(): LanguageCode {
+export function initialLanguage(): LanguageCode {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved && LANGUAGES.some((l) => l.code === saved)) return saved as LanguageCode;
@@ -46,7 +64,7 @@ function initialLanguage(): LanguageCode {
 }
 
 function translate(code: LanguageCode, key: TKey, vars?: Vars): string {
-  const dict = LANGUAGES.find((l) => l.code === code)!.dict as Record<string, string>;
+  const dict = dictionaries[code] ?? en;
   let text: string | undefined;
   if (vars && typeof vars.n === "number" && (`${key}_other` in en)) {
     const rule = new Intl.PluralRules(code).select(vars.n);
@@ -74,8 +92,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const info = LANGUAGES.find((l) => l.code === language)!;
   const rtl = "rtl" in info && info.rtl;
 
+  // Switches once the new language has arrived, so nothing flashes in English.
   const setLanguage = useCallback((code: LanguageCode) => {
-    setLanguageState(code);
+    loadLanguage(code).then(() => setLanguageState(code));
     try {
       localStorage.setItem(STORAGE_KEY, code);
     } catch {

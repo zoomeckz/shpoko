@@ -8,16 +8,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 // Import all profile pictures
-import shpokoHappy from "@/assets/shpoko-happy.png";
-import shpokoSad from "@/assets/shpoko-sad.png";
-import shpokoExcited from "@/assets/shpoko-excited.png";
-import shpokoThinking from "@/assets/shpoko-thinking.png";
-import shpokoAngry from "@/assets/shpoko-angry.png";
-import shpokoSmug from "@/assets/shpoko-smug.png";
-import shpokoStudying from "@/assets/shpoko-studying.png";
-import shpokoReading from "@/assets/shpoko-reading.png";
-import shpokoWriting from "@/assets/shpoko-writing.png";
-import shpokoSleeping from "@/assets/shpoko-sleeping.png";
+import shpokoHappy from "@/assets/shpoko-happy.webp";
+import shpokoSad from "@/assets/shpoko-sad.webp";
+import shpokoExcited from "@/assets/shpoko-excited.webp";
+import shpokoThinking from "@/assets/shpoko-thinking.webp";
+import shpokoAngry from "@/assets/shpoko-angry.webp";
+import shpokoSmug from "@/assets/shpoko-smug.webp";
+import shpokoStudying from "@/assets/shpoko-studying.webp";
+import shpokoReading from "@/assets/shpoko-reading.webp";
+import shpokoWriting from "@/assets/shpoko-writing.webp";
+import shpokoSleeping from "@/assets/shpoko-sleeping.webp";
 
 export type ProfilePictureId = 
   | "happy" 

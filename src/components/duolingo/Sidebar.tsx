@@ -446,7 +446,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
           <SoundToggle />
         </div>
         <div className="rounded-2xl border-2 border-border px-4 py-2">
-          <LanguageSelect />
+          <LanguageSelect className="w-full" />
         </div>
         {user ? (
           <button
