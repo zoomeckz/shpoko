@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronDown, Lock, LockOpen, Sparkles, Star, Trophy } from "lucide-react";
+import { BookOpen, Check, ChevronDown, ChevronsRight, Dumbbell, Lock, LockOpen, Sparkles, Star, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CourseLesson, CourseUnit } from "@/data/course";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useUnlockAll } from "@/hooks/useUnlockAll";
 import { useCourseAccess } from "@/hooks/useCourseAccess";
+import { useMistakes } from "@/hooks/useMistakes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuest } from "@/contexts/GuestContext";
 import { Switch } from "@/components/ui/switch";
@@ -80,6 +81,9 @@ export const CoursePath = () => {
   const [openId, setOpenId] = useState<string | null>(null);
   // Finished units are folded away; these are the ones opened again to review.
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  // The unit whose "skip this unit?" card is open.
+  const [skipOpen, setSkipOpen] = useState<string | null>(null);
+  const { count: mistakeCount } = useMistakes();
   const pathRef = useRef<HTMLDivElement>(null);
   const scrolledTo = useRef<string | null>(null);
 
@@ -186,12 +190,35 @@ export const CoursePath = () => {
           <Switch checked={unlockAll} onCheckedChange={setUnlockAll} aria-label="Unlock all lessons" />
         </label>
       )}
+      {mistakeCount > 0 && (
+        <button
+          type="button"
+          onClick={() => navigate("/course/practice")}
+          className="duo-card flex items-center gap-4 px-4 py-3 text-left hover:bg-muted transition-colors"
+        >
+          <span className="w-12 h-12 shrink-0 rounded-2xl bg-primary/15 flex items-center justify-center">
+            <Dumbbell className="w-6 h-6 text-primary" />
+          </span>
+          <span className="flex-1 min-w-0">
+            <span className="block font-extrabold text-foreground">Practise your mistakes</span>
+            <span className="block text-sm font-semibold text-muted-foreground">
+              {mistakeCount === 1 ? "1 tricky question" : `${mistakeCount} tricky questions`} waiting · +5 XP
+            </span>
+          </span>
+          <span className="rounded-xl bg-primary px-3 py-2 text-sm font-extrabold uppercase tracking-wide text-primary-foreground shadow-[0_3px_0_0_hsl(var(--primary-dark))]">
+            Go
+          </span>
+        </button>
+      )}
       {[...mainList, ...bonusList].map((unit, unitIndex) => {
         const theme = THEMES[unit.color];
         const unitLocked = statusOf(unit.lessons[0]) === "locked";
         const unitDone = unit.lessons.every((l) => isLessonCompleted(l.id));
         const collapsed = unitDone && !expanded.has(unit.id);
         const needXp = unit.bonus && xp < unit.bonus.unlockXp ? unit.bonus.unlockXp : null;
+        // Main units can be skipped by passing their test.
+        const unitTest = unit.bonus ? undefined : unit.lessons.find((l) => l.kind === "test");
+        const canSkip = !!unitTest && !unitDone;
 
         return (
           <section key={unit.id}>
@@ -204,8 +231,7 @@ export const CoursePath = () => {
             )}
             <div
               className={cn(
-                "relative rounded-2xl py-4 text-center",
-                unitDone ? "px-14 sm:px-28" : "px-5",
+                "relative rounded-2xl py-4 text-center px-14 sm:px-28",
                 !collapsed && "sticky top-16 lg:top-6 z-20",
                 unitLocked ? "bg-muted text-muted-foreground border-2 border-border" : theme.solid
               )}
@@ -223,6 +249,59 @@ export const CoursePath = () => {
                 </p>
                 <p className="text-xl font-extrabold truncate">{unit.title}</p>
               </div>
+              <button
+                type="button"
+                onClick={() => navigate(`/guide/${unit.id}`)}
+                aria-label={`Guidebook for ${unit.title}`}
+                className="absolute left-3 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 rounded-xl bg-white/20 px-3 py-2 text-sm font-extrabold uppercase tracking-wide hover:bg-white/30 transition-colors"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span className="hidden sm:inline">Guide</span>
+              </button>
+              {canSkip && (
+                <button
+                  type="button"
+                  onClick={() => setSkipOpen(skipOpen === unit.id ? null : unit.id)}
+                  aria-expanded={skipOpen === unit.id}
+                  aria-label={`Skip ${unit.title}`}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 rounded-xl bg-white/20 px-3 py-2 text-sm font-extrabold uppercase tracking-wide hover:bg-white/30 transition-colors"
+                >
+                  <ChevronsRight className="w-4 h-4" />
+                  <span className="hidden sm:inline">Skip</span>
+                </button>
+              )}
+              <AnimatePresence>
+                {canSkip && skipOpen === unit.id && unitTest && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    className="absolute right-0 top-full mt-3 z-30 w-[280px] max-w-full rounded-2xl border-2 border-border bg-background p-4 text-left text-foreground shadow-xl"
+                  >
+                    <p className="text-lg font-extrabold">Already know this?</p>
+                    <p className="mt-1 font-semibold text-muted-foreground">
+                      Pass the {unitTest.title.toLowerCase()} with {unitTest.passAccuracy ?? 80}% to skip the whole unit
+                      {unitIndex > 0 ? " and everything before it" : ""}.
+                    </p>
+                    <div className="mt-4 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSkipOpen(null)}
+                        className="flex-1 h-11 rounded-2xl border-2 border-border font-extrabold uppercase tracking-wide text-muted-foreground hover:bg-muted"
+                      >
+                        Not now
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/course/${unitTest.id}?testout=1`)}
+                        className="flex-1 h-11 rounded-2xl bg-warning font-extrabold uppercase tracking-wide text-warning-foreground shadow-[0_4px_0_0_hsl(var(--warning-dark))] active:translate-y-1 active:shadow-none"
+                      >
+                        Take test
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
               {unitDone && (
                 <button
                   type="button"

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Flag, Volume2, VolumeX, X } from "lucide-react";
+import { Check, Dumbbell, Flag, Volume2, VolumeX, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { findLesson, TEACHING_TYPES, type CourseLesson as Lesson, type TextFont } from "@/data/course";
+import { findLesson, mainUnits, TEACHING_TYPES, type CourseLesson as Lesson, type CourseUnit, type TextFont } from "@/data/course";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuest } from "@/contexts/GuestContext";
 import { useUserProgress } from "@/hooks/useUserProgress";
@@ -28,6 +28,11 @@ import {
 } from "@/components/course/exercises";
 import { ReportProblemSheet } from "@/components/course/ReportProblem";
 import { lessonMoments, syncAchievements } from "@/lib/achievements";
+import { buildPractice, clearMistake, loadMistakes, recordMistake, type Mistake } from "@/lib/mistakes";
+import { questionOf } from "@/lib/exerciseSummary";
+import { localDateKey } from "@/lib/dates";
+import { supabase } from "@/integrations/supabase/client";
+import { Confetti } from "@/components/Confetti";
 import shpokoMascot from "@/assets/shpoko-mascot.webp";
 
 const PRAISE = ["Nice!", "Great job!", "Correct!", "Awesome!", "You got it!"];
@@ -35,7 +40,21 @@ const EMPTY_ANSWER: AnswerState = { ready: false, correct: false, solution: "" }
 
 type Phase = "answering" | "checked" | "finished";
 
-function LessonPlayer({ lesson, onRetry, preview = false }: { lesson: Lesson; onRetry: () => void; preview?: boolean }) {
+function LessonPlayer({
+  lesson,
+  onRetry,
+  preview = false,
+  practice,
+  testOut,
+}: {
+  lesson: Lesson;
+  onRetry: () => void;
+  preview?: boolean;
+  /** Taking this unit's test to skip it: passing marks the unit (and earlier ones) done. */
+  testOut?: CourseUnit;
+  /** Practice only: where each exercise came from, so it can be cleared when answered right. */
+  practice?: Mistake[];
+}) {
   const exercises = lesson.exercises!;
   // Unit tests: no second chances, and a pass mark.
   const isTest = lesson.kind === "test";
@@ -43,7 +62,7 @@ function LessonPlayer({ lesson, onRetry, preview = false }: { lesson: Lesson; on
   const navigate = useNavigate();
   const { user, updateXP, recordActivity } = useAuth();
   const { isGuest, initGuest, addXP, markLessonCompleted, isGuestLessonCompleted } = useGuest();
-  const { saveProgress } = useUserProgress();
+  const { saveProgress, isLessonCompleted } = useUserProgress();
   const sfx = useSfx();
   const { soundEnabled, toggleSound } = useSoundSettings();
 
@@ -63,6 +82,11 @@ function LessonPlayer({ lesson, onRetry, preview = false }: { lesson: Lesson; on
   const startedAt = useRef(Date.now());
   const finishedAt = useRef(0);
   const saved = useRef(false);
+  // What was answered wrong, with the right answer, for the "worth another look" list.
+  const [missed, setMissed] = useState<Map<number, string>>(new Map());
+  // Saving mistakes runs in the background; "Practise these" waits for it.
+  const pendingSaves = useRef<Promise<unknown>[]>([]);
+  const sourceOf = (i: number) => practice?.[i] ?? { lessonId: lesson.id, index: i };
 
   const index = queue[pos];
   const exercise = exercises[index];
@@ -90,17 +114,28 @@ function LessonPlayer({ lesson, onRetry, preview = false }: { lesson: Lesson; on
         setStreak(nextStreak);
         sfx.correct(nextStreak);
         setDone((d) => new Set(d).add(index));
+        // Got a practice question right first time: it's no longer a mistake.
+        if (practice && !mistakes.has(index)) {
+          const src = sourceOf(index);
+          pendingSaves.current.push(clearMistake(user?.id ?? null, src.lessonId, src.index));
+        }
       } else {
         setStreak(0);
         sfx.wrong();
         setMistakes((m) => new Set(m).add(index));
+        setMissed((m) => new Map(m).set(index, answer.solution));
+        if (!preview) {
+          const src = sourceOf(index);
+          pendingSaves.current.push(recordMistake(user?.id ?? null, src.lessonId, src.index));
+        }
         // In a lesson the question comes back at the end; in a test it doesn't.
         if (isTest) setDone((d) => new Set(d).add(index));
         else setQueue((q) => [...q, index]);
       }
       setPhase("checked");
     },
-    [index, streak, sfx, phase, isTest]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [index, streak, sfx, phase, isTest, answer.solution, mistakes, practice, preview, user?.id]
   );
 
   const next = useCallback(() => {
@@ -150,6 +185,48 @@ function LessonPlayer({ lesson, onRetry, preview = false }: { lesson: Lesson; on
       setXpEarned(0);
       return;
     }
+    // Practising mistakes gives a little XP every time and isn't a lesson to complete.
+    if (practice) {
+      setXpEarned(lesson.xp);
+      if (user) {
+        updateXP(lesson.xp)
+          .then(() => recordActivity())
+          .catch(() => {});
+      } else {
+        addXP(lesson.xp);
+      }
+      return;
+    }
+    // Tested out: every lesson in this unit and the units before it counts as done
+    // (no XP for those; the test's own XP is saved as usual below).
+    if (testOut) {
+      const skipped = mainUnits
+        .slice(0, mainUnits.indexOf(testOut) + 1)
+        .flatMap((u) => u.lessons)
+        .filter((l) => l.id !== lesson.id && !isLessonCompleted(l.id));
+      if (user) {
+        supabase
+          .from("user_progress")
+          .upsert(
+            skipped.map((l) => ({
+              user_id: user.id,
+              lesson_id: l.id,
+              completed: true,
+              score: accuracy,
+              correct_answers: 0,
+              total_answers: 0,
+              completed_at: new Date().toISOString(),
+            })),
+            { onConflict: "user_id,lesson_id" }
+          )
+          .then(
+            () => {},
+            () => {}
+          );
+      } else {
+        skipped.forEach((l) => markLessonCompleted(l.id, accuracy));
+      }
+    }
     // Full XP the first time, half XP for practising a finished lesson again.
     const practiceXp = Math.ceil(lesson.xp / 2);
     if (user) {
@@ -180,8 +257,22 @@ function LessonPlayer({ lesson, onRetry, preview = false }: { lesson: Lesson; on
   }, [phase]);
 
   if (phase === "finished") {
+    const missedList = [...missed].map(([i, solution]) => ({ question: questionOf(exercises[i]), solution }));
+    // Waits for the mistakes to be saved, then opens a practice round of them.
+    const practiseNow = async () => {
+      await Promise.all(pendingSaves.current);
+      navigate("/course/practice");
+    };
     if (isTest && accuracy < passMark) {
-      return <TestFailed accuracy={accuracy} passMark={passMark} onRetry={onRetry} onExit={() => navigate("/")} />;
+      return (
+        <TestFailed
+          accuracy={accuracy}
+          passMark={passMark}
+          onRetry={onRetry}
+          onExit={() => navigate("/")}
+          onPractice={!preview && missedList.length ? practiseNow : undefined}
+        />
+      );
     }
     const seconds = Math.round(((finishedAt.current || Date.now()) - startedAt.current) / 1000);
     return (
@@ -189,11 +280,15 @@ function LessonPlayer({ lesson, onRetry, preview = false }: { lesson: Lesson; on
         xp={xpEarned}
         preview={preview}
         isTest={isTest}
+        isPractice={!!practice}
+        testedOut={!!testOut && !preview}
         learned={lesson.description}
         learnedFont={lesson.descriptionFont}
         testMessage={lesson.completeMessage}
         accuracy={accuracy}
         time={`${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`}
+        missed={missedList}
+        onPractice={!preview && !practice && missedList.length ? practiseNow : undefined}
         onContinue={() => navigate("/")}
       />
     );
@@ -388,6 +483,28 @@ function StatTile({ label, value, tone }: { label: string; value: string; tone: 
   );
 }
 
+/** Counts up from 0 to `to`, for the XP on the finish screen. */
+function useCountUp(to: number | null, duration = 900) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (to === null) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setValue(to);
+      return;
+    }
+    let frame = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      setValue(Math.round(to * (1 - Math.pow(1 - t, 3))));
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [to, duration]);
+  return value;
+}
+
 function LessonComplete({
   xp,
   accuracy,
@@ -395,8 +512,12 @@ function LessonComplete({
   learned,
   learnedFont,
   isTest,
+  isPractice = false,
+  testedOut = false,
   testMessage,
   preview = false,
+  missed,
+  onPractice,
   onContinue,
 }: {
   preview?: boolean;
@@ -406,13 +527,23 @@ function LessonComplete({
   learned: string;
   learnedFont?: TextFont;
   isTest: boolean;
+  isPractice?: boolean;
+  /** Passed a unit test to skip the unit. */
+  testedOut?: boolean;
   testMessage?: string;
   accuracy: number;
   time: string;
+  /** Questions answered wrong, with the right answer. */
+  missed: { question: string; solution: string }[];
+  onPractice?: () => void;
   onContinue: () => void;
 }) {
+  const { profile } = useAuth();
   const chips = (learned.includes(",") ? learned.split(",") : learned.split(" ")).map((s) => s.trim()).filter(Boolean);
   const onlyLetters = chips.every((c) => c.length === 1);
+  const shownXp = useCountUp(preview ? null : xp);
+  // The streak only shows once today's lesson has been counted.
+  const streakToday = profile && profile.last_activity_date === localDateKey() ? profile.streak : 0;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Enter" && (e.target as HTMLElement)?.tagName !== "BUTTON" && onContinue();
@@ -420,21 +551,38 @@ function LessonComplete({
     return () => window.removeEventListener("keydown", onKey);
   }, [onContinue]);
 
+  const title = testedOut
+    ? "You tested out! 🚀"
+    : isTest
+      ? "Unit complete! 🏆"
+      : isPractice
+        ? "Practice complete! 💪"
+        : "Lesson complete!";
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <main className="flex-1 flex flex-col items-center justify-center px-4 text-center">
+      <Confetti big={isTest} />
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 text-center">
         <motion.img
           src={shpokoMascot}
           alt="Shpoko celebrating"
-          className="w-44 h-44 object-contain"
+          className="w-40 h-40 object-contain"
           initial={{ scale: 0.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1, y: [0, -10, 0] }}
           transition={{ scale: { type: "spring", stiffness: 200 }, y: { duration: 2, repeat: Infinity } }}
         />
-        <h1 className="mt-6 text-3xl font-extrabold text-warning">{isTest ? "Unit complete! 🏆" : "Lesson complete!"}</h1>
-        {isTest ? (
+        <h1 className="mt-5 text-3xl font-extrabold text-warning">{title}</h1>
+        {testedOut ? (
+          <p className="mt-2 max-w-sm text-lg font-bold text-muted-foreground">
+            The whole unit is marked as done. On to the next one!
+          </p>
+        ) : isTest ? (
           <p className="mt-2 max-w-sm text-lg font-bold text-muted-foreground">
             You passed the test. {testMessage ?? "Great work!"}
+          </p>
+        ) : isPractice ? (
+          <p className="mt-2 max-w-sm text-lg font-bold text-muted-foreground">
+            {missed.length ? "Nice work. The ones you got right won't come back." : "All right first time. Those mistakes are gone!"}
           </p>
         ) : (
           <p className="mt-2 text-lg font-bold text-muted-foreground">
@@ -447,31 +595,69 @@ function LessonComplete({
                   : "You can read these now:"}
           </p>
         )}
-        <div className="mt-3 flex flex-wrap justify-center gap-2">
-          {!isTest && chips.map((letter, i) => (
-            <motion.span
-              key={letter}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.4 + i * 0.08, type: "spring", stiffness: 320, damping: 16 }}
-              className={cn(
-                "h-12 rounded-xl border-2 border-border bg-card flex items-center justify-center text-2xl text-foreground shadow-[0_3px_0_0_hsl(var(--border))]",
-                onlyLetters ? "w-11" : "px-3",
-                learnedFont && learnedFont !== "print" ? fontClass(learnedFont) : "font-black"
-              )}
-            >
-              {letter}
-            </motion.span>
-          ))}
-        </div>
-        <div className="mt-8 w-full max-w-md flex gap-3">
-          <StatTile label="Total XP" value={preview ? "Preview" : xp === null ? "…" : `+${xp}`} tone="yellow" />
+        {!isTest && !isPractice && (
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
+            {chips.map((letter, i) => (
+              <motion.span
+                key={letter}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.4 + i * 0.08, type: "spring", stiffness: 320, damping: 16 }}
+                className={cn(
+                  "h-12 rounded-xl border-2 border-border bg-card flex items-center justify-center text-2xl text-foreground shadow-[0_3px_0_0_hsl(var(--border))]",
+                  onlyLetters ? "w-11" : "px-3",
+                  learnedFont && learnedFont !== "print" ? fontClass(learnedFont) : "font-black"
+                )}
+              >
+                {letter}
+              </motion.span>
+            ))}
+          </div>
+        )}
+        <div className="mt-7 w-full max-w-md flex gap-3">
+          <StatTile label="Total XP" value={preview ? "Preview" : xp === null ? "…" : `+${shownXp}`} tone="yellow" />
           <StatTile label="Accuracy" value={`${accuracy}%`} tone="blue" />
           <StatTile label="Time" value={time} tone="pink" />
         </div>
+        {streakToday > 0 && !preview && (
+          <motion.p
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 1, type: "spring", stiffness: 300, damping: 14 }}
+            className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#ff9600]/15 px-4 py-2 text-lg font-extrabold text-[#ff9600]"
+          >
+            🔥 {streakToday} day streak!
+          </motion.p>
+        )}
+
+        {missed.length > 0 && (
+          <section className="mt-7 w-full max-w-md text-left" aria-label="Worth another look">
+            <p className="text-sm font-extrabold uppercase tracking-widest text-muted-foreground">Worth another look</p>
+            <ul className="mt-2 space-y-2">
+              {missed.slice(0, 5).map((m, i) => (
+                <li key={i} className="duo-card px-4 py-3">
+                  <p className="font-bold text-muted-foreground">{m.question}</p>
+                  <p className="mt-0.5 flex items-start gap-2 font-extrabold text-success">
+                    <Check className="w-5 h-5 shrink-0 mt-0.5" strokeWidth={3} />
+                    {m.solution}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            {missed.length > 5 && (
+              <p className="mt-2 text-sm font-bold text-muted-foreground">…and {missed.length - 5} more.</p>
+            )}
+          </section>
+        )}
       </main>
       <footer className="border-t-2 border-border">
-        <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-5 sm:py-8 flex sm:justify-end">
+        <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-5 sm:py-8 flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+          {onPractice && (
+            <DuoButton variant="white" size="xl" className="w-full sm:w-auto" onClick={onPractice}>
+              <Dumbbell className="w-5 h-5" />
+              Practise these
+            </DuoButton>
+          )}
           <DuoButton size="xl" className="w-full sm:w-[200px]" onClick={onContinue}>
             Continue
           </DuoButton>
@@ -486,11 +672,13 @@ function TestFailed({
   passMark,
   onRetry,
   onExit,
+  onPractice,
 }: {
   accuracy: number;
   passMark: number;
   onRetry: () => void;
   onExit: () => void;
+  onPractice?: () => void;
 }) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -516,6 +704,16 @@ function TestFailed({
           />
           <span className="absolute top-0 bottom-0 w-1 bg-warning" style={{ left: `${passMark}%` }} aria-hidden="true" />
         </div>
+        {onPractice && (
+          <button
+            type="button"
+            onClick={onPractice}
+            className="mt-6 inline-flex items-center gap-2 rounded-xl px-4 py-2 font-extrabold uppercase tracking-wide text-primary hover:bg-primary/10"
+          >
+            <Dumbbell className="w-5 h-5" />
+            Practise your mistakes first
+          </button>
+        )}
       </main>
       <footer className="border-t-2 border-border">
         <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-5 sm:py-8 flex flex-col-reverse sm:flex-row gap-3 sm:justify-between">
@@ -531,13 +729,59 @@ function TestFailed({
   );
 }
 
+/** "Practise your mistakes": loads the learner's mistakes and plays them as a lesson. */
+function PracticeSession() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const [round, setRound] = useState<ReturnType<typeof buildPractice> | null>(null);
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    if (loading) return;
+    let cancelled = false;
+    loadMistakes(user?.id ?? null).then((list) => {
+      if (cancelled) return;
+      if (!list.length) {
+        toast.success("No mistakes to practise. Nice!");
+        navigate("/", { replace: true });
+        return;
+      }
+      setRound(buildPractice(list));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, loading, attempt, navigate]);
+
+  if (!round) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-10 h-10 rounded-full border-4 border-primary/25 border-t-primary animate-spin" />
+      </div>
+    );
+  }
+  return (
+    <LessonPlayer
+      key={`practice-${attempt}`}
+      lesson={round.lesson}
+      practice={round.sources}
+      onRetry={() => {
+        setRound(null);
+        setAttempt((a) => a + 1);
+      }}
+    />
+  );
+}
+
 const CourseLesson = () => {
   const { lessonId } = useParams();
   const [searchParams] = useSearchParams();
   const preview = searchParams.get("preview") === "1";
-  const found = lessonId ? findLesson(lessonId) : null;
+  const testOut = searchParams.get("testout") === "1";
+  const found = lessonId && lessonId !== "practice" ? findLesson(lessonId) : null;
   const [attempt, setAttempt] = useState(0);
   const { isAllowedLesson } = useCourseAccess();
+  if (lessonId === "practice") return <PracticeSession />;
   // Lessons outside the account's allowed units can't be opened by address either.
   if (!found || !found.lesson.exercises || !isAllowedLesson(found.lesson.id)) return <Navigate to="/" replace />;
   return (
@@ -546,6 +790,7 @@ const CourseLesson = () => {
       lesson={found.lesson}
       onRetry={() => setAttempt((a) => a + 1)}
       preview={preview}
+      testOut={testOut && found.lesson.kind === "test" ? found.unit : undefined}
     />
   );
 };

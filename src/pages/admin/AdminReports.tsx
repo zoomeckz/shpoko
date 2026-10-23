@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { listAccounts } from "@/lib/adminApi";
 import { findLesson, type Exercise } from "@/data/course";
+import { describeExercise } from "@/lib/exerciseSummary";
 import { REPORT_REASONS } from "@/components/course/ReportProblem";
 import { DuoButton } from "@/components/duolingo/DuoButton";
 import { cn } from "@/lib/utils";
@@ -35,32 +36,6 @@ const reasonLabel = (id: string) => REPORT_REASONS.find((r) => r.id === id)?.lab
 
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-
-/** One line saying what the learner was looking at. */
-function describeExercise(e: Exercise): { kind: string; text: string } {
-  switch (e.type) {
-    case "intro":
-      return { kind: "New letter", text: `${e.letter} ${e.lower} · “${e.sound}”` };
-    case "choice":
-      return { kind: "Multiple choice", text: [e.prompt, e.display].filter(Boolean).join(" · ") };
-    case "match":
-      return { kind: "Matching", text: `${e.prompt} · ${e.pairs.map((p) => `${p.left}=${p.right}`).join(", ")}` };
-    case "build":
-      return { kind: "Build", text: `${e.prompt} · ${e.target}` };
-    case "shape":
-      return { kind: "Letter shape", text: `${e.letter} looks like ${e.looksLike}` };
-    case "tip":
-      return { kind: "Tip", text: e.title };
-    case "familiar":
-      return { kind: "Familiar letters", text: e.title };
-    case "word":
-      return { kind: "Word", text: `${e.word} · “${e.reading}” = ${e.meaning}` };
-    case "phrase":
-      return { kind: "Phrase", text: `${e.text} = ${e.meaning}` };
-    case "fill":
-      return { kind: "Fill the gap", text: `${e.sentence} (${e.meaning})` };
-  }
-}
 
 export default function AdminReports() {
   const [reports, setReports] = useState<Report[]>([]);

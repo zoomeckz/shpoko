@@ -92,6 +92,8 @@ const ShpokoEndlessWord = lazy(() => import("./pages/ShpokoEndlessWord"));
 // Profile & Quests
 const Profile = lazy(() => import("./pages/Profile"));
 const MyProfile = lazy(() => import("./pages/MyProfile"));
+const MyWords = lazy(() => import("./pages/MyWords"));
+const UnitGuide = lazy(() => import("./pages/UnitGuide"));
 const Quests = lazy(() => import("./pages/Quests"));
 const AchievementsPage = lazy(() => import("./pages/AchievementsPage"));
 const Friends = lazy(() => import("./pages/Friends"));
@@ -233,6 +235,8 @@ const App = () => (
               <Route path="/game/fruit-slicer" element={<FruitSlicer />} />
               {/* Profile & Quests */}
               <Route path="/profile" element={SHOW_LEGACY ? <Profile /> : <MyProfile />} />
+              <Route path="/words" element={<MyWords />} />
+              <Route path="/guide/:unitId" element={<UnitGuide />} />
               <Route path="/quests" element={<Quests />} />
               <Route path="/achievements" element={<AchievementsPage />} />
               <Route path="/friends" element={<Friends />} />

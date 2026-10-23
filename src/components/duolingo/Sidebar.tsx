@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Cherry, LogOut, Home, Trophy, Target, User, BookOpen, BookMarked, Flame, Crown, Zap, Gamepad2, Swords, Dices, Users, ShoppingBag, ChevronDown, Headphones, PenLine, ListChecks, GraduationCap, Bell, ScanEye, Shield, HelpCircle, Type } from "lucide-react";
+import { Cherry, Library, LogOut, Home, Trophy, Target, User, BookOpen, BookMarked, Flame, Crown, Zap, Gamepad2, Swords, Dices, Users, ShoppingBag, ChevronDown, Headphones, PenLine, ListChecks, GraduationCap, Bell, ScanEye, Shield, HelpCircle, Type } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -22,6 +22,7 @@ interface SidebarProps {
 // Main navigation items (top section)
 const mainNavItems = [
   { icon: Home, label: "Learn", path: "/", onboardingId: "lessons" },
+  { icon: Library, label: "My words", path: "/words" },
   { icon: Trophy, label: "Leaderboards", path: "/leaderboard" },
   { icon: Target, label: "Quests", path: "/quests" },
   { icon: BookOpen, label: "Scenarios", path: "/scenarios" },
