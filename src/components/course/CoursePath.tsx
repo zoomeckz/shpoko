@@ -157,6 +157,8 @@ export const CoursePath = () => {
       return false;
     }
   });
+  // Stays true until the guide has finished fading out, so it stays on top while it goes.
+  const [guideRaised, setGuideRaised] = useState(guideOpen);
   const closeGuide = () => {
     setGuideOpen(false);
     try {
@@ -268,14 +270,15 @@ export const CoursePath = () => {
                 const extraLesson = unit.extras?.[i];
                 const extraStatus = extraLesson ? extraStatusOf(extraLesson, unitLocked) : null;
                 const extraOpen = !!extraLesson && openId === extraLesson.id;
-                const showGuide = guideOpen && i === 0 && !!extraLesson && unit === guideUnit;
+                const guideRow = i === 0 && !!extraLesson && unit === guideUnit;
+                const showGuide = guideOpen && guideRow;
                 return (
                   <div
                     key={lesson.id}
                     data-lesson={lesson.id}
                     // Rows are spaced evenly (START sits beside the node), so neither column jumps.
                     className="relative w-full flex justify-center"
-                    style={{ zIndex: open || extraOpen ? 40 : showGuide ? 35 : 1 }}
+                    style={{ zIndex: guideRow && guideRaised ? 45 : open || extraOpen ? 40 : 1 }}
                   >
                   {/* With extras beside it, the path slides over to the left to make room. */}
                   <motion.div
@@ -353,9 +356,22 @@ export const CoursePath = () => {
                       )}
                     </AnimatePresence>
 
-                    <AnimatePresence>
+                    <AnimatePresence onExitComplete={() => setGuideRaised(false)}>
                       {showGuide && extraLesson && (
-                        <ExtrasGuide firstUnlockXp={extraLesson.unlockXp ?? 0} xp={xp} onClose={closeGuide} />
+                        <>
+                          {/* Dims everything but the first extra and the guide. */}
+                          <motion.div
+                            key="guide-backdrop"
+                            className="fixed inset-0 z-[41] bg-black/60"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3, delay: 0.5 }}
+                            onClick={closeGuide}
+                            aria-hidden="true"
+                          />
+                          <ExtrasGuide key="guide" firstUnlockXp={extraLesson.unlockXp ?? 0} xp={xp} onClose={closeGuide} />
+                        </>
                       )}
                     </AnimatePresence>
                   </div>
@@ -443,7 +459,7 @@ function ExtraNode({
   const playable = status !== "locked";
   return (
     <motion.div
-      className="absolute top-1/2 z-10 flex flex-col items-center"
+      className={cn("absolute top-1/2 flex flex-col items-center", highlight ? "z-[42]" : "z-10")}
       style={{ right: `calc(3% + ${EXTRA_OFFSETS[index % EXTRA_OFFSETS.length]}px)`, y: "-50%" }}
       initial={{ opacity: 0, x: 24 }}
       animate={{ opacity: 1, x: 0 }}
@@ -495,10 +511,12 @@ function ExtrasGuide({ firstUnlockXp, xp, onClose }: { firstUnlockXp: number; xp
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8, scale: 0.96 }}
       transition={{ type: "spring", stiffness: 260, damping: 22, delay: 0.6 }}
-      className="absolute right-0 top-full mt-6 z-50 w-[260px] rounded-2xl border-2 border-[#a560e8] bg-background p-4 text-left shadow-xl"
+      className="absolute top-full mt-5 z-50 w-[250px] max-w-[calc(100%-80px)] rounded-2xl border-2 border-[#a560e8] bg-background p-4 text-left shadow-xl"
+      // Just left of the extras column, so no extra pokes out from behind it.
+      style={{ right: "calc(3% + 64px)" }}
     >
       <span
-        className="absolute -top-[9px] right-[34px] w-4 h-4 rotate-45 border-l-2 border-t-2 border-[#a560e8] bg-background"
+        className="absolute -top-[9px] right-4 w-4 h-4 rotate-45 border-l-2 border-t-2 border-[#a560e8] bg-background"
         aria-hidden="true"
       />
       <p className="flex items-center gap-2 text-lg font-extrabold text-foreground">

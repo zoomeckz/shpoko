@@ -188,7 +188,8 @@ export const TopBar = ({ className }: TopBarProps) => {
 
               {/* Menu items */}
               <div className="flex-1 space-y-2">
-                {liveNavItems.map((item) => {
+                {/* Profile sits at the bottom, next to Dark Mode */}
+                {liveNavItems.filter((item) => item.path !== "/profile").map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
                   
@@ -316,6 +317,19 @@ export const TopBar = ({ className }: TopBarProps) => {
 
               {/* Footer actions */}
               <div className="space-y-2 pt-4 border-t border-border">
+                {isLive("/profile") && (
+                  <Link
+                    to="/profile"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-colors",
+                      location.pathname === "/profile" ? "bg-primary/10 text-primary" : "hover:bg-accent"
+                    )}
+                  >
+                    <User className="w-5 h-5" />
+                    Profile
+                  </Link>
+                )}
                 <div className="flex items-center justify-between px-4 py-3">
                   <span className="font-semibold">Dark Mode</span>
                   <DarkModeToggle />

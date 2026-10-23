@@ -22,7 +22,6 @@ interface SidebarProps {
 // Main navigation items (top section)
 const mainNavItems = [
   { icon: Home, label: "Learn", path: "/", onboardingId: "lessons" },
-  { icon: User, label: "Profile", path: "/profile", onboardingId: "profile" },
   { icon: Trophy, label: "Leaderboards", path: "/leaderboard" },
   { icon: Target, label: "Quests", path: "/quests" },
   { icon: BookOpen, label: "Scenarios", path: "/scenarios" },
@@ -409,6 +408,21 @@ export const Sidebar = ({ className }: SidebarProps) => {
           <DuoButton asChild size="md" fullWidth className="xl:hidden">
             <Link to="/auth?mode=signup">Create a profile</Link>
           </DuoButton>
+        )}
+        {isLive("/profile") && (
+          <Link
+            to="/profile"
+            data-onboarding="profile"
+            className={cn(
+              "flex items-center gap-3 rounded-2xl border-2 px-4 py-2 text-sm font-bold transition-colors",
+              location.pathname === "/profile"
+                ? "border-primary/50 bg-primary/10 text-primary"
+                : "border-border text-muted-foreground hover:bg-muted"
+            )}
+          >
+            <User className="w-5 h-5" />
+            Profile
+          </Link>
         )}
         <div className="flex items-center justify-between rounded-2xl border-2 border-border px-4 py-2">
           <span className="text-sm font-bold text-muted-foreground">Dark mode</span>
