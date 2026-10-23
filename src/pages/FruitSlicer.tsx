@@ -6,6 +6,9 @@ import { cn } from "@/lib/utils";
 import { DuoButton } from "@/components/duolingo/DuoButton";
 import { useSfx } from "@/hooks/useSfx";
 import { useSoundSettings } from "@/contexts/SoundSettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { syncAchievements } from "@/lib/achievements";
+import { toast } from "sonner";
 import { FruitSlicerEngine, LETTERS, type GameLetter, type GameResult, type HudState } from "@/games/fruitSlicer";
 import shpokoMascot from "@/assets/shpoko-mascot.webp";
 
@@ -25,6 +28,10 @@ export default function FruitSlicer() {
   const navigate = useNavigate();
   const sfx = useSfx();
   const { soundEnabled, toggleSound } = useSoundSettings();
+  const { user } = useAuth();
+  // The engine's callbacks are set up once; read the current user through a ref.
+  const userIdRef = useRef(user?.id);
+  userIdRef.current = user?.id;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<FruitSlicerEngine | null>(null);
   // The engine is created once; give it the latest sound settings through a ref.
@@ -59,6 +66,19 @@ export default function FruitSlicer() {
             localStorage.setItem(BEST_KEY, String(r.score));
           } catch {
             // Best score just won't be remembered.
+          }
+          // A new best can unlock a Fruit Ninja level.
+          if (userIdRef.current) {
+            syncAchievements(userIdRef.current).then(({ newlyEarned }) =>
+              newlyEarned
+                .filter((e) => e.achievement.id === "slicer")
+                .slice(-1)
+                .forEach(({ achievement, level }) =>
+                  toast.success(`${achievement.icon} Achievement unlocked: ${achievement.title}`, {
+                    description: achievement.describe(achievement.tiers[level - 1]),
+                  })
+                )
+            );
           }
         }
       },

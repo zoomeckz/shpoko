@@ -80,6 +80,63 @@ export type Database = {
         }
         Relationships: []
       }
+      content_reports: {
+        Row: {
+          created_at: string
+          exercise: Json
+          exercise_index: number
+          id: string
+          lesson_id: string
+          message: string | null
+          reason: string
+          resolved_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          exercise: Json
+          exercise_index: number
+          id?: string
+          lesson_id: string
+          message?: string | null
+          reason: string
+          resolved_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          exercise?: Json
+          exercise_index?: number
+          id?: string
+          lesson_id?: string
+          message?: string | null
+          reason?: string
+          resolved_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_xp: {
+        Row: {
+          day: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          day: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          day?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
       deep_dive_progress: {
         Row: {
           badge_earned: string | null
@@ -521,14 +578,17 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          daily_goal: number
           email: string | null
           id: string
           is_premium: boolean
           last_activity_date: string | null
           last_username_change: string | null
           level: number
+          longest_streak: number
           premium_until: string | null
           profile_picture: string | null
+          reminder_time: string | null
           streak: number
           streak_freeze_used_at: string | null
           streak_freezes: number
@@ -539,14 +599,17 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          daily_goal?: number
           email?: string | null
           id: string
           is_premium?: boolean
           last_activity_date?: string | null
           last_username_change?: string | null
           level?: number
+          longest_streak?: number
           premium_until?: string | null
           profile_picture?: string | null
+          reminder_time?: string | null
           streak?: number
           streak_freeze_used_at?: string | null
           streak_freezes?: number
@@ -557,14 +620,17 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          daily_goal?: number
           email?: string | null
           id?: string
           is_premium?: boolean
           last_activity_date?: string | null
           last_username_change?: string | null
           level?: number
+          longest_streak?: number
           premium_until?: string | null
           profile_picture?: string | null
+          reminder_time?: string | null
           streak?: number
           streak_freeze_used_at?: string | null
           streak_freezes?: number
@@ -1119,6 +1185,7 @@ export type Database = {
     }
     Functions: {
       account_is_active: { Args: { _user_id: string }; Returns: boolean }
+      add_daily_xp: { Args: { _day: string; _xp: number }; Returns: undefined }
       get_leaderboard: {
         Args: { limit_count?: number }
         Returns: {
@@ -1148,6 +1215,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_site_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user" | "premium"

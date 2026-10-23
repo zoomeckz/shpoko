@@ -26,6 +26,13 @@ interface Profile {
   last_username_change: string | null;
   profile_picture: string | null;
   username_set: boolean;
+  created_at: string;
+  last_activity_date: string | null;
+  /** XP to earn per day. Missing until the profile migration has run. */
+  daily_goal?: number;
+  longest_streak?: number;
+  /** "HH:MM:SS", or null when reminders are off. */
+  reminder_time?: string | null;
 }
 
 interface AuthContextType {
@@ -96,8 +103,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         level: newLevel
       })
       .eq("id", user.id);
-    
+
     if (!error) {
+      // Today's XP feeds the daily goal and the week chart on the profile.
+      // A failure here (e.g. before the migration has run) mustn't stop the lesson.
+      await supabase.rpc("add_daily_xp", { _day: localDateKey(), _xp: xpToAdd }).then(
+        () => {},
+        () => {}
+      );
       await refreshProfile();
     }
   };
@@ -108,7 +121,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return;
     const { data, error } = await supabase
       .from("profiles")
-      .select("streak, last_activity_date")
+      .select("*")
       .eq("id", user.id)
       .maybeSingle();
     if (error || !data) return;
@@ -122,6 +135,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .from("profiles")
       .update({ last_activity_date: today, streak })
       .eq("id", user.id);
+    // Saved on its own so the streak still works if this column doesn't exist yet.
+    if (!updateError && "longest_streak" in data && streak > (data.longest_streak ?? 0)) {
+      await supabase.from("profiles").update({ longest_streak: streak }).eq("id", user.id);
+    }
     if (!updateError) await refreshProfile();
   };
 

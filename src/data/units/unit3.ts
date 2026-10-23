@@ -2,8 +2,8 @@ import type { CourseUnit, Exercise } from "../course";
 // Temporary: same picture as Unit 1 until the new unit artwork is ready.
 import writer from "@/assets/shpoko-mascot.webp";
 
-// Unit 3: italics and handwriting. Several lowercase letters change shape:
-// т looks like m, и like u, п like n, д like ∂ / g and ш like w.
+// Unit 3: italics and handwriting. Letters lean and get curlier; with the
+// Bulgarian letter shapes, т looks like m, и like u, п like n, д like g and ш like w.
 // Italic text uses Lora Italic and handwriting uses Marck Script; both draw
 // these real cursive shapes (checked against the fonts).
 
@@ -11,7 +11,7 @@ const italics: Exercise[] = [
   {
     type: "tip",
     title: "Slanted letters",
-    text: "In italics, some small Bulgarian letters change shape. You'll see them in books, on menus and on shop signs. Capital letters stay the same, and every letter still makes the same sound.",
+    text: "In italics, letters lean and get rounder, and some small letters look even more like English ones. You'll see italics in books, on menus and on shop signs. Capital letters stay the same, and every letter still makes the same sound.",
   },
   { type: "shape", letter: "т", font: "italic", looksLike: "an English m", note: "Three little bumps, but it still says “t”." },
   { type: "shape", letter: "и", font: "italic", looksLike: "an English u", note: "It still says “i”." },
@@ -35,7 +35,7 @@ const italics: Exercise[] = [
     answer: "и",
   },
   { type: "shape", letter: "п", font: "italic", looksLike: "an English n", note: "It still says “p”." },
-  { type: "shape", letter: "д", font: "italic", looksLike: "a curly ∂", note: "It still says “d”." },
+  { type: "shape", letter: "д", font: "italic", looksLike: "a curly g", note: "It still says “d”." },
   {
     type: "choice",
     prompt: "How do you read this word?",

@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { ArrowLeft, LayoutDashboard, Loader2, Shield, Users } from "lucide-react";
+import { ArrowLeft, Flag, LayoutDashboard, Loader2, Shield, Users } from "lucide-react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { cn } from "@/lib/utils";
 import { DuoButton } from "@/components/duolingo/DuoButton";
@@ -18,6 +18,7 @@ interface AdminLayoutProps {
 const NAV = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard, end: true },
   { to: "/admin/users", label: "Users", icon: Users, end: false },
+  { to: "/admin/reports", label: "Reports", icon: Flag, end: false },
 ];
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -105,7 +106,7 @@ export function AdminLayout({ children, title, description, actions }: AdminLayo
         </div>
         <nav className="flex gap-2 px-4 pb-3">
           {NAV.map((item) => (
-            <NavLink key={item.to} to={item.to} end={item.end} className={(s) => cn(navClass(s), "flex-1 justify-center py-2 text-sm")}>
+            <NavLink key={item.to} to={item.to} end={item.end} className={(s) => cn(navClass(s), "flex-1 justify-center gap-1.5 px-2 py-2 text-sm")}>
               <item.icon className="w-4 h-4" />
               {item.label}
             </NavLink>

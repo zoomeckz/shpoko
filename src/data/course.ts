@@ -158,7 +158,7 @@ const lesson1: Exercise[] = [
   {
     type: "familiar",
     title: "Letters you already know",
-    note: "These are written just like in English. A few sound a little different, but you write them the same way.",
+    note: "Their capitals are written just like in English. A few sound a little different, and a couple of small letters have their own Bulgarian shape.",
     letters: [
       { upper: "А", lower: "а", sound: "a, as in father", audio: letterAudio("a") },
       { upper: "Е", lower: "е", sound: "e, as in pet (never “ee”)", audio: letterAudio("e") },
@@ -168,10 +168,10 @@ const lesson1: Exercise[] = [
         upper: "М",
         lower: "м",
         sound: "m, as in moon",
-        note: "Small м is just a little М. It's never written m.",
+        note: "Small м is just a little М.",
         audio: letterAudio("m"),
       },
-      { upper: "Т", lower: "т", sound: "t, as in top", note: "Small т is a little Т too.", audio: letterAudio("t") },
+      { upper: "Т", lower: "т", sound: "t, as in top", note: "Careful: small т looks like an English m. It still says “t”.", audio: letterAudio("t") },
     ],
   },
   {
@@ -240,7 +240,7 @@ const lesson1: Exercise[] = [
     lower: "в",
     sound: "v",
     looksLike: "B",
-    hint: "“v” as in van. Small в is a little В.",
+    hint: "“v” as in van. Small в has a tall loop, a bit like a b, but it still says “v”.",
     audio: letterAudio("v"),
   },
   {
@@ -356,7 +356,7 @@ const lesson2: Exercise[] = [
     letter: "Д",
     lower: "д",
     sound: "d",
-    hint: "“d” as in dog. Small д is a little Д.",
+    hint: "“d” as in dog. Small д looks like an English g, but it says “d”.",
     audio: letterAudio("d"),
   },
   {
@@ -390,7 +390,7 @@ const lesson2: Exercise[] = [
     letter: "П",
     lower: "п",
     sound: "p",
-    hint: "“p” as in pen. Don't mix it up with Р, which is “r”!",
+    hint: "“p” as in pen. Small п looks like an n. Don't mix it up with Р, which is “r”!",
     audio: letterAudio("p"),
   },
   {
@@ -398,7 +398,7 @@ const lesson2: Exercise[] = [
     letter: "Л",
     lower: "л",
     sound: "l",
-    hint: "“l” as in lamp.",
+    hint: "“l” as in lamp. Small л looks like an upside-down V.",
     audio: letterAudio("l"),
   },
   {
@@ -462,7 +462,7 @@ const lesson2: Exercise[] = [
     sound: "i",
     looksLike: "N",
     looksLikeName: "a backwards N",
-    hint: "“ee” as in meet, but short.",
+    hint: "“ee” as in meet, but short. Small и looks like a u.",
     audio: letterAudio("i"),
   },
   {

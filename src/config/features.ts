@@ -14,7 +14,7 @@ export const SHOW_LEGACY = false;
 export const SHOW_SOUND_BUTTONS = false;
 
 /** Pages that are part of the new site. */
-const LIVE_PATHS = ["/", "/welcome", "/auth", "/admin", "/admin/users", "/game/fruit-slicer"];
+const LIVE_PATHS = ["/", "/welcome", "/auth", "/profile", "/admin", "/admin/users", "/admin/reports", "/game/fruit-slicer"];
 
 /** Whole sections that stay reachable. */
 const LIVE_PREFIXES = ["/course"];

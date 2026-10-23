@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Volume2, VolumeX, X } from "lucide-react";
+import { Check, Flag, Volume2, VolumeX, X } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { findLesson, TEACHING_TYPES, type CourseLesson as Lesson, type TextFont } from "@/data/course";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +24,8 @@ import {
   IntroExercise,
   MatchExercise,
 } from "@/components/course/exercises";
+import { ReportProblemSheet } from "@/components/course/ReportProblem";
+import { lessonMoments, syncAchievements } from "@/lib/achievements";
 import shpokoMascot from "@/assets/shpoko-mascot.webp";
 
 const PRAISE = ["Nice!", "Great job!", "Correct!", "Awesome!", "You got it!"];
@@ -52,6 +55,7 @@ function LessonPlayer({ lesson, onRetry, preview = false }: { lesson: Lesson; on
   const [mistakes, setMistakes] = useState<Set<number>>(new Set());
   const [praise, setPraise] = useState(PRAISE[0]);
   const [confirmExit, setConfirmExit] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [streak, setStreak] = useState(0);
   const [xpEarned, setXpEarned] = useState<number | null>(null);
   const startedAt = useRef(Date.now());
@@ -121,13 +125,13 @@ function LessonPlayer({ lesson, onRetry, preview = false }: { lesson: Lesson; on
   // Enter checks / continues.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      // A focused button already handles Enter as a click.
-      if ((e.target as HTMLElement)?.tagName === "BUTTON") return;
-      if (e.key === "Enter" && phase !== "finished" && !confirmExit) onPrimary();
+      // A focused button already handles Enter as a click, and text boxes need it for typing.
+      if (["BUTTON", "TEXTAREA", "INPUT"].includes((e.target as HTMLElement)?.tagName)) return;
+      if (e.key === "Enter" && phase !== "finished" && !confirmExit && !reportOpen) onPrimary();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onPrimary, phase, confirmExit]);
+  }, [onPrimary, phase, confirmExit, reportOpen]);
 
   // Save once when the lesson is finished.
   useEffect(() => {
@@ -152,6 +156,16 @@ function LessonPlayer({ lesson, onRetry, preview = false }: { lesson: Lesson; on
           if (!xpAwarded) await updateXP(practiceXp);
           setXpEarned(xpAwarded ? lesson.xp : practiceXp);
           await recordActivity();
+          const { newlyEarned } = await syncAchievements(user.id, lessonMoments());
+          newlyEarned.slice(-2).forEach(({ achievement, level }, i) =>
+            setTimeout(
+              () =>
+                toast.success(`${achievement.icon} Achievement unlocked: ${achievement.title}`, {
+                  description: achievement.describe(achievement.tiers[level - 1]),
+                }),
+              900 + i * 700
+            )
+          );
         })
         .catch(() => setXpEarned(0));
     } else {
@@ -218,6 +232,17 @@ function LessonPlayer({ lesson, onRetry, preview = false }: { lesson: Lesson; on
         </div>
         {preview && (
           <span className="rounded-lg bg-warning/15 px-2 py-1 text-xs font-extrabold uppercase tracking-wide text-warning">Preview</span>
+        )}
+        {user && (
+          <button
+            type="button"
+            onClick={() => setReportOpen(true)}
+            aria-label="Report a problem with this exercise"
+            title="Report a problem"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Flag className="w-6 h-6" />
+          </button>
         )}
         <button
           type="button"
@@ -295,6 +320,14 @@ function LessonPlayer({ lesson, onRetry, preview = false }: { lesson: Lesson; on
           </DuoButton>
         </div>
       </footer>
+
+      <ReportProblemSheet
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        lessonId={lesson.id}
+        exerciseIndex={index}
+        exercise={exercise}
+      />
 
       {/* Quit confirmation */}
       <AnimatePresence>

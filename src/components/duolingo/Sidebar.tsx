@@ -23,6 +23,7 @@ interface SidebarProps {
 const mainNavItems = [
   { icon: Home, label: "Learn", path: "/", onboardingId: "lessons" },
   { icon: Cherry, label: "Fruit Slicer", path: "/game/fruit-slicer" },
+  { icon: User, label: "Profile", path: "/profile", onboardingId: "profile" },
   { icon: Trophy, label: "Leaderboards", path: "/leaderboard" },
   { icon: Target, label: "Quests", path: "/quests" },
   { icon: BookOpen, label: "Scenarios", path: "/scenarios" },
@@ -49,7 +50,6 @@ const gameItems = [
 // Bottom navigation items
 const bottomNavItems = [
   { icon: Users, label: "Friends", path: "/friends" },
-  { icon: User, label: "Profile", path: "/profile", onboardingId: "profile" },
 ];
 
 export const Sidebar = ({ className }: SidebarProps) => {
@@ -283,7 +283,6 @@ export const Sidebar = ({ className }: SidebarProps) => {
             <Link
               key={item.path}
               to={item.path}
-              data-onboarding={item.onboardingId}
               className={cn(
                 "flex items-center gap-4 px-4 py-2.5 rounded-xl transition-colors duration-150 font-extrabold text-[15px] uppercase tracking-wide",
                 isActive

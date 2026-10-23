@@ -3,6 +3,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { DuoButton } from "@/components/duolingo/DuoButton";
 import { useCourseAccess } from "@/hooks/useCourseAccess";
+import { useDailyXp } from "@/hooks/useDailyXp";
+import { DailyGoalCard } from "@/components/profile/DailyGoalCard";
 
 const BAR = { blue: "bg-primary", pink: "bg-accent-strong", green: "bg-success" } as const;
 
@@ -11,6 +13,7 @@ export const LearnSidePanel = () => {
   const { user } = useAuth();
   const { isLessonCompleted } = useUserProgress();
   const { units } = useCourseAccess();
+  const { today, goal } = useDailyXp(1);
   // The unit the learner is working on: the first one with lessons left.
   const unit = units.find((u) => u.lessons.some((l) => !isLessonCompleted(l.id))) ?? units[units.length - 1];
   if (!unit) return null;
@@ -32,6 +35,8 @@ export const LearnSidePanel = () => {
             </div>
           </div>
         )}
+
+        {user && <DailyGoalCard today={today} goal={goal} showLink />}
 
         <div className="duo-card p-5">
           <p className="text-sm font-extrabold uppercase tracking-widest text-muted-foreground">Unit {unit.unit}</p>

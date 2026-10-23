@@ -19,10 +19,10 @@ interface TopBarProps {
 const navItems = [
   { icon: Home, label: "Learn", path: "/" },
   { icon: Cherry, label: "Fruit Slicer", path: "/game/fruit-slicer" },
+  { icon: User, label: "Profile", path: "/profile" },
   { icon: Trophy, label: "Leaderboards", path: "/leaderboard" },
   { icon: Target, label: "Quests", path: "/quests" },
   { icon: Users, label: "Friends", path: "/friends" },
-  { icon: User, label: "Profile", path: "/profile" },
 ];
 
 const gameItems = [

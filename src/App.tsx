@@ -10,6 +10,7 @@ import { LanguageModeProvider } from "@/contexts/LanguageModeContext";
 import { SoundSettingsProvider } from "@/contexts/SoundSettingsContext";
 import { ThemeProvider } from "next-themes";
 import { RouteGate } from "@/components/RouteGate";
+import { SHOW_LEGACY } from "@/config/features";
 import { lazy, Suspense, useEffect } from "react";
 import { initSmoothScroll } from "@/lib/smoothScroll";
 import Index from "./pages/Index";
@@ -90,6 +91,7 @@ const RapidFireGame = lazy(() => import("./pages/RapidFireGame"));
 const ShpokoEndlessWord = lazy(() => import("./pages/ShpokoEndlessWord"));
 // Profile & Quests
 const Profile = lazy(() => import("./pages/Profile"));
+const MyProfile = lazy(() => import("./pages/MyProfile"));
 const Quests = lazy(() => import("./pages/Quests"));
 const AchievementsPage = lazy(() => import("./pages/AchievementsPage"));
 const Friends = lazy(() => import("./pages/Friends"));
@@ -99,6 +101,7 @@ const ImageAnalyzer = lazy(() => import("./pages/ImageAnalyzer"));
 // Admin
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminReports = lazy(() => import("./pages/admin/AdminReports"));
 const AdminForum = lazy(() => import("./pages/admin/AdminForum"));
 const AdminQuizzes = lazy(() => import("./pages/admin/AdminQuizzes"));
 const AdminLeagues = lazy(() => import("./pages/admin/AdminLeagues"));
@@ -229,7 +232,7 @@ const App = () => (
               {/* Mini Games */}
               <Route path="/game/fruit-slicer" element={<FruitSlicer />} />
               {/* Profile & Quests */}
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile" element={SHOW_LEGACY ? <Profile /> : <MyProfile />} />
               <Route path="/quests" element={<Quests />} />
               <Route path="/achievements" element={<AchievementsPage />} />
               <Route path="/friends" element={<Friends />} />
@@ -239,6 +242,7 @@ const App = () => (
               {/* Admin Routes */}
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/reports" element={<AdminReports />} />
               <Route path="/admin/analytics" element={<AdminAnalytics />} />
               <Route path="/admin/lessons" element={<AdminLessons />} />
               <Route path="/admin/quizzes" element={<AdminQuizzes />} />
