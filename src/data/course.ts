@@ -110,8 +110,31 @@ export type Exercise =
       targetFont?: TextFont;
       answer: string[];
       tiles: string[];
+      /** Tiles are whole words (a word bank), joined with spaces, instead of letters. */
+      words?: boolean;
       explain?: string;
       audio?: string;
+    }
+  | {
+      /** Teaches a whole sentence; every word can be tapped for its meaning. */
+      type: "phrase";
+      text: string;
+      reading: string;
+      meaning: string;
+      /** One entry per word in `text`, in order. `isNew` words are highlighted. */
+      words: { bg: string; en: string; isNew?: boolean }[];
+      note?: string;
+      audio?: string;
+    }
+  | {
+      /** Pick the word that fills the gap (written ___) in a sentence. */
+      type: "fill";
+      sentence: string;
+      /** The whole sentence in English, shown as a hint. */
+      meaning: string;
+      options: string[];
+      answer: string;
+      explain?: string;
     };
 
 export interface CourseLesson {
@@ -139,18 +162,21 @@ export interface CourseUnit {
   unit: number;
   title: string;
   /** Each unit has its own colour on the path, like Duolingo. */
-  color: "blue" | "pink" | "green";
+  color: "blue" | "pink" | "green" | "gold";
+  /** An extra unit outside the main path, opened by earning XP. */
+  bonus?: { unlockXp: number };
   /** Picture shown beside the unit's path. */
   mascot: string;
   lessons: CourseLesson[];
 }
 
 /** Exercise types that only teach; they are read and continued, not graded. */
-export const TEACHING_TYPES: Exercise["type"][] = ["intro", "familiar", "tip", "word", "shape"];
+export const TEACHING_TYPES: Exercise["type"][] = ["intro", "familiar", "tip", "word", "shape", "phrase"];
 
 import shpokoMascot from "@/assets/shpoko-mascot.webp";
 import { unit2 } from "./units/unit2";
 import { unit3 } from "./units/unit3";
+import { bonusHandwriting } from "./units/handwriting";
 
 const letterAudio = (name: string) => `/audio/letters/${name}.mp3`;
 const wordAudio = (name: string) => `/audio/words/${name}.mp3`;
@@ -1081,14 +1107,18 @@ export const course: CourseUnit[] = [
         xp: 30,
         kind: "test",
         passAccuracy: 80,
-        completeMessage: "You can read and write all 30 letters of the Bulgarian alphabet!",
+        completeMessage: "You can read all 30 letters of the Bulgarian alphabet!",
         exercises: unit1Test,
       },
     ],
   },
   unit2,
   unit3,
+  bonusHandwriting,
 ];
+
+/** The main path, in order. Bonus units sit outside it. */
+export const mainUnits = course.filter((u) => !u.bonus);
 
 export const findLesson = (lessonId: string) => {
   for (const unit of course) {

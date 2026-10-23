@@ -52,7 +52,7 @@ export function HeroSection({ onStart }: HeroSectionProps) {
         className="text-center"
       >
         <h1 className="text-[28px] sm:text-[34px] leading-tight font-extrabold text-foreground max-w-md mx-auto">
-          The free, fun and fast way to read and write Bulgarian!
+          The free, fun and fast way to learn everyday Bulgarian!
         </h1>
 
         <div className="mt-8 flex flex-col gap-3 max-w-[330px] mx-auto">

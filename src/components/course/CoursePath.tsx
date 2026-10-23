@@ -7,6 +7,8 @@ import type { CourseLesson, CourseUnit } from "@/data/course";
 import { useUserProgress } from "@/hooks/useUserProgress";
 import { useUnlockAll } from "@/hooks/useUnlockAll";
 import { useCourseAccess } from "@/hooks/useCourseAccess";
+import { useAuth } from "@/contexts/AuthContext";
+import { useGuest } from "@/contexts/GuestContext";
 import { Switch } from "@/components/ui/switch";
 
 // Horizontal offsets (px) that make the path wind left and right.
@@ -39,18 +41,31 @@ const THEMES: Record<CourseUnit["color"], { solid: string; shadow: string; ring:
     text: "text-success",
     buttonText: "text-success-dark",
   },
+  gold: {
+    solid: "bg-warning text-warning-foreground",
+    shadow: "hsl(var(--warning-dark))",
+    ring: "ring-warning/25",
+    text: "text-warning",
+    buttonText: "text-warning-dark",
+  },
 };
-const GOLD = { solid: "bg-warning text-warning-foreground", shadow: "hsl(var(--warning-dark))", ring: "ring-warning/25", text: "text-warning", buttonText: "text-warning-dark" };
-
+// Unit tests (and bonus units) are gold.
+const GOLD = THEMES.gold;
 
 export const CoursePath = () => {
   const navigate = useNavigate();
   const { isLessonCompleted } = useUserProgress();
   const { isOwner, unlockAll, setUnlockAll } = useUnlockAll();
   const { units, unlockAll: accountUnlockAll } = useCourseAccess();
-  // Lessons unlock in order across the units this account can see: a unit
-  // opens once the previous one (including its test) is done.
-  const allLessons = useMemo(() => units.flatMap((unit) => unit.lessons), [units]);
+  const { user, profile } = useAuth();
+  const { xp: guestXp } = useGuest();
+  const xp = user ? profile?.xp ?? 0 : guestXp;
+  // Lessons unlock in order across the main units this account can see: a unit
+  // opens once the previous one (including its test) is done. Bonus units sit
+  // after the path and open with XP instead.
+  const mainList = useMemo(() => units.filter((u) => !u.bonus), [units]);
+  const bonusList = useMemo(() => units.filter((u) => u.bonus), [units]);
+  const allLessons = useMemo(() => mainList.flatMap((unit) => unit.lessons), [mainList]);
   const [openId, setOpenId] = useState<string | null>(null);
   // Finished units are folded away; these are the ones opened again to review.
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -68,8 +83,12 @@ export const CoursePath = () => {
 
   const statusOf = (lesson: CourseLesson): NodeStatus => {
     if (isLessonCompleted(lesson.id)) return "completed";
-    const index = allLessons.findIndex((l) => l.id === lesson.id);
-    const unlocked = allLessons.slice(0, index).every((l) => isLessonCompleted(l.id));
+    const bonusUnit = bonusList.find((u) => u.lessons.includes(lesson));
+    // Bonus lessons: enough XP, then in order within their own unit.
+    const path = bonusUnit ? bonusUnit.lessons : allLessons;
+    const index = path.findIndex((l) => l.id === lesson.id);
+    const unlocked =
+      (!bonusUnit || xp >= bonusUnit.bonus!.unlockXp) && path.slice(0, index).every((l) => isLessonCompleted(l.id));
     if (!unlocked) {
       if (accountUnlockAll && lesson.exercises) return "open";
       return unlockAll && lesson.exercises ? "preview" : "locked";
@@ -114,14 +133,22 @@ export const CoursePath = () => {
           <Switch checked={unlockAll} onCheckedChange={setUnlockAll} aria-label="Unlock all lessons" />
         </label>
       )}
-      {units.map((unit, unitIndex) => {
+      {[...mainList, ...bonusList].map((unit, unitIndex) => {
         const theme = THEMES[unit.color];
         const unitLocked = statusOf(unit.lessons[0]) === "locked";
         const unitDone = unit.lessons.every((l) => isLessonCompleted(l.id));
         const collapsed = unitDone && !expanded.has(unit.id);
+        const needXp = unit.bonus && xp < unit.bonus.unlockXp ? unit.bonus.unlockXp : null;
 
         return (
           <section key={unit.id}>
+            {unit === bonusList[0] && (
+              <div className="mb-6 mt-4 flex items-center gap-3" role="separator">
+                <span className="h-0.5 flex-1 bg-border" />
+                <span className="text-sm font-extrabold uppercase tracking-widest text-warning">Bonus · unlock with XP</span>
+                <span className="h-0.5 flex-1 bg-border" />
+              </div>
+            )}
             <div
               className={cn(
                 "relative rounded-2xl py-4 text-center",
@@ -133,7 +160,7 @@ export const CoursePath = () => {
             >
               <div className="min-w-0">
                 <p className="text-sm font-extrabold uppercase tracking-widest opacity-80">
-                  Section {unit.section}, Unit {unit.unit}
+                  {unit.bonus ? (needXp ? `Bonus · ${xp}/${needXp} XP` : "Bonus unit") : `Section ${unit.section}, Unit ${unit.unit}`}
                   {unitDone && (
                     <>
                       <Check className="sm:hidden inline w-4 h-4 ml-1.5 -mt-0.5" strokeWidth={4} aria-label="complete" />
@@ -239,6 +266,7 @@ export const CoursePath = () => {
                           total={unit.lessons.filter((l) => l.kind !== "test").length}
                           status={status}
                           theme={nodeTheme}
+                          needXp={needXp}
                           onStart={() => navigate(`/course/${lesson.id}${status === "preview" ? "?preview=1" : ""}`)}
                         />
                       )}
@@ -263,6 +291,7 @@ function LessonCard({
   total,
   status,
   theme,
+  needXp,
   onStart,
 }: {
   lesson: CourseLesson;
@@ -270,6 +299,8 @@ function LessonCard({
   total: number;
   status: NodeStatus;
   theme: typeof GOLD;
+  /** XP still needed to open this bonus unit, or null. */
+  needXp: number | null;
   onStart: () => void;
 }) {
   const playable = status === "current" || status === "completed" || status === "preview" || status === "open";
@@ -320,6 +351,8 @@ function LessonCard({
           <p className="mt-3 text-sm font-bold">
             {status === "soon"
               ? "This lesson is coming soon!"
+              : needXp
+              ? `Earn ${needXp} XP in total to unlock this bonus unit!`
               : isTest
                 ? "Finish every lesson in this unit to unlock the test!"
                 : number === 1

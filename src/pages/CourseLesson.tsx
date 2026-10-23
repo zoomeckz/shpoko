@@ -23,6 +23,8 @@ import {
   fontClass,
   IntroExercise,
   MatchExercise,
+  PhraseExercise,
+  FillExercise,
 } from "@/components/course/exercises";
 import { ReportProblemSheet } from "@/components/course/ReportProblem";
 import { lessonMoments, syncAchievements } from "@/lib/achievements";
@@ -273,6 +275,8 @@ function LessonPlayer({ lesson, onRetry, preview = false }: { lesson: Lesson; on
             {exercise.type === "choice" && <ChoiceExercise exercise={exercise} {...props} />}
             {exercise.type === "match" && <MatchExercise exercise={exercise} {...props} />}
             {exercise.type === "build" && <BuildExercise exercise={exercise} {...props} />}
+            {exercise.type === "phrase" && <PhraseExercise exercise={exercise} {...props} />}
+            {exercise.type === "fill" && <FillExercise exercise={exercise} {...props} />}
           </motion.div>
         </AnimatePresence>
       </main>

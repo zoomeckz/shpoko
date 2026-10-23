@@ -177,6 +177,164 @@ export function WordExercise({ exercise, onChange }: BaseProps & { exercise: Ext
   );
 }
 
+/* ---------- New phrase (tap a word to see what it means) ---------- */
+
+export function PhraseExercise({ exercise, onChange }: BaseProps & { exercise: Extract<Exercise, { type: "phrase" }> }) {
+  const sfx = useSfx();
+  // Which word's meaning bubble is showing. New words start out explained.
+  const [open, setOpen] = useState<number | null>(() => {
+    const first = exercise.words.findIndex((w) => w.isNew);
+    return first >= 0 ? first : null;
+  });
+  useEffect(() => {
+    onChange({ ready: true, correct: true, solution: "" });
+    sfx.reveal();
+  }, [onChange, sfx]);
+
+  return (
+    <div className="flex flex-col items-center text-center">
+      <TeachingPill>New phrase</TeachingPill>
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 260, damping: 18 }}
+        className="mt-8 w-full duo-card px-4 pt-14 pb-6"
+      >
+        <p className="flex flex-wrap justify-center gap-x-3 gap-y-10 text-4xl sm:text-5xl font-black text-foreground" aria-label={exercise.text}>
+          {exercise.words.map((w, i) => (
+            <span key={i} className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  sfx.tap();
+                  setOpen(open === i ? null : i);
+                }}
+                aria-expanded={open === i}
+                aria-label={`${w.bg}: ${w.en}`}
+                className={cn(
+                  "underline decoration-dotted decoration-[3px] underline-offset-[10px] transition-colors",
+                  w.isNew ? "text-primary decoration-primary/60" : "decoration-muted-foreground/50 hover:text-primary"
+                )}
+              >
+                {w.bg}
+              </button>
+              {open === i && (
+                <motion.span
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap rounded-xl bg-foreground px-3 py-1.5 text-base font-extrabold text-background shadow-lg"
+                >
+                  {w.en}
+                  <span className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-foreground" aria-hidden="true" />
+                </motion.span>
+              )}
+            </span>
+          ))}
+        </p>
+        <div className="mt-6 flex items-center justify-center gap-3">
+          <SoundButton src={exercise.audio} />
+          <p className="text-xl font-extrabold text-primary">“{exercise.reading}”</p>
+        </div>
+        <p className="mt-2 text-2xl font-extrabold text-foreground">{exercise.meaning}</p>
+      </motion.div>
+
+      {/* Word by word */}
+      <div className="mt-5 w-full flex flex-wrap justify-center gap-2">
+        {exercise.words.map((w, i) => (
+          <span
+            key={i}
+            className={cn(
+              "rounded-xl border-2 px-3 py-1.5 text-base font-bold",
+              w.isNew ? "border-primary/50 bg-primary/10 text-foreground" : "border-border text-muted-foreground"
+            )}
+          >
+            <span className="font-black">{w.bg.replace(/[.,!?]+$/, "")}</span> = {w.en}
+            {w.isNew && <span className="ml-2 text-[10px] font-extrabold uppercase tracking-wider text-primary">New</span>}
+          </span>
+        ))}
+      </div>
+      {exercise.note && <p className="mt-4 text-lg font-bold text-muted-foreground">{exercise.note}</p>}
+    </div>
+  );
+}
+
+/* ---------- Fill the gap ---------- */
+
+export function FillExercise({
+  exercise,
+  checked,
+  onChange,
+}: BaseProps & { exercise: Extract<Exercise, { type: "fill" }> }) {
+  const [selected, setSelected] = useState<string | null>(null);
+  const sfx = useSfx();
+  const [before, after = ""] = exercise.sentence.split("___");
+  // Punctuation right after the gap sticks to it ("съм," not "съм ,").
+  const stuck = /^[.,!?]+/.exec(after)?.[0] ?? "";
+
+  const choose = (word: string) => {
+    if (checked) return;
+    if (word !== selected) sfx.tap();
+    setSelected(word);
+    onChange({ ready: true, correct: word === exercise.answer, solution: `${before}${exercise.answer}${after}` });
+  };
+
+  // Number keys pick an option, like the other choices.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const n = Number(e.key);
+      if (n >= 1 && n <= exercise.options.length) choose(exercise.options[n - 1]);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
+  const stateFor = (word: string): TileState => {
+    if (checked && word === exercise.answer) return "correct";
+    if (checked && word === selected) return "wrong";
+    return word === selected ? "selected" : "idle";
+  };
+
+  return (
+    <div>
+      <Prompt>Fill in the blank</Prompt>
+      <div className="mt-8 duo-card px-5 py-6 text-center">
+        <p className="text-3xl sm:text-4xl font-black text-foreground leading-relaxed">
+          {before}
+          <span className="whitespace-nowrap">
+            <span
+              className={cn(
+                "inline-block min-w-[3.5em] mx-1 border-b-4 px-1 align-baseline",
+                stuck && "mr-0",
+                selected ? "border-primary text-primary" : "border-muted-foreground/40 text-transparent"
+              )}
+            >
+              {selected ?? "…"}
+            </span>
+            {stuck}
+          </span>
+          {after.slice(stuck.length)}
+        </p>
+        <p className="mt-3 text-lg font-bold text-muted-foreground">{exercise.meaning}</p>
+      </div>
+      <div className="mt-8 flex flex-wrap justify-center gap-3">
+        {exercise.options.map((word, i) => (
+          <button
+            key={word}
+            type="button"
+            disabled={checked}
+            aria-pressed={selected === word}
+            aria-label={`${i + 1}: ${word}`}
+            onClick={() => choose(word)}
+            className={cn(tileClass(stateFor(word)), "h-14 px-5 text-2xl")}
+          >
+            {word}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ---------- Same letter, new look ---------- */
 
 export function ShapeExercise({ exercise, onChange }: BaseProps & { exercise: Extract<Exercise, { type: "shape" }> }) {
@@ -526,14 +684,17 @@ export function BuildExercise({
 }: BaseProps & { exercise: Extract<Exercise, { type: "build" }> }) {
   // Indexes into exercise.tiles, in the order they were placed.
   const [placed, setPlaced] = useState<number[]>([]);
+  // Letter tiles are square; word tiles are as wide as their word.
+  const tileSize = exercise.words ? "h-14 px-4 text-xl" : "w-14 h-16 text-3xl";
   const sfx = useSfx();
 
   useEffect(() => {
-    const built = placed.map((i) => exercise.tiles[i]).join("");
+    const sep = exercise.words ? " " : "";
+    const built = placed.map((i) => exercise.tiles[i]).join(sep);
     onChange({
       ready: placed.length > 0,
-      correct: built === exercise.answer.join(""),
-      solution: exercise.answer.join(""),
+      correct: built === exercise.answer.join(sep),
+      solution: exercise.answer.join(sep),
     });
   }, [placed, exercise, onChange]);
 
@@ -575,7 +736,7 @@ export function BuildExercise({
             type="button"
             onClick={() => remove(i)}
             disabled={checked}
-            className={cn(tileClass("idle"), "w-14 h-16 text-3xl")}
+            className={cn(tileClass("idle"), tileSize)}
           >
             {exercise.tiles[i]}
           </motion.button>
@@ -587,7 +748,9 @@ export function BuildExercise({
         {exercise.tiles.map((tile, i) => {
           const used = placed.includes(i);
           return used ? (
-            <span key={i} className="w-14 h-16 rounded-2xl bg-muted border-2 border-transparent" />
+            <span key={i} className={cn(tileSize, "inline-flex items-center rounded-2xl bg-muted border-2 border-transparent font-extrabold text-transparent select-none")} aria-hidden="true">
+              {exercise.words ? tile : ""}
+            </span>
           ) : (
             <motion.button
               key={i}
@@ -595,7 +758,7 @@ export function BuildExercise({
               type="button"
               onClick={() => add(i)}
               disabled={checked}
-              className={cn(tileClass("idle"), "w-14 h-16 text-3xl")}
+              className={cn(tileClass("idle"), tileSize)}
             >
               {tile}
             </motion.button>

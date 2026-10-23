@@ -232,7 +232,7 @@ export default function MyProfile() {
     if (profile?.reminder_time) setReminderTime(profile.reminder_time.slice(0, 5));
   }, [profile?.reminder_time]);
 
-  const lessonTotal = useMemo(() => units.reduce((n, u) => n + u.lessons.length, 0), [units]);
+  const lessonTotal = useMemo(() => units.filter((u) => !u.bonus).reduce((n, u) => n + u.lessons.length, 0), [units]);
 
   const saveProfile = async (changes: { daily_goal?: number; reminder_time?: string | null }) => {
     if (!user) return false;
@@ -307,7 +307,7 @@ export default function MyProfile() {
                         <span className="flex-1 bg-[#00966e]" />
                         <span className="flex-1 bg-[#d62612]" />
                       </span>
-                      Learning to read Bulgarian
+                      Learning Bulgarian
                     </p>
                   </div>
                 </section>

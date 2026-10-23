@@ -79,7 +79,7 @@ function PathVisual() {
 
 // Illustration: everything is included, no price tag.
 function FreeVisual() {
-  const items = ["Every lesson", "Every exercise", "Reading and writing", "Today and always"];
+  const items = ["Every lesson", "Every exercise", "Every unit", "Today and always"];
   return (
     <div className="relative mx-auto w-full max-w-sm" aria-hidden="true">
       <div className="duo-card p-6 pt-10">
@@ -111,20 +111,20 @@ export function FeatureRows({ onStart }: FeatureRowsProps) {
       <Row
         title="free. fun. fast."
         titleClass="text-primary"
-        body="Learning with Shpoko is 100% free, at all times. Bite-sized modules teach you the letters, how they sound and how to write them, and you read real Bulgarian words in your very first lesson."
+        body="Learning with Shpoko is 100% free, at all times. Bite-sized lessons teach you to read Cyrillic in no time, then the everyday Bulgarian you'll actually use: asking how someone is, ordering a coffee, finding your way."
         visual={<FreeVisual />}
       />
       <Row
         flip
         title="learn by playing"
         titleClass="text-primary"
-        body="Every module is a quick little game: tap, match and build words from letter tiles. Go on, try it."
+        body="Every lesson is a quick little game: tap, match, fill the gaps and build sentences. Go on, try it."
         visual={<TryItCard onStart={onStart} />}
       />
       <Row
         title="a little every day"
         titleClass="text-primary"
-        body="Lessons take about three minutes, and your path grows with every letter you learn."
+        body="Lessons take about three minutes, and your path grows with everything you learn."
         visual={<PathVisual />}
       />
     </section>

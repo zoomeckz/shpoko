@@ -36,7 +36,7 @@ const isExpired = (a: AdminAccount) => !!a.access?.expires_at && Date.parse(a.ac
 
 const unitLabel = (id: string) => {
   const u = course.find((x) => x.id === id);
-  return u ? `Unit ${u.unit}` : id;
+  return u ? (u.bonus ? "Bonus" : `Unit ${u.unit}`) : id;
 };
 
 function Badge({ children, tone }: { children: React.ReactNode; tone: "gold" | "blue" | "pink" | "red" | "grey" }) {
@@ -296,7 +296,7 @@ function AccountDialog({
                               onChange={() => toggleUnit(u.id)}
                             />
                             <span className="font-semibold text-foreground">
-                              Unit {u.unit} · {u.title}
+                              {u.bonus ? "Bonus" : `Unit ${u.unit}`} · {u.title}
                             </span>
                           </label>
                         ))}

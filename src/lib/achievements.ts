@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { course } from "@/data/course";
+import { course, mainUnits } from "@/data/course";
 import { daysAgo, localDateKey } from "@/lib/dates";
 
 /** Everything the achievements are worked out from. */
@@ -69,7 +69,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     icon: "🏆",
     title: "Champion",
     describe: (n) => `Pass ${plural(n, "unit test")}`,
-    tiers: course.map((_, i) => i + 1),
+    tiers: mainUnits.map((_, i) => i + 1),
     stat: (s) => s.units,
     color: "purple",
   },
@@ -160,7 +160,7 @@ export async function syncAchievements(userId: string, moments: string[] = []): 
     xp: profile?.xp ?? 0,
     lessons: [...done].filter((id) => courseLessonIds.has(id)).length,
     perfectLessons: (progress ?? []).filter((p) => p.completed && p.score === 100 && courseLessonIds.has(p.lesson_id)).length,
-    units: course.filter((u) => u.lessons.every((l) => done.has(l.id))).length,
+    units: mainUnits.filter((u) => u.lessons.every((l) => done.has(l.id))).length,
     fruitBest: readFruitBest(),
   };
 

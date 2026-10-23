@@ -55,6 +55,10 @@ function describeExercise(e: Exercise): { kind: string; text: string } {
       return { kind: "Familiar letters", text: e.title };
     case "word":
       return { kind: "Word", text: `${e.word} · “${e.reading}” = ${e.meaning}` };
+    case "phrase":
+      return { kind: "Phrase", text: `${e.text} = ${e.meaning}` };
+    case "fill":
+      return { kind: "Fill the gap", text: `${e.sentence} (${e.meaning})` };
   }
 }
 

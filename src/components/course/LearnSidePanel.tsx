@@ -6,7 +6,7 @@ import { useCourseAccess } from "@/hooks/useCourseAccess";
 import { useDailyXp } from "@/hooks/useDailyXp";
 import { DailyGoalCard } from "@/components/profile/DailyGoalCard";
 
-const BAR = { blue: "bg-primary", pink: "bg-accent-strong", green: "bg-success" } as const;
+const BAR = { blue: "bg-primary", pink: "bg-accent-strong", green: "bg-success", gold: "bg-warning" } as const;
 
 // Right-hand column on the Learn page (wide screens only).
 export const LearnSidePanel = () => {
@@ -15,7 +15,8 @@ export const LearnSidePanel = () => {
   const { units } = useCourseAccess();
   const { today, goal } = useDailyXp(1);
   // The unit the learner is working on: the first one with lessons left.
-  const unit = units.find((u) => u.lessons.some((l) => !isLessonCompleted(l.id))) ?? units[units.length - 1];
+  const mainUnits = units.filter((u) => !u.bonus);
+  const unit = mainUnits.find((u) => u.lessons.some((l) => !isLessonCompleted(l.id))) ?? mainUnits[mainUnits.length - 1];
   if (!unit) return null;
   const completed = unit.lessons.filter((l) => isLessonCompleted(l.id)).length;
 
