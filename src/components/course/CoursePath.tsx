@@ -138,10 +138,13 @@ export const CoursePath = () => {
     return unlockAll ? "preview" : "locked";
   };
 
-  // How far the path slides left to make room for the extras column.
-  const [shift, setShift] = useState(() => (window.innerWidth < 640 ? 52 : 84));
+  // How far the path slides left to make room for the extras column. On phones
+  // the path also winds less, so the START bubble fits on its left.
+  const [narrow, setNarrow] = useState(() => window.innerWidth < 640);
+  const shift = narrow ? 40 : 84;
+  const wind = narrow ? 0.65 : 1;
   useEffect(() => {
-    const onResize = () => setShift(window.innerWidth < 640 ? 52 : 84);
+    const onResize = () => setNarrow(window.innerWidth < 640);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
@@ -242,7 +245,7 @@ export const CoursePath = () => {
               exit={{ height: 0, opacity: 0, overflow: "hidden" }}
               transition={{ height: { duration: 0.45, ease: [0.22, 1, 0.36, 1] }, opacity: { duration: 0.3 } }}
             >
-            <div className="relative mt-20 pb-10 flex flex-col items-center gap-14">
+            <div className="relative mt-20 pb-10 flex flex-col items-center gap-9">
               <img
                 src={unit.mascot}
                 alt=""
@@ -270,29 +273,18 @@ export const CoursePath = () => {
                   <div
                     key={lesson.id}
                     data-lesson={lesson.id}
-                    // Rows are spaced evenly with room for the START bubble, so neither column jumps.
+                    // Rows are spaced evenly (START sits beside the node), so neither column jumps.
                     className="relative w-full flex justify-center"
                     style={{ zIndex: open || extraOpen ? 40 : showGuide ? 35 : 1 }}
                   >
                   {/* With extras beside it, the path slides over to the left to make room. */}
                   <motion.div
                     className="relative flex flex-col items-center"
-                    initial={{ x: OFFSETS[i % OFFSETS.length] }}
-                    animate={{ x: OFFSETS[i % OFFSETS.length] - (unit.extras ? shift : 0) }}
+                    initial={{ x: OFFSETS[i % OFFSETS.length] * wind }}
+                    animate={{ x: OFFSETS[i % OFFSETS.length] * wind - (unit.extras ? shift : 0) }}
                     transition={{ type: "spring", stiffness: 140, damping: 20, delay: 0.1 + i * 0.04 }}
                   >
-                    {status === "current" && !open && (
-                      <motion.span
-                        className={cn(
-                          "absolute -top-12 z-10 rounded-xl border-2 border-border bg-background px-3 py-2 text-sm font-extrabold uppercase tracking-wide whitespace-nowrap",
-                          nodeTheme.text
-                        )}
-                        animate={{ y: [0, -5, 0] }}
-                        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-                      >
-                        Start
-                      </motion.span>
-                    )}
+                    {status === "current" && !open && <StartBubble textClass={nodeTheme.text} />}
 
                     <button
                       type="button"
@@ -379,6 +371,59 @@ export const CoursePath = () => {
     </div>
   );
 };
+
+/**
+ * "START" beside the current lesson, pointing at it from the left. Where the
+ * winding path leaves no room on the left (phones), it sits on the right instead.
+ */
+function StartBubble({ textClass }: { textClass: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  // Hidden until the path has slid into place and we know which side fits.
+  const [side, setSide] = useState<"left" | "right" | null>(null);
+
+  useEffect(() => {
+    const place = () => {
+      const bubble = ref.current;
+      const node = bubble?.parentElement;
+      const area = bubble?.closest("section");
+      if (!bubble || !node || !area) return;
+      const roomLeft = node.getBoundingClientRect().left - area.getBoundingClientRect().left;
+      setSide(roomLeft >= bubble.offsetWidth + 16 ? "left" : "right");
+    };
+    const timer = setTimeout(place, 700);
+    window.addEventListener("resize", place);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", place);
+    };
+  }, []);
+
+  const left = side !== "right";
+  return (
+    <motion.span
+      ref={ref}
+      className={cn(
+        "absolute top-1/2 z-10 rounded-xl border-2 border-border bg-background px-3 py-2 text-sm font-extrabold uppercase tracking-wide whitespace-nowrap",
+        left ? "right-full mr-3" : "left-full ml-3",
+        textClass
+      )}
+      style={{ y: "-50%" }}
+      initial={false}
+      animate={{ opacity: side ? 1 : 0, x: left ? [0, -5, 0] : [0, 5, 0] }}
+      transition={{ opacity: { duration: 0.2 }, x: { duration: 1.6, repeat: Infinity, ease: "easeInOut" } }}
+    >
+      Start
+      {/* Little arrow pointing at the lesson */}
+      <span
+        className={cn(
+          "absolute top-1/2 w-3 h-3 -translate-y-1/2 rotate-45 bg-background border-border",
+          left ? "-right-[7px] border-r-2 border-t-2" : "-left-[7px] border-l-2 border-b-2"
+        )}
+        aria-hidden="true"
+      />
+    </motion.span>
+  );
+}
 
 /** A small purple node beside the path for one extra. */
 function ExtraNode({
