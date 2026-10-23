@@ -7,6 +7,7 @@ import { useCourseAccess } from "@/hooks/useCourseAccess";
 import { Sidebar } from "@/components/duolingo/Sidebar";
 import { TopBar } from "@/components/duolingo/TopBar";
 import { useT } from "@/i18n";
+import { SoundButton } from "@/components/course/SoundButton";
 
 const BANNER = {
   blue: "bg-primary text-primary-foreground",
@@ -31,12 +32,15 @@ function VocabList({ items }: { items: VocabItem[] }) {
   return (
     <ul dir="ltr" className="duo-card divide-y-2 divide-border overflow-hidden">
       {items.map((item) => (
-        <li key={item.bg} className="px-4 py-3">
-          <p className="text-xl font-black text-foreground break-words">{item.bg}</p>
-          <p className="text-sm font-bold">
-            {item.reading && <span className="text-primary">“{item.reading}” · </span>}
-            <span className="text-muted-foreground">{item.en}</span>
-          </p>
+        <li key={item.bg} className="px-4 py-3 flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-xl font-black text-foreground break-words">{item.bg}</p>
+            <p className="text-sm font-bold">
+              {item.reading && <span className="text-primary">“{item.reading}” · </span>}
+              <span className="text-muted-foreground">{item.en}</span>
+            </p>
+          </div>
+          <SoundButton text={item.bg} size="sm" className="shrink-0" />
         </li>
       ))}
     </ul>

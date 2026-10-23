@@ -27,6 +27,7 @@ export const de: Record<MessageKey, string> = {
   "nav.closeMenu": "Menü schließen",
   "sound.mute": "Soundeffekte stummschalten",
   "sound.unmute": "Soundeffekte einschalten",
+  "sound.play": "Anhören",
   "theme.toggle": "Zwischen hell und dunkel wechseln",
 
   "landing.home": "Shpoko-Startseite",

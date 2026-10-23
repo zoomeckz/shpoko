@@ -2,7 +2,8 @@
 // - Pages: always try the network first, so a new version shows straight away;
 //   fall back to the last saved copy when offline.
 // - Built files (/assets/…) never change once published (their names include a
-//   fingerprint), so they come from the cache after the first visit.
+//   fingerprint), so they come from the cache after the first visit. Spoken
+//   clips (/audio/…) are named after their text, so they never change either.
 // - Everything else, like the database, is left alone.
 const CACHE = "shpoko-v1";
 
@@ -36,7 +37,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (url.pathname.startsWith("/assets/")) {
+  if (url.pathname.startsWith("/assets/") || url.pathname.startsWith("/audio/")) {
     event.respondWith(
       caches.match(request).then(
         (cached) =>

@@ -34,6 +34,7 @@ export const en = {
   "nav.closeMenu": "Close menu",
   "sound.mute": "Mute sound effects",
   "sound.unmute": "Turn on sound effects",
+  "sound.play": "Play the sound",
   "theme.toggle": "Switch between light and dark",
 
   // Landing page

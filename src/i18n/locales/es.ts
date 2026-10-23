@@ -27,6 +27,7 @@ export const es: Record<MessageKey, string> = {
   "nav.closeMenu": "Cerrar el menú",
   "sound.mute": "Silenciar los efectos de sonido",
   "sound.unmute": "Activar los efectos de sonido",
+  "sound.play": "Reproducir el sonido",
   "theme.toggle": "Cambiar entre claro y oscuro",
 
   "landing.home": "Inicio de Shpoko",

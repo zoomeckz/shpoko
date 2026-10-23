@@ -27,6 +27,9 @@ import {
   FillExercise,
 } from "@/components/course/exercises";
 import { ReportProblemSheet } from "@/components/course/ReportProblem";
+import { SoundButton } from "@/components/course/SoundButton";
+import { answerSpeech } from "@/data/speechTexts";
+import { playSpeech } from "@/lib/speech";
 import { lessonMoments, syncAchievements } from "@/lib/achievements";
 import { buildPractice, clearMistake, loadMistakes, recordMistake, type Mistake } from "@/lib/mistakes";
 import { questionOf } from "@/lib/exerciseSummary";
@@ -136,9 +139,12 @@ function LessonPlayer({
         else setQueue((q) => [...q, index]);
       }
       setPhase("checked");
+      // Then hear the Bulgarian the question was about.
+      const said = soundEnabled ? answerSpeech(exercise) : undefined;
+      if (said) setTimeout(() => playSpeech(said), 450);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [index, streak, sfx, phase, isTest, answer.solution, mistakes, practice, preview, user?.id]
+    [index, streak, sfx, phase, isTest, answer.solution, mistakes, practice, preview, user?.id, soundEnabled, exercise]
   );
 
   const next = useCallback(() => {
@@ -408,6 +414,7 @@ function LessonPlayer({
                     <p className="text-base font-bold opacity-90">{exercise.explain}</p>
                   )}
                 </div>
+                <SoundButton text={answerSpeech(exercise)} size="sm" className="shrink-0" />
               </motion.div>
             )}
           </div>

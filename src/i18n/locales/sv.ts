@@ -27,6 +27,7 @@ export const sv: Record<MessageKey, string> = {
   "nav.closeMenu": "Stäng menyn",
   "sound.mute": "Stäng av ljudeffekter",
   "sound.unmute": "Slå på ljudeffekter",
+  "sound.play": "Spela upp ljudet",
   "theme.toggle": "Växla mellan ljust och mörkt",
 
   "landing.home": "Shpoko, startsida",

@@ -4,6 +4,8 @@ import { cn } from "@/lib/utils";
 import type { Exercise, SignColor, TextFont } from "@/data/course";
 import { useSfx } from "@/hooks/useSfx";
 import { SoundButton } from "./SoundButton";
+import { useAutoSpeech } from "@/hooks/useAutoSpeech";
+import { playSpeech } from "@/lib/speech";
 import { useT } from "@/i18n";
 
 export interface AnswerState {
@@ -127,6 +129,7 @@ export function TipExercise({ exercise, onChange }: BaseProps & { exercise: Extr
                 {item.big}
               </span>
               <span className="font-bold text-muted-foreground">{item.small}</span>
+              <SoundButton text={item.big} size="sm" className="ml-auto self-center" />
             </motion.div>
           ))}
         </div>
@@ -140,6 +143,7 @@ export function TipExercise({ exercise, onChange }: BaseProps & { exercise: Extr
 export function WordExercise({ exercise, onChange }: BaseProps & { exercise: Extract<Exercise, { type: "word" }> }) {
   const sfx = useSfx();
   const t = useT();
+  useAutoSpeech(exercise.word);
   useEffect(() => {
     onChange({ ready: true, correct: true, solution: "" });
     sfx.reveal();
@@ -162,7 +166,7 @@ export function WordExercise({ exercise, onChange }: BaseProps & { exercise: Ext
           </div>
         )}
         <div className="mt-6 flex items-center justify-center gap-3">
-          <SoundButton src={exercise.audio} />
+          <SoundButton text={exercise.word} />
           <p className="text-2xl font-extrabold text-primary">“{exercise.reading}”</p>
         </div>
         <p className="mt-3 text-2xl font-extrabold text-foreground">
@@ -179,6 +183,7 @@ export function WordExercise({ exercise, onChange }: BaseProps & { exercise: Ext
 export function PhraseExercise({ exercise, onChange }: BaseProps & { exercise: Extract<Exercise, { type: "phrase" }> }) {
   const sfx = useSfx();
   const t = useT();
+  useAutoSpeech(exercise.text);
   // Which word's meaning bubble is showing. New words start out explained.
   const [open, setOpen] = useState<number | null>(() => {
     const first = exercise.words.findIndex((w) => w.isNew);
@@ -204,6 +209,7 @@ export function PhraseExercise({ exercise, onChange }: BaseProps & { exercise: E
               <button
                 type="button"
                 onClick={() => {
+                  if (open !== i) playSpeech(w.bg);
                   sfx.tap();
                   setOpen(open === i ? null : i);
                 }}
@@ -230,7 +236,7 @@ export function PhraseExercise({ exercise, onChange }: BaseProps & { exercise: E
           ))}
         </p>
         <div className="mt-6 flex items-center justify-center gap-3">
-          <SoundButton src={exercise.audio} />
+          <SoundButton text={exercise.text} />
           <p className="text-xl font-extrabold text-primary">“{exercise.reading}”</p>
         </div>
         <p className="mt-2 text-2xl font-extrabold text-foreground">{exercise.meaning}</p>
@@ -462,7 +468,7 @@ export function FamiliarExercise({
               <span className="block font-bold text-foreground">{l.sound}</span>
               {l.note && <span className="block text-sm font-extrabold text-primary">{l.note}</span>}
             </span>
-            <SoundButton src={l.audio} size="sm" className="ml-auto shrink-0" />
+            <SoundButton text={l.upper} size="sm" className="ml-auto shrink-0" />
           </motion.div>
         ))}
       </div>
@@ -478,6 +484,7 @@ export function IntroExercise({
 }: BaseProps & { exercise: Extract<Exercise, { type: "intro" }> }) {
   const sfx = useSfx();
   const t = useT();
+  useAutoSpeech(exercise.letter);
 
   useEffect(() => {
     onChange({ ready: true, correct: true, solution: "" });
@@ -510,7 +517,7 @@ export function IntroExercise({
           <span className="ml-3 text-muted-foreground/60">{exercise.lower}</span>
         </p>
         <div className="mt-6 flex items-center justify-center gap-3">
-          <SoundButton src={exercise.audio} />
+          <SoundButton text={exercise.letter} />
           <p className="text-2xl font-extrabold text-primary">{t("ex.soundsLike", { sound: exercise.sound })}</p>
         </div>
       </motion.div>
@@ -566,7 +573,6 @@ export function ChoiceExercise({
 
       {exercise.display && (
         <div className="mt-8 flex items-center justify-center gap-4 text-center">
-          <SoundButton src={exercise.displayAudio} />
           {exercise.displaySign ? (
             <Sign text={exercise.display} color={exercise.displaySign} />
           ) : (
@@ -651,7 +657,10 @@ export function MatchExercise({
   useEffect(() => {
     if (!pickedLeft || !pickedRight) return;
     const ok = partnerOf(pickedLeft) === pickedRight;
-    if (ok) sfx.match(matched.length);
+    if (ok) {
+      sfx.match(matched.length);
+      if (!playSpeech(pickedLeft)) playSpeech(pickedRight);
+    }
     else sfx.miss();
     setFlash({ left: pickedLeft, right: pickedRight, ok });
     const t = setTimeout(() => {
@@ -763,7 +772,6 @@ export function BuildExercise({
       <Prompt>{exercise.prompt}</Prompt>
 
       <div className="mt-6 flex items-center gap-3">
-        <SoundButton src={exercise.audio} size="sm" />
         <p
           className={cn(
             "rounded-2xl border-2 border-border px-4 py-2 text-foreground",

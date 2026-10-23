@@ -2,9 +2,8 @@
  * The new Shpoko course. Each lesson is a list of short exercises played by
  * src/pages/CourseLesson.tsx.
  *
- * `audio` fields point at clips in /public (e.g. public/audio/letters/r.mp3).
- * Sound buttons stay hidden until SHOW_SOUND_BUTTONS is turned on in
- * src/config/features.ts, so missing clips never show up for learners.
+ * Bulgarian text is spoken from clips made once by scripts/generate-audio.mjs
+ * (see src/lib/speech.ts); nothing here needs to point at a sound file.
  */
 
 /** How a piece of Cyrillic text is drawn: normal print, true italics or handwriting. */
@@ -15,7 +14,6 @@ export type SignColor = "green" | "blue" | "red" | "yellow" | "white";
 
 export interface ChoiceOption {
   label: string;
-  audio?: string;
   /** With optionStyle "signs": the sign's colour. */
   sign?: SignColor;
 }
@@ -26,7 +24,6 @@ export interface FamiliarLetter {
   sound: string;
   /** Extra writing rule, shown highlighted. */
   note?: string;
-  audio?: string;
 }
 
 export type Exercise =
@@ -47,7 +44,6 @@ export type Exercise =
       /** Draw the word as a sign of this colour. */
       sign?: SignColor;
       font?: TextFont;
-      audio?: string;
     }
   | {
       /** Shows how a print letter looks in italics or handwriting. */
@@ -75,14 +71,12 @@ export type Exercise =
       looksLike?: string;
       /** How to say it in a sentence; defaults to "an English P". */
       looksLikeName?: string;
-      audio?: string;
     }
   | {
       type: "choice";
       prompt: string;
       /** Big text shown above the options (a letter or a word). */
       display?: string;
-      displayAudio?: string;
       displayFont?: TextFont;
       /** Draw the display as a sign of this colour. */
       displaySign?: SignColor;
@@ -97,7 +91,7 @@ export type Exercise =
       type: "match";
       prompt: string;
       leftFont?: TextFont;
-      pairs: { left: string; right: string; audio?: string }[];
+      pairs: { left: string; right: string }[];
     }
   | {
       type: "build";
@@ -110,7 +104,6 @@ export type Exercise =
       /** Tiles are whole words (a word bank), joined with spaces, instead of letters. */
       words?: boolean;
       explain?: string;
-      audio?: string;
     }
   | {
       /** Teaches a whole sentence; every word can be tapped for its meaning. */
@@ -121,7 +114,6 @@ export type Exercise =
       /** One entry per word in `text`, in order. `isNew` words are highlighted. */
       words: { bg: string; en: string; isNew?: boolean }[];
       note?: string;
-      audio?: string;
       /** Asks the learner to say it out loud three times, tapping after each. */
       repeat?: boolean;
     }
@@ -183,9 +175,6 @@ import { unit4 } from "./units/unit4";
 import { extras } from "./units/extras";
 import { bonusHandwriting } from "./units/handwriting";
 
-const letterAudio = (name: string) => `/audio/letters/${name}.mp3`;
-const wordAudio = (name: string) => `/audio/words/${name}.mp3`;
-
 // Lesson 1: a quick look at the letters learners already know, then the
 // "false friends" that look English but sound different.
 const lesson1: Exercise[] = [
@@ -194,18 +183,17 @@ const lesson1: Exercise[] = [
     title: "Letters you already know",
     note: "These are written just like in English. A few sound a little different, but you write them the same way.",
     letters: [
-      { upper: "А", lower: "а", sound: "a, as in father", audio: letterAudio("a") },
-      { upper: "Е", lower: "е", sound: "e, as in pet (never “ee”)", audio: letterAudio("e") },
-      { upper: "К", lower: "к", sound: "k, as in kite", audio: letterAudio("k") },
-      { upper: "О", lower: "о", sound: "o, as in sort, but short", audio: letterAudio("o") },
+      { upper: "А", lower: "а", sound: "a, as in father" },
+      { upper: "Е", lower: "е", sound: "e, as in pet (never “ee”)" },
+      { upper: "К", lower: "к", sound: "k, as in kite" },
+      { upper: "О", lower: "о", sound: "o, as in sort, but short" },
       {
         upper: "М",
         lower: "м",
         sound: "m, as in moon",
         note: "Small м is just a little М. It's never written m.",
-        audio: letterAudio("m"),
       },
-      { upper: "Т", lower: "т", sound: "t, as in top", note: "Small т is a little Т too.", audio: letterAudio("t") },
+      { upper: "Т", lower: "т", sound: "t, as in top", note: "Small т is a little Т too." },
     ],
   },
   {
@@ -223,7 +211,6 @@ const lesson1: Exercise[] = [
     sound: "r",
     looksLike: "P",
     hint: "A rolled “r”, like in Spanish or Italian.",
-    audio: letterAudio("r"),
   },
   {
     type: "intro",
@@ -232,13 +219,11 @@ const lesson1: Exercise[] = [
     sound: "s",
     looksLike: "C",
     hint: "Always “s” as in sun. Never a “k” sound.",
-    audio: letterAudio("s"),
   },
   {
     type: "choice",
     prompt: "What sound does this letter make?",
     display: "Р",
-    displayAudio: letterAudio("r"),
     options: [{ label: "p" }, { label: "r" }, { label: "b" }],
     answer: "r",
   },
@@ -246,7 +231,6 @@ const lesson1: Exercise[] = [
     type: "choice",
     prompt: "What sound does this letter make?",
     display: "С",
-    displayAudio: letterAudio("s"),
     options: [{ label: "k" }, { label: "ch" }, { label: "s" }],
     answer: "s",
   },
@@ -254,7 +238,6 @@ const lesson1: Exercise[] = [
     type: "choice",
     prompt: "How do you read this word?",
     display: "РАК",
-    displayAudio: wordAudio("rak"),
     options: [{ label: "pak" }, { label: "rak" }, { label: "rac" }],
     answer: "rak",
     explain: "РАК means crab 🦀",
@@ -266,7 +249,6 @@ const lesson1: Exercise[] = [
     sound: "n",
     looksLike: "H",
     hint: "“n” as in nose. Small н looks like a little Н.",
-    audio: letterAudio("n"),
   },
   {
     type: "intro",
@@ -275,23 +257,21 @@ const lesson1: Exercise[] = [
     sound: "v",
     looksLike: "B",
     hint: "“v” as in van. Small в is a little В.",
-    audio: letterAudio("v"),
   },
   {
     type: "match",
     prompt: "Tap the matching pairs",
     pairs: [
-      { left: "Р", right: "r", audio: letterAudio("r") },
-      { left: "С", right: "s", audio: letterAudio("s") },
-      { left: "Н", right: "n", audio: letterAudio("n") },
-      { left: "В", right: "v", audio: letterAudio("v") },
+      { left: "Р", right: "r" },
+      { left: "С", right: "s" },
+      { left: "Н", right: "n" },
+      { left: "В", right: "v" },
     ],
   },
   {
     type: "choice",
     prompt: "How do you read this word?",
     display: "НОС",
-    displayAudio: wordAudio("nos"),
     options: [{ label: "hoc" }, { label: "nos" }, { label: "noc" }],
     answer: "nos",
     explain: "НОС means nose 👃",
@@ -303,7 +283,6 @@ const lesson1: Exercise[] = [
     answer: ["С", "О", "К"],
     tiles: ["К", "Р", "С", "О", "Н", "А"],
     explain: "СОК means juice 🧃",
-    audio: wordAudio("sok"),
   },
   {
     type: "intro",
@@ -312,7 +291,6 @@ const lesson1: Exercise[] = [
     sound: "u",
     looksLike: "Y",
     hint: "“oo” as in moon, but short.",
-    audio: letterAudio("u"),
   },
   {
     type: "intro",
@@ -321,17 +299,16 @@ const lesson1: Exercise[] = [
     sound: "h",
     looksLike: "X",
     hint: "“h” as in hat, a little throaty, like “ch” in Scottish loch.",
-    audio: letterAudio("h"),
   },
   {
     type: "choice",
     prompt: "Select the letter that sounds like “u”",
     optionStyle: "letters",
     options: [
-      { label: "Х", audio: letterAudio("h") },
-      { label: "У", audio: letterAudio("u") },
-      { label: "В", audio: letterAudio("v") },
-      { label: "Н", audio: letterAudio("n") },
+      { label: "Х" },
+      { label: "У" },
+      { label: "В" },
+      { label: "Н" },
     ],
     answer: "У",
   },
@@ -339,7 +316,6 @@ const lesson1: Exercise[] = [
     type: "choice",
     prompt: "How do you read this word?",
     display: "УХО",
-    displayAudio: wordAudio("uho"),
     options: [{ label: "yxo" }, { label: "uho" }, { label: "uxo" }],
     answer: "uho",
     explain: "УХО means ear 👂",
@@ -348,7 +324,6 @@ const lesson1: Exercise[] = [
     type: "choice",
     prompt: "How do you read this sign?",
     display: "РЕСТОРАНТ",
-    displayAudio: wordAudio("restorant"),
     options: [{ label: "pectopaht" }, { label: "restorant" }, { label: "restoran" }],
     answer: "restorant",
     explain: "РЕСТОРАНТ means restaurant 🍽️",
@@ -357,10 +332,10 @@ const lesson1: Exercise[] = [
     type: "match",
     prompt: "Match each word with how it's read",
     pairs: [
-      { left: "НОС", right: "nos", audio: wordAudio("nos") },
-      { left: "УХО", right: "uho", audio: wordAudio("uho") },
-      { left: "СОК", right: "sok", audio: wordAudio("sok") },
-      { left: "РАК", right: "rak", audio: wordAudio("rak") },
+      { left: "НОС", right: "nos" },
+      { left: "УХО", right: "uho" },
+      { left: "СОК", right: "sok" },
+      { left: "РАК", right: "rak" },
     ],
   },
   {
@@ -370,7 +345,6 @@ const lesson1: Exercise[] = [
     answer: ["М", "О", "Р", "Е"],
     tiles: ["Е", "Р", "Н", "М", "С", "О"],
     explain: "МОРЕ means sea 🌊",
-    audio: wordAudio("more"),
   },
 ];
 
@@ -383,7 +357,6 @@ const lesson2: Exercise[] = [
     lower: "б",
     sound: "b",
     hint: "“b” as in boy. Small б looks a bit like a 6.",
-    audio: letterAudio("b"),
   },
   {
     type: "intro",
@@ -391,13 +364,11 @@ const lesson2: Exercise[] = [
     lower: "д",
     sound: "d",
     hint: "“d” as in dog. Small д is a little Д.",
-    audio: letterAudio("d"),
   },
   {
     type: "choice",
     prompt: "What sound does this letter make?",
     display: "Б",
-    displayAudio: letterAudio("b"),
     options: [{ label: "v" }, { label: "b" }, { label: "p" }],
     answer: "b",
     explain: "Careful: В is “v”, Б is “b”.",
@@ -406,7 +377,6 @@ const lesson2: Exercise[] = [
     type: "choice",
     prompt: "What sound does this letter make?",
     display: "Д",
-    displayAudio: letterAudio("d"),
     options: [{ label: "d" }, { label: "g" }, { label: "l" }],
     answer: "d",
   },
@@ -414,7 +384,6 @@ const lesson2: Exercise[] = [
     type: "choice",
     prompt: "How do you read this word?",
     display: "ДОМ",
-    displayAudio: wordAudio("dom"),
     options: [{ label: "bom" }, { label: "dom" }, { label: "tom" }],
     answer: "dom",
     explain: "ДОМ means home 🏠",
@@ -425,7 +394,6 @@ const lesson2: Exercise[] = [
     lower: "п",
     sound: "p",
     hint: "“p” as in pen. Don't mix it up with Р, which is “r”!",
-    audio: letterAudio("p"),
   },
   {
     type: "intro",
@@ -433,23 +401,21 @@ const lesson2: Exercise[] = [
     lower: "л",
     sound: "l",
     hint: "“l” as in lamp.",
-    audio: letterAudio("l"),
   },
   {
     type: "match",
     prompt: "Tap the matching pairs",
     pairs: [
-      { left: "Б", right: "b", audio: letterAudio("b") },
-      { left: "Д", right: "d", audio: letterAudio("d") },
-      { left: "П", right: "p", audio: letterAudio("p") },
-      { left: "Л", right: "l", audio: letterAudio("l") },
+      { left: "Б", right: "b" },
+      { left: "Д", right: "d" },
+      { left: "П", right: "p" },
+      { left: "Л", right: "l" },
     ],
   },
   {
     type: "choice",
     prompt: "How do you read this sign?",
     display: "ПАРК",
-    displayAudio: wordAudio("park"),
     options: [{ label: "rapk" }, { label: "park" }, { label: "pank" }],
     answer: "park",
     explain: "ПАРК means park 🌳",
@@ -458,7 +424,6 @@ const lesson2: Exercise[] = [
     type: "choice",
     prompt: "How do you read this word?",
     display: "ЛАМПА",
-    displayAudio: wordAudio("lampa"),
     options: [{ label: "lampa" }, { label: "dampa" }, { label: "lamra" }],
     answer: "lampa",
     explain: "ЛАМПА means lamp 💡",
@@ -469,7 +434,6 @@ const lesson2: Exercise[] = [
     target: "dom (home)",
     answer: ["Д", "О", "М"],
     tiles: ["М", "Б", "Д", "О", "Л", "А"],
-    audio: wordAudio("dom"),
   },
   {
     type: "intro",
@@ -477,7 +441,6 @@ const lesson2: Exercise[] = [
     lower: "г",
     sound: "g",
     hint: "Always a hard “g” as in go, never like the g in gem.",
-    audio: letterAudio("g"),
   },
   {
     type: "intro",
@@ -487,7 +450,6 @@ const lesson2: Exercise[] = [
     looksLike: "3",
     looksLikeName: "the number 3",
     hint: "“z” as in zoo.",
-    audio: letterAudio("z"),
   },
   {
     type: "intro",
@@ -497,17 +459,16 @@ const lesson2: Exercise[] = [
     looksLike: "N",
     looksLikeName: "a backwards N",
     hint: "“ee” as in meet, but short.",
-    audio: letterAudio("i"),
   },
   {
     type: "choice",
     prompt: "Select the letter that sounds like “z”",
     optionStyle: "letters",
     options: [
-      { label: "Г", audio: letterAudio("g") },
-      { label: "З", audio: letterAudio("z") },
-      { label: "Б", audio: letterAudio("b") },
-      { label: "Д", audio: letterAudio("d") },
+      { label: "Г" },
+      { label: "З" },
+      { label: "Б" },
+      { label: "Д" },
     ],
     answer: "З",
   },
@@ -516,10 +477,10 @@ const lesson2: Exercise[] = [
     prompt: "Select the letter that sounds like “ee”",
     optionStyle: "letters",
     options: [
-      { label: "Н", audio: letterAudio("n") },
-      { label: "И", audio: letterAudio("i") },
-      { label: "П", audio: letterAudio("p") },
-      { label: "Л", audio: letterAudio("l") },
+      { label: "Н" },
+      { label: "И" },
+      { label: "П" },
+      { label: "Л" },
     ],
     answer: "И",
     explain: "Н is “n”, И is “i”.",
@@ -528,7 +489,6 @@ const lesson2: Exercise[] = [
     type: "choice",
     prompt: "How do you read this word?",
     display: "ЗИМА",
-    displayAudio: wordAudio("zima"),
     options: [{ label: "3ima" }, { label: "zina" }, { label: "zima" }],
     answer: "zima",
     explain: "ЗИМА means winter ❄️",
@@ -537,7 +497,6 @@ const lesson2: Exercise[] = [
     type: "choice",
     prompt: "How do you read this word?",
     display: "КРОКОДИЛ",
-    displayAudio: wordAudio("krokodil"),
     options: [{ label: "krokodil" }, { label: "kpokodil" }, { label: "krokobil" }],
     answer: "krokodil",
     explain: "КРОКОДИЛ means crocodile 🐊",
@@ -546,10 +505,10 @@ const lesson2: Exercise[] = [
     type: "match",
     prompt: "Match each word with how it's read",
     pairs: [
-      { left: "ГРАД", right: "grad", audio: wordAudio("grad") },
-      { left: "ВОДА", right: "voda", audio: wordAudio("voda") },
-      { left: "БИРА", right: "bira", audio: wordAudio("bira") },
-      { left: "ЛИМОН", right: "limon", audio: wordAudio("limon") },
+      { left: "ГРАД", right: "grad" },
+      { left: "ВОДА", right: "voda" },
+      { left: "БИРА", right: "bira" },
+      { left: "ЛИМОН", right: "limon" },
     ],
   },
   {
@@ -559,26 +518,23 @@ const lesson2: Exercise[] = [
     answer: ["М", "А", "Г", "А", "З", "И", "Н"],
     tiles: ["Г", "А", "Н", "М", "И", "З", "А", "П", "Д"],
     explain: "МАГАЗИН means shop 🛒",
-    audio: wordAudio("magazin"),
   },
 ];
 
 // Lesson 3: the hissing and buzzing sounds.
 const lesson3: Exercise[] = [
-  { type: "intro", letter: "Ш", lower: "ш", sound: "sh", hint: "“sh” as in ship.", audio: letterAudio("sh") },
+  { type: "intro", letter: "Ш", lower: "ш", sound: "sh", hint: "“sh” as in ship." },
   {
     type: "intro",
     letter: "Щ",
     lower: "щ",
     sound: "sht",
     hint: "Ш with a little tail. It says “sht”, like in ashtray.",
-    audio: letterAudio("sht"),
   },
   {
     type: "choice",
     prompt: "What sound does this letter make?",
     display: "Ш",
-    displayAudio: letterAudio("sh"),
     options: [{ label: "sh" }, { label: "sht" }, { label: "ch" }],
     answer: "sh",
   },
@@ -586,7 +542,6 @@ const lesson3: Exercise[] = [
     type: "choice",
     prompt: "What sound does this letter make?",
     display: "Щ",
-    displayAudio: letterAudio("sht"),
     options: [{ label: "sh" }, { label: "ts" }, { label: "sht" }],
     answer: "sht",
     explain: "The little tail adds a “t”: Щ = sht.",
@@ -595,7 +550,6 @@ const lesson3: Exercise[] = [
     type: "choice",
     prompt: "How do you read this word?",
     display: "ШАПКА",
-    displayAudio: wordAudio("shapka"),
     options: [{ label: "shtapka" }, { label: "shapka" }, { label: "chapka" }],
     answer: "shapka",
     explain: "ШАПКА means hat 🧢",
@@ -606,7 +560,6 @@ const lesson3: Exercise[] = [
     lower: "ж",
     sound: "zh",
     hint: "Like the s in pleasure. It looks like a little bug!",
-    audio: letterAudio("zh"),
   },
   {
     type: "intro",
@@ -616,23 +569,21 @@ const lesson3: Exercise[] = [
     looksLike: "4",
     looksLikeName: "the number 4",
     hint: "“ch” as in chair.",
-    audio: letterAudio("ch"),
   },
   {
     type: "match",
     prompt: "Tap the matching pairs",
     pairs: [
-      { left: "Ш", right: "sh", audio: letterAudio("sh") },
-      { left: "Щ", right: "sht", audio: letterAudio("sht") },
-      { left: "Ж", right: "zh", audio: letterAudio("zh") },
-      { left: "Ч", right: "ch", audio: letterAudio("ch") },
+      { left: "Ш", right: "sh" },
+      { left: "Щ", right: "sht" },
+      { left: "Ж", right: "zh" },
+      { left: "Ч", right: "ch" },
     ],
   },
   {
     type: "choice",
     prompt: "How do you read this word?",
     display: "ЖАБА",
-    displayAudio: wordAudio("zhaba"),
     options: [{ label: "shaba" }, { label: "zhaba" }, { label: "chaba" }],
     answer: "zhaba",
     explain: "ЖАБА means frog 🐸",
@@ -641,7 +592,6 @@ const lesson3: Exercise[] = [
     type: "choice",
     prompt: "How do you read this word?",
     display: "ЧАША",
-    displayAudio: wordAudio("chasha"),
     options: [{ label: "chasha" }, { label: "shasha" }, { label: "chashta" }],
     answer: "chasha",
     explain: "ЧАША means cup ☕",
@@ -652,7 +602,6 @@ const lesson3: Exercise[] = [
     target: "shapka (hat)",
     answer: ["Ш", "А", "П", "К", "А"],
     tiles: ["К", "Ш", "А", "П", "Щ", "А", "Ч"],
-    audio: wordAudio("shapka"),
   },
   {
     type: "intro",
@@ -660,7 +609,6 @@ const lesson3: Exercise[] = [
     lower: "ц",
     sound: "ts",
     hint: "“ts” as in cats. Notice the little tail at the bottom.",
-    audio: letterAudio("ts"),
   },
   {
     type: "intro",
@@ -668,17 +616,16 @@ const lesson3: Exercise[] = [
     lower: "ф",
     sound: "f",
     hint: "“f” as in fish. A circle with a line through it.",
-    audio: letterAudio("f"),
   },
   {
     type: "choice",
     prompt: "Select the letter that sounds like “ts”",
     optionStyle: "letters",
     options: [
-      { label: "Ч", audio: letterAudio("ch") },
-      { label: "Ц", audio: letterAudio("ts") },
-      { label: "Щ", audio: letterAudio("sht") },
-      { label: "Ш", audio: letterAudio("sh") },
+      { label: "Ч" },
+      { label: "Ц" },
+      { label: "Щ" },
+      { label: "Ш" },
     ],
     answer: "Ц",
   },
@@ -687,10 +634,10 @@ const lesson3: Exercise[] = [
     prompt: "Select the letter that sounds like “ch”",
     optionStyle: "letters",
     options: [
-      { label: "Ц", audio: letterAudio("ts") },
-      { label: "Ж", audio: letterAudio("zh") },
-      { label: "Ч", audio: letterAudio("ch") },
-      { label: "Щ", audio: letterAudio("sht") },
+      { label: "Ц" },
+      { label: "Ж" },
+      { label: "Ч" },
+      { label: "Щ" },
     ],
     answer: "Ч",
     explain: "Ч looks like a 4 and says “ch”.",
@@ -699,7 +646,6 @@ const lesson3: Exercise[] = [
     type: "choice",
     prompt: "How do you read this word?",
     display: "ПИЦА",
-    displayAudio: wordAudio("pitsa"),
     options: [{ label: "pisa" }, { label: "pitsa" }, { label: "picha" }],
     answer: "pitsa",
     explain: "ПИЦА means pizza 🍕",
@@ -708,7 +654,6 @@ const lesson3: Exercise[] = [
     type: "choice",
     prompt: "How do you read this word?",
     display: "ЖИРАФ",
-    displayAudio: wordAudio("zhiraf"),
     options: [{ label: "zhiraf" }, { label: "shiraf" }, { label: "zhirat" }],
     answer: "zhiraf",
     explain: "ЖИРАФ means giraffe 🦒",
@@ -717,7 +662,6 @@ const lesson3: Exercise[] = [
     type: "choice",
     prompt: "How do you read this word?",
     display: "ЩАСТИЕ",
-    displayAudio: wordAudio("shtastie"),
     options: [{ label: "shastie" }, { label: "chastie" }, { label: "shtastie" }],
     answer: "shtastie",
     explain: "ЩАСТИЕ means happiness 😊",
@@ -726,10 +670,10 @@ const lesson3: Exercise[] = [
     type: "match",
     prompt: "Match each word with how it's read",
     pairs: [
-      { left: "ЦИРК", right: "tsirk", audio: wordAudio("tsirk") },
-      { left: "ФОТО", right: "foto", audio: wordAudio("foto") },
-      { left: "КАФЕ", right: "kafe", audio: wordAudio("kafe") },
-      { left: "УЛИЦА", right: "ulitsa", audio: wordAudio("ulitsa") },
+      { left: "ЦИРК", right: "tsirk" },
+      { left: "ФОТО", right: "foto" },
+      { left: "КАФЕ", right: "kafe" },
+      { left: "УЛИЦА", right: "ulitsa" },
     ],
   },
   {
@@ -739,7 +683,6 @@ const lesson3: Exercise[] = [
     answer: ["Ш", "О", "К", "О", "Л", "А", "Д"],
     tiles: ["Л", "О", "Ш", "Д", "К", "А", "О", "Щ", "Ч"],
     explain: "ШОКОЛАД means chocolate 🍫",
-    audio: wordAudio("shokolad"),
   },
 ];
 
@@ -753,7 +696,6 @@ const lesson4: Exercise[] = [
     looksLike: "R",
     looksLikeName: "a backwards R",
     hint: "“ya” as in yard.",
-    audio: letterAudio("ya"),
   },
   {
     type: "intro",
@@ -763,13 +705,11 @@ const lesson4: Exercise[] = [
     looksLike: "IO",
     looksLikeName: "I and O stuck together",
     hint: "“yu” as in you.",
-    audio: letterAudio("yu"),
   },
   {
     type: "choice",
     prompt: "What sound does this letter make?",
     display: "Я",
-    displayAudio: letterAudio("ya"),
     options: [{ label: "r" }, { label: "ya" }, { label: "yu" }],
     answer: "ya",
     explain: "Я is “ya”, not R.",
@@ -778,7 +718,6 @@ const lesson4: Exercise[] = [
     type: "choice",
     prompt: "What sound does this letter make?",
     display: "Ю",
-    displayAudio: letterAudio("yu"),
     options: [{ label: "io" }, { label: "ya" }, { label: "yu" }],
     answer: "yu",
   },
@@ -786,7 +725,6 @@ const lesson4: Exercise[] = [
     type: "choice",
     prompt: "How do you read this word?",
     display: "ЮЛИ",
-    displayAudio: wordAudio("yuli"),
     options: [{ label: "yuli" }, { label: "ioli" }, { label: "yali" }],
     answer: "yuli",
     explain: "ЮЛИ means July ☀️",
@@ -797,13 +735,11 @@ const lesson4: Exercise[] = [
     lower: "й",
     sound: "y",
     hint: "A short “y”, like at the end of boy. It's И with a little hat.",
-    audio: letterAudio("y"),
   },
   {
     type: "choice",
     prompt: "How do you read this word?",
     display: "ЧАЙ",
-    displayAudio: wordAudio("chay"),
     options: [{ label: "shay" }, { label: "chay" }, { label: "chan" }],
     answer: "chay",
     explain: "ЧАЙ means tea 🍵",
@@ -812,7 +748,6 @@ const lesson4: Exercise[] = [
     type: "choice",
     prompt: "How do you read this word?",
     display: "ЗДРАВЕЙ",
-    displayAudio: wordAudio("zdravey"),
     options: [{ label: "sdravey" }, { label: "zdrabey" }, { label: "zdravey" }],
     answer: "zdravey",
     explain: "ЗДРАВЕЙ means hello! 👋",
@@ -823,13 +758,11 @@ const lesson4: Exercise[] = [
     lower: "ъ",
     sound: "ă",
     hint: "A short “uh”, like the a in about. We write it ă.",
-    audio: letterAudio("a-short"),
   },
   {
     type: "choice",
     prompt: "What sound does this letter make?",
     display: "Ъ",
-    displayAudio: letterAudio("a-short"),
     options: [{ label: "b" }, { label: "ă" }, { label: "y" }],
     answer: "ă",
   },
@@ -837,7 +770,6 @@ const lesson4: Exercise[] = [
     type: "choice",
     prompt: "How do you read this word?",
     display: "КЪЩА",
-    displayAudio: wordAudio("kashta"),
     options: [{ label: "kăsta" }, { label: "kăchta" }, { label: "kăshta" }],
     answer: "kăshta",
     explain: "КЪЩА means house 🏡",
@@ -849,7 +781,6 @@ const lesson4: Exercise[] = [
     answer: ["П", "Ъ", "Т"],
     tiles: ["Т", "Ъ", "Б", "П", "Д", "Р"],
     explain: "ПЪТ means road 🛣️",
-    audio: wordAudio("pat"),
   },
   {
     type: "intro",
@@ -857,13 +788,11 @@ const lesson4: Exercise[] = [
     lower: "ь",
     sound: "ьо = yo",
     hint: "It only ever comes before О, and together they say “yo”.",
-    audio: letterAudio("yo"),
   },
   {
     type: "choice",
     prompt: "How do you read this word?",
     display: "ШОФЬОР",
-    displayAudio: wordAudio("shofyor"),
     options: [{ label: "shofbor" }, { label: "shofyor" }, { label: "shotyor" }],
     answer: "shofyor",
     explain: "ШОФЬОР means driver 🚕",
@@ -873,10 +802,10 @@ const lesson4: Exercise[] = [
     prompt: "Select the letter that sounds like “ă”",
     optionStyle: "letters",
     options: [
-      { label: "Ь", audio: letterAudio("yo") },
-      { label: "Б", audio: letterAudio("b") },
-      { label: "Ъ", audio: letterAudio("a-short") },
-      { label: "Й", audio: letterAudio("y") },
+      { label: "Ь" },
+      { label: "Б" },
+      { label: "Ъ" },
+      { label: "Й" },
     ],
     answer: "Ъ",
     explain: "Ъ has a little flag on top. Ь doesn't.",
@@ -886,10 +815,10 @@ const lesson4: Exercise[] = [
     prompt: "Select the letter that sounds like “ya”",
     optionStyle: "letters",
     options: [
-      { label: "Р", audio: letterAudio("r") },
-      { label: "Ю", audio: letterAudio("yu") },
-      { label: "Я", audio: letterAudio("ya") },
-      { label: "Й", audio: letterAudio("y") },
+      { label: "Р" },
+      { label: "Ю" },
+      { label: "Я" },
+      { label: "Й" },
     ],
     answer: "Я",
   },
@@ -897,7 +826,6 @@ const lesson4: Exercise[] = [
     type: "choice",
     prompt: "How do you read this word?",
     display: "ЯБЪЛКА",
-    displayAudio: wordAudio("yabalka"),
     options: [{ label: "yubălka" }, { label: "yabălka" }, { label: "rabălka" }],
     answer: "yabălka",
     explain: "ЯБЪЛКА means apple 🍎",
@@ -906,17 +834,16 @@ const lesson4: Exercise[] = [
     type: "match",
     prompt: "Match each word with how it's read",
     pairs: [
-      { left: "ЛЮБОВ", right: "lyubov", audio: wordAudio("lyubov") },
-      { left: "ЯЙЦЕ", right: "yaytse", audio: wordAudio("yaytse") },
-      { left: "АКТЬОР", right: "aktyor", audio: wordAudio("aktyor") },
-      { left: "МУЗЕЙ", right: "muzey", audio: wordAudio("muzey") },
+      { left: "ЛЮБОВ", right: "lyubov" },
+      { left: "ЯЙЦЕ", right: "yaytse" },
+      { left: "АКТЬОР", right: "aktyor" },
+      { left: "МУЗЕЙ", right: "muzey" },
     ],
   },
   {
     type: "choice",
     prompt: "How do you read this city?",
     display: "СОФИЯ",
-    displayAudio: wordAudio("sofiya"),
     options: [{ label: "sotiya" }, { label: "sofiyu" }, { label: "sofiya" }],
     answer: "sofiya",
     explain: "СОФИЯ is Sofia, the capital of Bulgaria 🏙️",
@@ -928,7 +855,6 @@ const lesson4: Exercise[] = [
     answer: ["Б", "Ъ", "Л", "Г", "А", "Р", "И", "Я"],
     tiles: ["Я", "Л", "Ъ", "Б", "И", "Ь", "Г", "Р", "А", "Ю"],
     explain: "БЪЛГАРИЯ: you can write Bulgaria! 🇧🇬",
-    audio: wordAudio("balgariya"),
   },
 ];
 

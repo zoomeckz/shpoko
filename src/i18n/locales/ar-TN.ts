@@ -28,6 +28,7 @@ export const arTN: Record<MessageKey, string> = {
   "nav.closeMenu": "سكّر القائمة",
   "sound.mute": "سكّت مؤثرات الصوت",
   "sound.unmute": "شغّل مؤثرات الصوت",
+  "sound.play": "اسمع",
   "theme.toggle": "بدّل بين الفاتح والداكن",
 
   "landing.home": "الصفحة الرئيسية متاع Shpoko",
