@@ -22,7 +22,6 @@ interface SidebarProps {
 // Main navigation items (top section)
 const mainNavItems = [
   { icon: Home, label: "Learn", path: "/", onboardingId: "lessons" },
-  { icon: Cherry, label: "Fruit Slicer", path: "/game/fruit-slicer" },
   { icon: User, label: "Profile", path: "/profile", onboardingId: "profile" },
   { icon: Trophy, label: "Leaderboards", path: "/leaderboard" },
   { icon: Target, label: "Quests", path: "/quests" },
@@ -39,6 +38,7 @@ const quizItems = [
 
 // Game items (collapsible section)
 const gameItems = [
+  { icon: Cherry, label: "Fruit Slicer", path: "/game/fruit-slicer" },
   { icon: Swords, label: "Dialogue Battle", path: "/game/dialogue-battle" },
   { icon: Dices, label: "Rapid Fire", path: "/game/rapid-fire" },
   { icon: Type, label: "Endless Words", path: "/game/endless-words" },
@@ -161,7 +161,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
     <Collapsible open={isOpen || isActive} onOpenChange={setIsOpen}>
       <CollapsibleTrigger className="w-full" data-onboarding={onboardingId}>
         <div className={cn(
-          "flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 font-bold text-base",
+          "flex items-center justify-between px-4 py-2.5 rounded-xl transition-colors duration-150 font-extrabold text-[15px] uppercase tracking-wide",
           isActive
             ? "bg-primary/10 text-primary border-2 border-primary/50"
             : "text-muted-foreground hover:bg-accent border-2 border-transparent"
@@ -202,7 +202,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
                   <Link
                     to={item.path}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 font-medium text-sm",
+                      "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-150 font-bold text-[15px]",
                       itemIsActive
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-accent"

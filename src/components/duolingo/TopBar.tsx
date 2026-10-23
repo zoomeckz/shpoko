@@ -18,7 +18,6 @@ interface TopBarProps {
 
 const navItems = [
   { icon: Home, label: "Learn", path: "/" },
-  { icon: Cherry, label: "Fruit Slicer", path: "/game/fruit-slicer" },
   { icon: User, label: "Profile", path: "/profile" },
   { icon: Trophy, label: "Leaderboards", path: "/leaderboard" },
   { icon: Target, label: "Quests", path: "/quests" },
@@ -26,6 +25,7 @@ const navItems = [
 ];
 
 const gameItems = [
+  { icon: Cherry, label: "Fruit Slicer", path: "/game/fruit-slicer" },
   { icon: Swords, label: "Dialogue Battle", path: "/game/dialogue-battle" },
   { icon: Dices, label: "Rapid Fire", path: "/game/rapid-fire" },
   { icon: Type, label: "Endless Words", path: "/game/endless-words" },
@@ -108,8 +108,9 @@ export const TopBar = ({ className }: TopBarProps) => {
           )}
 
           {/* Menu button */}
-          <button 
+          <button
             onClick={() => setMobileMenuOpen(true)}
+            aria-label="Open menu"
             className="p-2 hover:bg-accent rounded-lg transition-colors"
           >
             <Menu className="w-6 h-6" />
@@ -158,8 +159,9 @@ export const TopBar = ({ className }: TopBarProps) => {
                 <div className="flex items-center gap-3">
                   <Wordmark />
                 </div>
-                <button 
+                <button
                   onClick={() => setMobileMenuOpen(false)}
+                  aria-label="Close menu"
                   className="p-2 hover:bg-accent rounded-lg"
                 >
                   <X className="w-6 h-6" />
