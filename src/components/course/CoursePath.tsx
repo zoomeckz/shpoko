@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronDown, Lock, LockOpen, Star, Trophy } from "lucide-react";
+import { Check, ChevronDown, Lock, LockOpen, Sparkles, Star, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CourseLesson, CourseUnit } from "@/data/course";
 import { useUserProgress } from "@/hooks/useUserProgress";
@@ -51,6 +51,17 @@ const THEMES: Record<CourseUnit["color"], { solid: string; shadow: string; ring:
 };
 // Unit tests (and bonus units) are gold.
 const GOLD = THEMES.gold;
+// Extras beside the path are purple.
+const EXTRA = {
+  solid: "bg-[#a560e8] text-white",
+  shadow: "#7b3fc4",
+  ring: "ring-[#a560e8]/25",
+  text: "text-[#a560e8]",
+  buttonText: "text-[#7b3fc4]",
+};
+// The extras column wiggles a little too, but less than the path.
+const EXTRA_OFFSETS = [0, -12, -20, -12, 0, 8];
+const GUIDE_KEY = "shpoko-extras-guide-seen";
 
 export const CoursePath = () => {
   const navigate = useNavigate();
@@ -118,6 +129,43 @@ export const CoursePath = () => {
       else next.add(id);
       return next;
     });
+
+  // Extras open with XP once their unit has been reached.
+  const extraStatusOf = (extra: CourseLesson, unitLocked: boolean): NodeStatus => {
+    if (isLessonCompleted(extra.id)) return "completed";
+    if (!unitLocked && xp >= (extra.unlockXp ?? 0)) return "open";
+    if (accountUnlockAll) return "open";
+    return unlockAll ? "preview" : "locked";
+  };
+
+  // How far the path slides left to make room for the extras column.
+  const [shift, setShift] = useState(() => (window.innerWidth < 640 ? 52 : 84));
+  useEffect(() => {
+    const onResize = () => setShift(window.innerWidth < 640 ? 52 : 84);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // A one-time guide pointing at the first extra (per device).
+  const [guideOpen, setGuideOpen] = useState(() => {
+    try {
+      return !localStorage.getItem(GUIDE_KEY);
+    } catch {
+      return false;
+    }
+  });
+  const closeGuide = () => {
+    setGuideOpen(false);
+    try {
+      localStorage.setItem(GUIDE_KEY, "1");
+    } catch {
+      // It'll just show again next time.
+    }
+  };
+  // The guide sits on the first unit whose path is showing (Unit 1 for new learners).
+  const guideUnit = mainList.find(
+    (u) => u.extras && !(u.lessons.every((l) => isLessonCompleted(l.id)) && !expanded.has(u.id))
+  );
 
   return (
     <div className="py-6 flex flex-col gap-6" ref={pathRef}>
@@ -200,8 +248,10 @@ export const CoursePath = () => {
                 alt=""
                 aria-hidden="true"
                 className={cn(
-                  "pointer-events-none absolute top-24 w-28 sm:w-36 object-contain opacity-95",
+                  "pointer-events-none absolute top-24 w-28 sm:w-36 object-contain transition-opacity duration-700",
                   unitIndex % 2 === 0 ? "right-0 sm:right-4" : "left-0 sm:left-4",
+                  // The mascot fades into the background when the extras column is beside it.
+                  unit.extras ? "opacity-20" : "opacity-95",
                   unitLocked && "grayscale opacity-40"
                 )}
               />
@@ -212,13 +262,24 @@ export const CoursePath = () => {
                 const isTest = lesson.kind === "test";
                 const playable = status === "current" || status === "completed" || status === "preview" || status === "open";
                 const nodeTheme = isTest ? GOLD : theme;
+                const extraLesson = unit.extras?.[i];
+                const extraStatus = extraLesson ? extraStatusOf(extraLesson, unitLocked) : null;
+                const extraOpen = !!extraLesson && openId === extraLesson.id;
+                const showGuide = guideOpen && i === 0 && !!extraLesson && unit === guideUnit;
                 return (
                   <div
                     key={lesson.id}
                     data-lesson={lesson.id}
                     // Extra room above the current lesson for its START bubble.
-                    className={cn("relative flex flex-col items-center", status === "current" && i > 0 && "mt-10")}
-                    style={{ transform: `translateX(${OFFSETS[i % OFFSETS.length]}px)`, zIndex: open ? 40 : 1 }}
+                    className={cn("relative w-full flex justify-center", status === "current" && i > 0 && "mt-10")}
+                    style={{ zIndex: open || extraOpen ? 40 : showGuide ? 35 : 1 }}
+                  >
+                  {/* With extras beside it, the path slides over to the left to make room. */}
+                  <motion.div
+                    className="relative flex flex-col items-center"
+                    initial={{ x: OFFSETS[i % OFFSETS.length] }}
+                    animate={{ x: OFFSETS[i % OFFSETS.length] - (unit.extras ? shift : 0) }}
+                    transition={{ type: "spring", stiffness: 140, damping: 20, delay: 0.1 + i * 0.04 }}
                   >
                     {status === "current" && !open && (
                       <motion.span
@@ -257,6 +318,20 @@ export const CoursePath = () => {
                         </>
                       )}
                     </button>
+                  </motion.div>
+
+                    {extraLesson && extraStatus && (
+                      <ExtraNode
+                        index={i}
+                        lesson={extraLesson}
+                        status={extraStatus}
+                        highlight={showGuide}
+                        onClick={() => {
+                          if (showGuide) closeGuide();
+                          setOpenId(extraOpen ? null : extraLesson.id);
+                        }}
+                      />
+                    )}
 
                     <AnimatePresence>
                       {open && (
@@ -267,8 +342,28 @@ export const CoursePath = () => {
                           status={status}
                           theme={nodeTheme}
                           needXp={needXp}
+                          xp={xp}
                           onStart={() => navigate(`/course/${lesson.id}${status === "preview" ? "?preview=1" : ""}`)}
                         />
+                      )}
+                      {extraOpen && extraLesson && extraStatus && (
+                        <LessonCard
+                          key={extraLesson.id}
+                          lesson={extraLesson}
+                          number={i + 1}
+                          total={unit.extras!.length}
+                          status={extraStatus}
+                          theme={EXTRA}
+                          needXp={extraStatus === "locked" && !unitLocked ? extraLesson.unlockXp ?? null : null}
+                          xp={xp}
+                          onStart={() => navigate(`/course/${extraLesson.id}${extraStatus === "preview" ? "?preview=1" : ""}`)}
+                        />
+                      )}
+                    </AnimatePresence>
+
+                    <AnimatePresence>
+                      {showGuide && extraLesson && (
+                        <ExtrasGuide firstUnlockXp={extraLesson.unlockXp ?? 0} xp={xp} onClose={closeGuide} />
                       )}
                     </AnimatePresence>
                   </div>
@@ -285,6 +380,102 @@ export const CoursePath = () => {
   );
 };
 
+/** A small purple node beside the path for one extra. */
+function ExtraNode({
+  index,
+  lesson,
+  status,
+  highlight,
+  onClick,
+}: {
+  index: number;
+  lesson: CourseLesson;
+  status: NodeStatus;
+  /** Pulses while the guide points at it. */
+  highlight: boolean;
+  onClick: () => void;
+}) {
+  const playable = status !== "locked";
+  return (
+    <motion.div
+      className="absolute top-1/2 z-10 flex flex-col items-center"
+      style={{ right: `calc(3% + ${EXTRA_OFFSETS[index % EXTRA_OFFSETS.length]}px)`, y: "-50%" }}
+      initial={{ opacity: 0, x: 24 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ type: "spring", stiffness: 160, damping: 18, delay: 0.35 + index * 0.06 }}
+    >
+      {highlight && (
+        <motion.span
+          className="absolute top-0 w-14 h-[50px] rounded-[50%] ring-4 ring-[#a560e8]"
+          animate={{ scale: [1, 1.35], opacity: [0.8, 0] }}
+          transition={{ duration: 1.4, repeat: Infinity }}
+          aria-hidden="true"
+        />
+      )}
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={`Extra: ${lesson.title}${playable ? "" : ` (unlocks at ${lesson.unlockXp} XP)`}`}
+        className={cn(
+          "relative w-14 h-[50px] rounded-[50%] flex items-center justify-center transition-transform active:translate-y-1 active:shadow-none",
+          playable ? EXTRA.solid : "bg-muted text-muted-foreground/60 border-2 border-border"
+        )}
+        style={{ boxShadow: `0 5px 0 0 ${playable ? EXTRA.shadow : "hsl(var(--border))"}` }}
+      >
+        {status === "completed" ? (
+          <Check className="w-6 h-6" strokeWidth={4} />
+        ) : playable ? (
+          <Sparkles className="w-6 h-6" />
+        ) : (
+          <Lock className="w-5 h-5" />
+        )}
+      </button>
+      {!playable && (
+        <span className="mt-2 rounded-md bg-muted px-1.5 py-0.5 text-[11px] font-extrabold text-muted-foreground whitespace-nowrap">
+          {lesson.unlockXp} XP
+        </span>
+      )}
+    </motion.div>
+  );
+}
+
+/** One-time popup in the first unit explaining the extras column. */
+function ExtrasGuide({ firstUnlockXp, xp, onClose }: { firstUnlockXp: number; xp: number; onClose: () => void }) {
+  const ready = xp >= firstUnlockXp;
+  return (
+    <motion.div
+      role="dialog"
+      aria-label="Extras"
+      initial={{ opacity: 0, y: -8, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -8, scale: 0.96 }}
+      transition={{ type: "spring", stiffness: 260, damping: 22, delay: 0.6 }}
+      className="absolute right-0 top-full mt-6 z-50 w-[260px] rounded-2xl border-2 border-[#a560e8] bg-background p-4 text-left shadow-xl"
+    >
+      <span
+        className="absolute -top-[9px] right-[34px] w-4 h-4 rotate-45 border-l-2 border-t-2 border-[#a560e8] bg-background"
+        aria-hidden="true"
+      />
+      <p className="flex items-center gap-2 text-lg font-extrabold text-foreground">
+        <Sparkles className="w-5 h-5 text-[#a560e8]" /> Extras!
+      </p>
+      <p className="mt-1 font-semibold text-muted-foreground">
+        Beside your path are extra mini-lessons: brands, menus, tongue twisters and more. They unlock with XP.
+      </p>
+      <p className="mt-2 font-bold text-foreground">
+        {ready ? "You've already unlocked the first one. Tap it!" : `Your first one unlocks at ${firstUnlockXp} XP. Finish a lesson to get there!`}
+      </p>
+      <button
+        type="button"
+        onClick={onClose}
+        className="mt-4 w-full h-11 rounded-2xl bg-[#a560e8] font-extrabold uppercase tracking-wide text-white shadow-[0_4px_0_0_#7b3fc4] active:translate-y-1 active:shadow-none transition-transform"
+      >
+        Got it
+      </button>
+    </motion.div>
+  );
+}
+
 function LessonCard({
   lesson,
   number,
@@ -292,6 +483,7 @@ function LessonCard({
   status,
   theme,
   needXp,
+  xp,
   onStart,
 }: {
   lesson: CourseLesson;
@@ -299,12 +491,14 @@ function LessonCard({
   total: number;
   status: NodeStatus;
   theme: typeof GOLD;
-  /** XP still needed to open this bonus unit, or null. */
+  /** XP still needed to open this bonus unit or extra, or null. */
   needXp: number | null;
+  xp: number;
   onStart: () => void;
 }) {
   const playable = status === "current" || status === "completed" || status === "preview" || status === "open";
   const isTest = lesson.kind === "test";
+  const isExtra = lesson.kind === "extra";
   return (
     <motion.div
       initial={{ opacity: 0, y: -6, scale: 0.96 }}
@@ -320,6 +514,8 @@ function LessonCard({
       <p className="mt-0.5 font-bold opacity-90">
         {isTest
           ? `${lesson.description} · Get ${lesson.passAccuracy ?? 80}% to pass`
+          : isExtra
+          ? `Extra ${number} of ${total} · ${lesson.description}`
           : `Lesson ${number} of ${total} · ${lesson.description}`}
       </p>
       {status === "preview" && (
@@ -344,6 +540,8 @@ function LessonCard({
               : `Practice +${Math.ceil(lesson.xp / 2)} XP`
             : isTest
               ? `Start test +${lesson.xp} XP`
+              : isExtra
+              ? `Start extra +${lesson.xp} XP`
               : `Start +${lesson.xp} XP`}
         </button>
       ) : (
@@ -351,8 +549,12 @@ function LessonCard({
           <p className="mt-3 text-sm font-bold">
             {status === "soon"
               ? "This lesson is coming soon!"
+              : needXp && isExtra
+              ? `Unlocks at ${needXp} XP. You have ${xp} XP, so earn ${needXp - xp} more!`
               : needXp
               ? `Earn ${needXp} XP in total to unlock this bonus unit!`
+              : isExtra
+              ? "Reach this unit to unlock its extras!"
               : isTest
                 ? "Finish every lesson in this unit to unlock the test!"
                 : number === 1

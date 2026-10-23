@@ -13,7 +13,7 @@ export const useCourseAccess = () => {
   return useMemo(() => {
     const allowed = access?.units?.length ? new Set(access.units) : null;
     const units = allowed ? course.filter((u) => allowed.has(u.id)) : course;
-    const lessonIds = new Set(units.flatMap((u) => u.lessons.map((l) => l.id)));
+    const lessonIds = new Set(units.flatMap((u) => [...u.lessons, ...(u.extras ?? [])].map((l) => l.id)));
     return {
       units,
       unlockAll: !!access?.unlock_all,

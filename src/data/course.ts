@@ -145,7 +145,9 @@ export interface CourseLesson {
    * "test": a unit test. No teaching cards, wrong answers aren't repeated,
    * and it only counts as complete with at least `passAccuracy` percent.
    */
-  kind?: "lesson" | "test";
+  kind?: "lesson" | "test" | "extra";
+  /** Extras only: total XP needed to open it (set from the unit's position, see below). */
+  unlockXp?: number;
   passAccuracy?: number;
   /** Shown when a unit test is passed. */
   completeMessage?: string;
@@ -164,6 +166,8 @@ export interface CourseUnit {
   color: "blue" | "pink" | "green" | "gold";
   /** An extra unit outside the main path, opened by earning XP. */
   bonus?: { unlockXp: number };
+  /** Short extra lessons beside the path, one per lesson, opened with XP. */
+  extras?: CourseLesson[];
   /** Picture shown beside the unit's path. */
   mascot: string;
   lessons: CourseLesson[];
@@ -176,6 +180,7 @@ import shpokoMascot from "@/assets/shpoko-mascot.webp";
 import { unit2 } from "./units/unit2";
 import { unit3 } from "./units/unit3";
 import { unit4 } from "./units/unit4";
+import { extras } from "./units/extras";
 import { bonusHandwriting } from "./units/handwriting";
 
 const letterAudio = (name: string) => `/audio/letters/${name}.mp3`;
@@ -1121,9 +1126,25 @@ export const course: CourseUnit[] = [
 /** The main path, in order. Bonus units sit outside it. */
 export const mainUnits = course.filter((u) => !u.bonus);
 
+// Each extra opens at the XP a learner has after finishing the lesson beside it
+// (counting every earlier unit too). Replaying lessons for XP opens them sooner.
+{
+  let before = 0;
+  for (const unit of mainUnits) {
+    unit.extras = extras[unit.id];
+    let sum = before;
+    unit.lessons.forEach((lesson, i) => {
+      sum += lesson.xp;
+      const extra = unit.extras?.[i];
+      if (extra) extra.unlockXp = sum;
+    });
+    before = sum;
+  }
+}
+
 export const findLesson = (lessonId: string) => {
   for (const unit of course) {
-    const lesson = unit.lessons.find((l) => l.id === lessonId);
+    const lesson = [...unit.lessons, ...(unit.extras ?? [])].find((l) => l.id === lessonId);
     if (lesson) return { unit, lesson };
   }
   return null;
