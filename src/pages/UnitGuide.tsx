@@ -6,6 +6,7 @@ import { unitGuide, type VocabItem } from "@/lib/vocabulary";
 import { useCourseAccess } from "@/hooks/useCourseAccess";
 import { Sidebar } from "@/components/duolingo/Sidebar";
 import { TopBar } from "@/components/duolingo/TopBar";
+import { useT } from "@/i18n";
 
 const BANNER = {
   blue: "bg-primary text-primary-foreground",
@@ -28,7 +29,7 @@ function Section({ icon: Icon, title, children }: { icon: typeof Lightbulb; titl
 
 function VocabList({ items }: { items: VocabItem[] }) {
   return (
-    <ul className="duo-card divide-y-2 divide-border overflow-hidden">
+    <ul dir="ltr" className="duo-card divide-y-2 divide-border overflow-hidden">
       {items.map((item) => (
         <li key={item.bg} className="px-4 py-3">
           <p className="text-xl font-black text-foreground break-words">{item.bg}</p>
@@ -47,6 +48,7 @@ export default function UnitGuide() {
   const { unitId } = useParams();
   const navigate = useNavigate();
   const { units } = useCourseAccess();
+  const t = useT();
   const unit = course.find((u) => u.id === unitId);
   if (!unit || !units.includes(unit)) return <Navigate to="/" replace />;
   const guide = unitGuide(unit);
@@ -65,34 +67,34 @@ export default function UnitGuide() {
                 className="inline-flex items-center gap-2 rounded-xl px-2 py-1 text-sm font-extrabold uppercase tracking-wide text-primary hover:bg-primary/10"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Back to the path
+                {t("common.backToPath")}
               </button>
               <div className={cn("mt-4 rounded-2xl px-5 py-5", BANNER[unit.color])}>
                 <p className="text-sm font-extrabold uppercase tracking-widest opacity-80">
-                  {unit.bonus ? "Bonus unit" : `Unit ${unit.unit}`} · Guidebook
+                  {t("guidebook.label", { unit: unit.bonus ? t("path.bonusUnit") : t("side.unit", { n: unit.unit }) })}
                 </p>
                 <h1 className="text-2xl sm:text-3xl font-extrabold">{unit.title}</h1>
-                <p className="mt-1 font-bold opacity-90">The key phrases, words and tips from this unit, all in one place.</p>
+                <p className="mt-1 font-bold opacity-90">{t("guidebook.intro")}</p>
               </div>
             </div>
 
             {guide.phrases.length > 0 && (
-              <Section icon={MessageCircle} title="Key phrases">
+              <Section icon={MessageCircle} title={t("guidebook.phrases")}>
                 <VocabList items={guide.phrases} />
               </Section>
             )}
 
             {guide.words.length > 0 && (
-              <Section icon={Type} title="Words">
+              <Section icon={Type} title={t("guidebook.words")}>
                 <VocabList items={guide.words} />
               </Section>
             )}
 
             {guide.tips.length > 0 && (
-              <Section icon={Lightbulb} title="Tips">
+              <Section icon={Lightbulb} title={t("guidebook.tips")}>
                 <div className="space-y-3">
                   {guide.tips.map((tip) => (
-                    <div key={tip.title} className="duo-card px-5 py-4">
+                    <div key={tip.title} dir="ltr" className="duo-card px-5 py-4">
                       <p className="text-lg font-extrabold text-foreground">{tip.title}</p>
                       <p className="mt-1 font-semibold text-muted-foreground">{tip.text}</p>
                       {tip.items && (
@@ -112,7 +114,7 @@ export default function UnitGuide() {
             )}
 
             {guide.extraWords.length > 0 && (
-              <Section icon={Sparkles} title="From the extras">
+              <Section icon={Sparkles} title={t("guidebook.extras")}>
                 <VocabList items={guide.extraWords} />
               </Section>
             )}

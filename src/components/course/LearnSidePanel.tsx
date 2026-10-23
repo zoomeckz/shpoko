@@ -5,12 +5,14 @@ import { DuoButton } from "@/components/duolingo/DuoButton";
 import { useCourseAccess } from "@/hooks/useCourseAccess";
 import { useDailyXp } from "@/hooks/useDailyXp";
 import { DailyGoalCard } from "@/components/profile/DailyGoalCard";
+import { useT } from "@/i18n";
 
 const BAR = { blue: "bg-primary", pink: "bg-accent-strong", green: "bg-success", gold: "bg-warning" } as const;
 
 // Right-hand column on the Learn page (wide screens only).
 export const LearnSidePanel = () => {
   const { user } = useAuth();
+  const t = useT();
   const { isLessonCompleted } = useUserProgress();
   const { units } = useCourseAccess();
   const { today, goal } = useDailyXp(1);
@@ -25,13 +27,13 @@ export const LearnSidePanel = () => {
       <div className="sticky top-6 space-y-6">
         {!user && (
           <div className="duo-card p-5">
-            <p className="text-xl font-extrabold text-foreground">Create a profile to save your progress!</p>
+            <p className="text-xl font-extrabold text-foreground">{t("side.saveProgress")}</p>
             <div className="mt-5 flex flex-col gap-3">
               <DuoButton asChild size="lg" fullWidth>
-                <Link to="/auth?mode=signup">Create a profile</Link>
+                <Link to="/auth?mode=signup">{t("common.createProfile")}</Link>
               </DuoButton>
               <DuoButton asChild variant="white" size="lg" fullWidth>
-                <Link to="/auth">Log in</Link>
+                <Link to="/auth">{t("common.logIn")}</Link>
               </DuoButton>
             </div>
           </div>
@@ -40,7 +42,7 @@ export const LearnSidePanel = () => {
         {user && <DailyGoalCard today={today} goal={goal} showLink />}
 
         <div className="duo-card p-5">
-          <p className="text-sm font-extrabold uppercase tracking-widest text-muted-foreground">Unit {unit.unit}</p>
+          <p className="text-sm font-extrabold uppercase tracking-widest text-muted-foreground">{t("side.unit", { n: unit.unit })}</p>
           <p className="mt-1 text-lg font-extrabold text-foreground">{unit.title}</p>
           <div className="mt-4 h-4 rounded-full bg-muted overflow-hidden">
             <div
@@ -49,7 +51,7 @@ export const LearnSidePanel = () => {
             />
           </div>
           <p className="mt-2 text-sm font-bold text-muted-foreground">
-            {completed} of {unit.lessons.length} lessons complete
+            {t("side.lessonsDone", { done: completed, total: unit.lessons.length })}
           </p>
         </div>
       </div>

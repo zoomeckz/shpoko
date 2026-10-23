@@ -13,20 +13,22 @@ import { cn } from "@/lib/utils";
 import { calculateLevel } from "@/lib/levelUtils";
 import { Loader2, CheckCircle2, AlertCircle, X } from "lucide-react";
 import shpokoMascot from "@/assets/shpoko-mascot.webp";
+import { useT, type TKey } from "@/i18n";
+import { LanguageSelect } from "@/components/LanguageSelect";
 
 const signUpSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string().min(1, "Please confirm your password"),
+  email: z.string().email("auth.errEmail"),
+  password: z.string().min(6, "auth.errPasswordShort"),
+  confirmPassword: z.string().min(1, "auth.errConfirm"),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
+  message: "auth.errMismatch",
   path: ["confirmPassword"],
 });
 
 const signInSchema = z.object({
   // Email, or the username of an account made in the admin panel.
-  email: z.string().trim().min(3, "Enter your email or username"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().trim().min(3, "auth.errLoginId"),
+  password: z.string().min(1, "auth.errPassword"),
 });
 
 type Mode = "login" | "register";
@@ -54,6 +56,7 @@ const Auth = () => {
   const { isGuest, getProgressForTransfer, clearGuest, initGuest } = useGuest();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const t = useT();
 
   useEffect(() => {
     if (user) navigate("/");
@@ -144,14 +147,14 @@ const Auth = () => {
         const { error } = await signIn(email, password);
         if (error) {
           toast({
-            title: "Login Failed",
+            title: t("auth.loginFailed"),
             description: /banned/i.test(error.message)
-            ? "This account has been disabled or has expired."
-            : "Wrong email, username or password. Please try again.",
+            ? t("auth.disabled")
+            : t("auth.wrongDetails"),
             variant: "destructive",
           });
         } else {
-          toast({ title: "Welcome back!", description: "You're logged in." });
+          toast({ title: t("auth.welcomeBack"), description: t("auth.loggedIn") });
           navigate("/");
         }
       } else {
@@ -162,13 +165,13 @@ const Auth = () => {
         if (error) {
           if (error.message.includes("already")) {
             toast({
-              title: "Email Already Registered",
-              description: "Try logging in instead.",
+              title: t("auth.emailTaken"),
+              description: t("auth.tryLogin"),
               variant: "destructive",
             });
           } else {
             toast({
-              title: "Sign Up Failed",
+              title: t("auth.signupFailed"),
               description: error.message,
               variant: "destructive",
             });
@@ -176,8 +179,8 @@ const Auth = () => {
         } else {
           await transferGuestProgress();
           toast({
-            title: "Welcome to Shpoko!",
-            description: "Let's set up your username next.",
+            title: t("auth.welcome"),
+            description: t("auth.pickUsernameNext"),
           });
           navigate("/");
         }
@@ -197,10 +200,10 @@ const Auth = () => {
       if (result.error) {
         const message =
           (result.error as { message?: string })?.message ||
-          "Please try again or use email instead.";
+          t("auth.googleTryAgain");
         setGoogleStatus({ kind: "error", message });
         toast({
-          title: "Google Sign-In Failed",
+          title: t("auth.googleFailed"),
           description: message,
           variant: "destructive",
         });
@@ -216,17 +219,17 @@ const Auth = () => {
       // Authenticated inline (no redirect path)
       setGoogleStatus({ kind: "success" });
       toast({
-        title: "Signed in with Google",
-        description: "Welcome! Loading your account...",
+        title: t("auth.googleSignedIn"),
+        description: t("auth.googleLoading"),
       });
       await transferGuestProgress();
       navigate("/");
     } catch (e) {
       const message =
-        e instanceof Error ? e.message : "Something went wrong. Please try again.";
+        e instanceof Error ? e.message : t("auth.somethingWrong");
       setGoogleStatus({ kind: "error", message });
       toast({
-        title: "Google Sign-In Failed",
+        title: t("auth.googleFailed"),
         description: message,
         variant: "destructive",
       });
@@ -255,18 +258,21 @@ const Auth = () => {
       <header className="px-4 sm:px-6 h-[70px] flex items-center justify-between">
         <Link
           to="/"
-          aria-label="Close"
+          aria-label={t("common.close")}
           className="w-10 h-10 -ml-2 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
         >
           <X className="w-6 h-6" strokeWidth={3} />
         </Link>
+        <div className="flex items-center gap-3">
+        <LanguageSelect />
         <DuoButton
           variant="white"
           size="sm"
           onClick={() => switchMode(isLogin ? "register" : "login")}
         >
-          {isLogin ? "Sign up" : "Log in"}
+          {isLogin ? t("common.signUp") : t("common.logIn")}
         </DuoButton>
+        </div>
       </header>
 
       <main className="flex-1 flex items-start sm:items-center justify-center px-4 pb-12">
@@ -283,19 +289,19 @@ const Auth = () => {
             className="w-20 h-20 mx-auto object-contain"
           />
           <h1 className="mt-3 text-[26px] font-extrabold text-foreground text-center">
-            {isLogin ? "Log in" : "Create your profile"}
+            {isLogin ? t("auth.loginTitle") : t("auth.signupTitle")}
           </h1>
           <p className="mt-1 text-center text-muted-foreground font-semibold">
-            {isLogin ? "Welcome back! Your streak missed you." : "Free forever. Save your progress anywhere."}
+            {isLogin ? t("auth.loginSub") : t("auth.signupSub")}
           </p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-3" noValidate>
             <div>
-              <Label htmlFor="auth-email" className="sr-only">{isLogin ? "Email or username" : "Email"}</Label>
+              <Label htmlFor="auth-email" className="sr-only">{isLogin ? t("auth.emailOrUsername") : t("auth.email")}</Label>
               <input
                 id="auth-email"
                 type={isLogin ? "text" : "email"}
-                placeholder={isLogin ? "Email or username" : "Email"}
+                placeholder={isLogin ? t("auth.emailOrUsername") : t("auth.email")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={fieldClass(!!errors.email)}
@@ -304,31 +310,31 @@ const Auth = () => {
                 spellCheck={false}
                 aria-invalid={!!errors.email}
               />
-              {errors.email && <p className="mt-1.5 ml-1 text-sm font-semibold text-error">{errors.email}</p>}
+              {errors.email && <p className="mt-1.5 ml-1 text-sm font-semibold text-error">{t(errors.email as TKey)}</p>}
             </div>
 
             <div>
-              <Label htmlFor="auth-password" className="sr-only">Password</Label>
+              <Label htmlFor="auth-password" className="sr-only">{t("auth.password")}</Label>
               <input
                 id="auth-password"
                 type="password"
-                placeholder={isLogin ? "Password" : "Password (at least 6 characters)"}
+                placeholder={isLogin ? t("auth.password") : t("auth.passwordNew")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={fieldClass(!!errors.password)}
                 autoComplete={isLogin ? "current-password" : "new-password"}
                 aria-invalid={!!errors.password}
               />
-              {errors.password && <p className="mt-1.5 ml-1 text-sm font-semibold text-error">{errors.password}</p>}
+              {errors.password && <p className="mt-1.5 ml-1 text-sm font-semibold text-error">{t(errors.password as TKey)}</p>}
             </div>
 
             {!isLogin && (
               <div>
-                <Label htmlFor="auth-confirm" className="sr-only">Confirm password</Label>
+                <Label htmlFor="auth-confirm" className="sr-only">{t("auth.confirm")}</Label>
                 <input
                   id="auth-confirm"
                   type="password"
-                  placeholder="Confirm password"
+                  placeholder={t("auth.confirm")}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className={fieldClass(!!errors.confirmPassword)}
@@ -336,20 +342,20 @@ const Auth = () => {
                   aria-invalid={!!errors.confirmPassword}
                 />
                 {errors.confirmPassword && (
-                  <p className="mt-1.5 ml-1 text-sm font-semibold text-error">{errors.confirmPassword}</p>
+                  <p className="mt-1.5 ml-1 text-sm font-semibold text-error">{t(errors.confirmPassword as TKey)}</p>
                 )}
               </div>
             )}
 
             <DuoButton type="submit" variant="info" size="lg" fullWidth disabled={loading} className="!mt-5">
               {loading && <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />}
-              {isLogin ? (loading ? "Logging in..." : "Log in") : loading ? "Creating..." : "Create account"}
+              {isLogin ? (loading ? t("auth.loggingIn") : t("common.logIn")) : loading ? t("auth.creating") : t("auth.createAccount")}
             </DuoButton>
           </form>
 
           <div className="my-6 flex items-center gap-4" aria-hidden="true">
             <div className="h-0.5 flex-1 bg-border" />
-            <span className="text-sm font-extrabold text-muted-foreground">OR</span>
+            <span className="text-sm font-extrabold text-muted-foreground">{t("auth.or")}</span>
             <div className="h-0.5 flex-1 bg-border" />
           </div>
 
@@ -373,12 +379,12 @@ const Auth = () => {
               </svg>
             )}
             {googleStatus.kind === "redirecting"
-              ? "Redirecting..."
+              ? t("auth.redirecting")
               : googleStatus.kind === "connecting"
-              ? "Connecting..."
+              ? t("auth.connecting")
               : googleStatus.kind === "success"
-              ? "Signed in!"
-              : "Continue with Google"}
+              ? t("auth.signedIn")
+              : t("auth.google")}
           </DuoButton>
 
           {/* Inline Google status message */}
@@ -404,8 +410,8 @@ const Auth = () => {
               )}
               <span>
                 {googleStatus.kind === "error" && googleStatus.message}
-                {googleStatus.kind === "success" && "Signed in with Google. Loading your account..."}
-                {googleStatus.kind === "redirecting" && "Taking you to Google to finish signing in..."}
+                {googleStatus.kind === "success" && t("auth.googleSuccessNote")}
+                {googleStatus.kind === "redirecting" && t("auth.googleRedirectNote")}
               </span>
             </div>
           )}
@@ -415,11 +421,11 @@ const Auth = () => {
             onClick={handleContinueAsGuest}
             className="mt-6 w-full text-center text-sm font-extrabold uppercase tracking-wide text-primary hover:brightness-110"
           >
-            Continue without an account
+            {t("auth.guest")}
           </button>
 
           <p className="mt-8 text-xs font-semibold text-muted-foreground text-center leading-relaxed">
-            By continuing, you agree to Shpoko's Terms and Privacy Policy.
+            {t("auth.terms")}
           </p>
         </motion.div>
       </main>

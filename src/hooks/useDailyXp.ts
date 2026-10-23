@@ -2,14 +2,16 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { daysAgo, localDateKey } from "@/lib/dates";
+import type { TKey } from "@/i18n";
 
 export const DEFAULT_DAILY_GOAL = 20;
 
-export const GOAL_OPTIONS = [
-  { xp: 10, label: "Casual" },
-  { xp: 20, label: "Regular" },
-  { xp: 30, label: "Serious" },
-  { xp: 50, label: "Intense" },
+/** Goal choices; `label` is a translation key. */
+export const GOAL_OPTIONS: { xp: number; label: TKey }[] = [
+  { xp: 10, label: "goal.casual" },
+  { xp: 20, label: "goal.regular" },
+  { xp: 30, label: "goal.serious" },
+  { xp: 50, label: "goal.intense" },
 ];
 
 /**

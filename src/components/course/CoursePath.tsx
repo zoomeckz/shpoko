@@ -11,6 +11,7 @@ import { useMistakes } from "@/hooks/useMistakes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGuest } from "@/contexts/GuestContext";
 import { Switch } from "@/components/ui/switch";
+import { useT } from "@/i18n";
 
 // Horizontal offsets (px) that make the path wind left and right.
 const OFFSETS = [0, 45, 70, 45, 0, -45, -70, -45];
@@ -67,6 +68,7 @@ const GUIDE_KEY = "shpoko-extras-guide-seen";
 export const CoursePath = () => {
   const navigate = useNavigate();
   const { isLessonCompleted } = useUserProgress();
+  const t = useT();
   const { isOwner, unlockAll, setUnlockAll } = useUnlockAll();
   const { units, unlockAll: accountUnlockAll } = useCourseAccess();
   const { user, profile } = useAuth();
@@ -182,12 +184,12 @@ export const CoursePath = () => {
         <label className="flex items-center gap-3 rounded-2xl border-2 border-dashed border-warning/60 bg-warning/10 px-4 py-3 cursor-pointer">
           <LockOpen className="w-5 h-5 shrink-0 text-warning" />
           <span className="flex-1 min-w-0">
-            <span className="block font-extrabold text-foreground">Unlock all lessons</span>
+            <span className="block font-extrabold text-foreground">{t("path.unlockAll")}</span>
             <span className="block text-sm font-semibold text-muted-foreground">
-              Only you can see this. Locked lessons open as previews and don't save progress.
+              {t("path.unlockAllDesc")}
             </span>
           </span>
-          <Switch checked={unlockAll} onCheckedChange={setUnlockAll} aria-label="Unlock all lessons" />
+          <Switch checked={unlockAll} onCheckedChange={setUnlockAll} aria-label={t("path.unlockAll")} />
         </label>
       )}
       {mistakeCount > 0 && (
@@ -200,13 +202,13 @@ export const CoursePath = () => {
             <Dumbbell className="w-6 h-6 text-primary" />
           </span>
           <span className="flex-1 min-w-0">
-            <span className="block font-extrabold text-foreground">Practise your mistakes</span>
+            <span className="block font-extrabold text-foreground">{t("path.practiseTitle")}</span>
             <span className="block text-sm font-semibold text-muted-foreground">
-              {mistakeCount === 1 ? "1 tricky question" : `${mistakeCount} tricky questions`} waiting · +5 XP
+              {t("path.practiseCount", { n: mistakeCount })}
             </span>
           </span>
           <span className="rounded-xl bg-primary px-3 py-2 text-sm font-extrabold uppercase tracking-wide text-primary-foreground shadow-[0_3px_0_0_hsl(var(--primary-dark))]">
-            Go
+            {t("path.go")}
           </span>
         </button>
       )}
@@ -225,7 +227,7 @@ export const CoursePath = () => {
             {unit === bonusList[0] && (
               <div className="mb-6 mt-4 flex items-center gap-3" role="separator">
                 <span className="h-0.5 flex-1 bg-border" />
-                <span className="text-sm font-extrabold uppercase tracking-widest text-warning">Bonus · unlock with XP</span>
+                <span className="text-sm font-extrabold uppercase tracking-widest text-warning">{t("path.bonusDivider")}</span>
                 <span className="h-0.5 flex-1 bg-border" />
               </div>
             )}
@@ -239,11 +241,15 @@ export const CoursePath = () => {
             >
               <div className="min-w-0">
                 <p className="text-sm font-extrabold uppercase tracking-widest opacity-80">
-                  {unit.bonus ? (needXp ? `Bonus · ${xp}/${needXp} XP` : "Bonus unit") : `Section ${unit.section}, Unit ${unit.unit}`}
+                  {unit.bonus
+                    ? needXp
+                      ? t("path.bonusProgress", { xp, need: needXp })
+                      : t("path.bonusUnit")
+                    : t("path.unitLabel", { section: unit.section, unit: unit.unit })}
                   {unitDone && (
                     <>
-                      <Check className="sm:hidden inline w-4 h-4 ml-1.5 -mt-0.5" strokeWidth={4} aria-label="complete" />
-                      <span className="hidden sm:inline"> · Complete</span>
+                      <Check className="sm:hidden inline w-4 h-4 ml-1.5 -mt-0.5" strokeWidth={4} aria-label={t("path.complete")} />
+                      <span className="hidden sm:inline"> · {t("path.complete")}</span>
                     </>
                   )}
                 </p>
@@ -252,22 +258,22 @@ export const CoursePath = () => {
               <button
                 type="button"
                 onClick={() => navigate(`/guide/${unit.id}`)}
-                aria-label={`Guidebook for ${unit.title}`}
+                aria-label={t("path.guideAria", { title: unit.title })}
                 className="absolute left-3 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 rounded-xl bg-white/20 px-3 py-2 text-sm font-extrabold uppercase tracking-wide hover:bg-white/30 transition-colors"
               >
                 <BookOpen className="w-4 h-4" />
-                <span className="hidden sm:inline">Guide</span>
+                <span className="hidden sm:inline">{t("path.guide")}</span>
               </button>
               {canSkip && (
                 <button
                   type="button"
                   onClick={() => setSkipOpen(skipOpen === unit.id ? null : unit.id)}
                   aria-expanded={skipOpen === unit.id}
-                  aria-label={`Skip ${unit.title}`}
+                  aria-label={t("path.skipAria", { title: unit.title })}
                   className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 rounded-xl bg-white/20 px-3 py-2 text-sm font-extrabold uppercase tracking-wide hover:bg-white/30 transition-colors"
                 >
                   <ChevronsRight className="w-4 h-4" />
-                  <span className="hidden sm:inline">Skip</span>
+                  <span className="hidden sm:inline">{t("path.skip")}</span>
                 </button>
               )}
               <AnimatePresence>
@@ -278,10 +284,9 @@ export const CoursePath = () => {
                     exit={{ opacity: 0, y: -6 }}
                     className="absolute right-0 top-full mt-3 z-30 w-[280px] max-w-full rounded-2xl border-2 border-border bg-background p-4 text-left text-foreground shadow-xl"
                   >
-                    <p className="text-lg font-extrabold">Already know this?</p>
+                    <p className="text-lg font-extrabold">{t("path.skipTitle")}</p>
                     <p className="mt-1 font-semibold text-muted-foreground">
-                      Pass the {unitTest.title.toLowerCase()} with {unitTest.passAccuracy ?? 80}% to skip the whole unit
-                      {unitIndex > 0 ? " and everything before it" : ""}.
+                      {t(unitIndex > 0 ? "path.skipBodyEarlier" : "path.skipBody", { pct: unitTest.passAccuracy ?? 80 })}
                     </p>
                     <div className="mt-4 flex gap-2">
                       <button
@@ -289,14 +294,14 @@ export const CoursePath = () => {
                         onClick={() => setSkipOpen(null)}
                         className="flex-1 h-11 rounded-2xl border-2 border-border font-extrabold uppercase tracking-wide text-muted-foreground hover:bg-muted"
                       >
-                        Not now
+                        {t("common.notNow")}
                       </button>
                       <button
                         type="button"
                         onClick={() => navigate(`/course/${unitTest.id}?testout=1`)}
                         className="flex-1 h-11 rounded-2xl bg-warning font-extrabold uppercase tracking-wide text-warning-foreground shadow-[0_4px_0_0_hsl(var(--warning-dark))] active:translate-y-1 active:shadow-none"
                       >
-                        Take test
+                        {t("path.takeTest")}
                       </button>
                     </div>
                   </motion.div>
@@ -307,11 +312,11 @@ export const CoursePath = () => {
                   type="button"
                   onClick={() => toggleUnit(unit.id)}
                   aria-expanded={!collapsed}
-                  aria-label={collapsed ? `Review Unit ${unit.unit}` : `Hide Unit ${unit.unit}`}
+                  aria-label={collapsed ? t("path.reviewAria", { n: unit.unit }) : t("path.hideAria", { n: unit.unit })}
                   className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 rounded-xl bg-white/20 px-3 py-2 text-sm font-extrabold uppercase tracking-wide hover:bg-white/30 transition-colors"
                 >
                   <ChevronDown className={cn("w-4 h-4 transition-transform duration-300", !collapsed && "rotate-180")} />
-                  <span className="hidden sm:inline">{collapsed ? "Review" : "Hide"}</span>
+                  <span className="hidden sm:inline">{collapsed ? t("path.review") : t("path.hide")}</span>
                 </button>
               )}
             </div>
@@ -371,7 +376,7 @@ export const CoursePath = () => {
                     <button
                       type="button"
                       onClick={() => setOpenId(open ? null : lesson.id)}
-                      aria-label={`${lesson.title}${status === "locked" || status === "soon" ? " (locked)" : ""}`}
+                      aria-label={status === "locked" || status === "soon" ? t("path.lockedAria", { title: lesson.title }) : lesson.title}
                       aria-expanded={open}
                       className={cn(
                         "relative w-[72px] h-[64px] rounded-[50%] flex items-center justify-center transition-transform active:translate-y-1.5 active:shadow-none",
@@ -472,6 +477,7 @@ export const CoursePath = () => {
  * winding path leaves no room on the left (phones), it sits on the right instead.
  */
 function StartBubble({ textClass }: { textClass: string }) {
+  const t = useT();
   const ref = useRef<HTMLSpanElement>(null);
   // Hidden until the path has slid into place and we know which side fits.
   const [side, setSide] = useState<"left" | "right" | null>(null);
@@ -507,7 +513,7 @@ function StartBubble({ textClass }: { textClass: string }) {
       animate={{ opacity: side ? 1 : 0, x: left ? [0, -5, 0] : [0, 5, 0] }}
       transition={{ opacity: { duration: 0.2 }, x: { duration: 1.6, repeat: Infinity, ease: "easeInOut" } }}
     >
-      Start
+      {t("path.start")}
       {/* Little arrow pointing at the lesson */}
       <span
         className={cn(
@@ -536,6 +542,7 @@ function ExtraNode({
   onClick: () => void;
 }) {
   const playable = status !== "locked";
+  const t = useT();
   return (
     <motion.div
       className={cn("absolute top-1/2 flex flex-col items-center", highlight ? "z-[42]" : "z-10")}
@@ -555,7 +562,7 @@ function ExtraNode({
       <button
         type="button"
         onClick={onClick}
-        aria-label={`Extra: ${lesson.title}${playable ? "" : ` (unlocks at ${lesson.unlockXp} XP)`}`}
+        aria-label={playable ? t("path.extraAria", { title: lesson.title }) : t("path.extraLockedAria", { title: lesson.title, xp: lesson.unlockXp ?? 0 })}
         className={cn(
           "relative w-14 h-[50px] rounded-[50%] flex items-center justify-center transition-transform active:translate-y-1 active:shadow-none",
           playable ? EXTRA.solid : "bg-muted text-muted-foreground/60 border-2 border-border"
@@ -581,11 +588,12 @@ function ExtraNode({
 
 /** One-time popup in the first unit explaining the extras column. */
 function ExtrasGuide({ firstUnlockXp, xp, onClose }: { firstUnlockXp: number; xp: number; onClose: () => void }) {
+  const t = useT();
   const ready = xp >= firstUnlockXp;
   return (
     <motion.div
       role="dialog"
-      aria-label="Extras"
+      aria-label={t("guide.title")}
       initial={{ opacity: 0, y: -8, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8, scale: 0.96 }}
@@ -599,20 +607,20 @@ function ExtrasGuide({ firstUnlockXp, xp, onClose }: { firstUnlockXp: number; xp
         aria-hidden="true"
       />
       <p className="flex items-center gap-2 text-lg font-extrabold text-foreground">
-        <Sparkles className="w-5 h-5 text-[#a560e8]" /> Extras!
+        <Sparkles className="w-5 h-5 text-[#a560e8]" /> {t("guide.title")}
       </p>
       <p className="mt-1 font-semibold text-muted-foreground">
-        Beside your path are extra mini-lessons: brands, menus, tongue twisters and more. They unlock with XP.
+        {t("guide.body")}
       </p>
       <p className="mt-2 font-bold text-foreground">
-        {ready ? "You've already unlocked the first one. Tap it!" : `Your first one unlocks at ${firstUnlockXp} XP. Finish a lesson to get there!`}
+        {ready ? t("guide.ready") : t("guide.notReady", { xp: firstUnlockXp })}
       </p>
       <button
         type="button"
         onClick={onClose}
         className="mt-4 w-full h-11 rounded-2xl bg-[#a560e8] font-extrabold uppercase tracking-wide text-white shadow-[0_4px_0_0_#7b3fc4] active:translate-y-1 active:shadow-none transition-transform"
       >
-        Got it
+        {t("common.gotIt")}
       </button>
     </motion.div>
   );
@@ -641,6 +649,7 @@ function LessonCard({
   const playable = status === "current" || status === "completed" || status === "preview" || status === "open";
   const isTest = lesson.kind === "test";
   const isExtra = lesson.kind === "extra";
+  const t = useT();
   return (
     <motion.div
       initial={{ opacity: 0, y: -6, scale: 0.96 }}
@@ -655,13 +664,13 @@ function LessonCard({
       <p className={cn("text-lg font-extrabold", !playable && "text-foreground")}>{lesson.title}</p>
       <p className="mt-0.5 font-bold opacity-90">
         {isTest
-          ? `${lesson.description} · Get ${lesson.passAccuracy ?? 80}% to pass`
+          ? t("path.testPass", { desc: lesson.description, pct: lesson.passAccuracy ?? 80 })
           : isExtra
-          ? `Extra ${number} of ${total} · ${lesson.description}`
-          : `Lesson ${number} of ${total} · ${lesson.description}`}
+          ? t("path.extraOf", { n: number, total, desc: lesson.description })
+          : t("path.lessonOf", { n: number, total, desc: lesson.description })}
       </p>
       {status === "preview" && (
-        <p className="mt-2 text-sm font-bold opacity-90">Preview: your progress won't be saved.</p>
+        <p className="mt-2 text-sm font-bold opacity-90">{t("path.previewNote")}</p>
       )}
       {playable ? (
         <button
@@ -674,37 +683,37 @@ function LessonCard({
         >
           {status === "preview"
             ? isTest
-              ? "Preview test"
-              : "Preview lesson"
+              ? t("path.previewTest")
+              : t("path.previewLesson")
             : status === "completed"
             ? isTest
-              ? `Retake test +${Math.ceil(lesson.xp / 2)} XP`
-              : `Practice +${Math.ceil(lesson.xp / 2)} XP`
+              ? t("path.retakeTest", { xp: Math.ceil(lesson.xp / 2) })
+              : t("path.practiseAgain", { xp: Math.ceil(lesson.xp / 2) })
             : isTest
-              ? `Start test +${lesson.xp} XP`
+              ? t("path.startTest", { xp: lesson.xp })
               : isExtra
-              ? `Start extra +${lesson.xp} XP`
-              : `Start +${lesson.xp} XP`}
+              ? t("path.startExtra", { xp: lesson.xp })
+              : t("path.startLesson", { xp: lesson.xp })}
         </button>
       ) : (
         <>
           <p className="mt-3 text-sm font-bold">
             {status === "soon"
-              ? "This lesson is coming soon!"
+              ? t("path.soon")
               : needXp && isExtra
-              ? `Unlocks at ${needXp} XP. You have ${xp} XP, so earn ${needXp - xp} more!`
+              ? t("path.extraNeed", { need: needXp, xp, diff: needXp - xp })
               : needXp
-              ? `Earn ${needXp} XP in total to unlock this bonus unit!`
+              ? t("path.bonusNeed", { need: needXp })
               : isExtra
-              ? "Reach this unit to unlock its extras!"
+              ? t("path.reachUnit")
               : isTest
-                ? "Finish every lesson in this unit to unlock the test!"
+                ? t("path.testLocked")
                 : number === 1
-                  ? "Pass the unit test above to unlock this unit!"
-                  : "Complete all lessons above to unlock this!"}
+                  ? t("path.unitLocked")
+                  : t("path.lessonLocked")}
           </p>
           <div className="mt-4 w-full h-12 rounded-2xl bg-border/60 flex items-center justify-center font-extrabold uppercase tracking-wide text-muted-foreground">
-            Locked
+            {t("path.locked")}
           </div>
         </>
       )}

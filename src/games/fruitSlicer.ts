@@ -127,6 +127,12 @@ export interface GameResult {
 
 interface Options {
   sfx: Sfx;
+  /** Floating messages, in the learner's language. */
+  texts?: {
+    combo: (n: number, bonus: number) => string;
+    wrongLetter: (char: string, sound: string) => string;
+    missed: (char: string) => string;
+  };
   onUpdate: (hud: HudState) => void;
   /** A new target sound was picked (not called for the first one). */
   onNewTarget: (letter: GameLetter) => void;
@@ -396,7 +402,7 @@ export class FruitSlicerEngine {
     } else {
       this.wrong++;
       this.streak = 0;
-      this.loseLife(f.x, f.y - f.r, `${f.letter.char} is “${f.letter.sound}”`);
+      this.loseLife(f.x, f.y - f.r, this.opts.texts?.wrongLetter(f.letter.char, f.letter.sound) ?? `${f.letter.char} is “${f.letter.sound}”`);
     }
     this.emit();
   }
@@ -406,7 +412,7 @@ export class FruitSlicerEngine {
     this.score += bonus;
     this.bestCombo = Math.max(this.bestCombo, n);
     const last = this.trail[this.trail.length - 1] ?? { x: this.w / 2, y: this.h / 2 };
-    this.texts.push({ x: last.x, y: last.y - 30, text: `${n}× combo! +${bonus}`, color: "#7dd3fc", life: 1.1, size: 30 });
+    this.texts.push({ x: last.x, y: last.y - 30, text: this.opts.texts?.combo(n, bonus) ?? `${n}× combo! +${bonus}`, color: "#7dd3fc", life: 1.1, size: 30 });
     this.opts.sfx.match(n);
     this.emit();
   }
@@ -460,7 +466,7 @@ export class FruitSlicerEngine {
       if (f.isTarget && this.running) {
         this.missed++;
         this.streak = 0;
-        this.loseLife(Math.min(Math.max(f.x, 80), this.w - 80), this.h - 40, `Missed ${f.letter.char}!`);
+        this.loseLife(Math.min(Math.max(f.x, 80), this.w - 80), this.h - 40, this.opts.texts?.missed(f.letter.char) ?? `Missed ${f.letter.char}!`);
         this.emit();
       }
     }

@@ -1,8 +1,12 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
+import { useT } from "@/i18n";
+import { DuoButton } from "@/components/duolingo/DuoButton";
+import shpokoMascot from "@/assets/shpoko-mascot.webp";
 
 const NotFound = () => {
   const location = useLocation();
+  const t = useT();
 
   useEffect(() => {
     console.error(
@@ -12,13 +16,14 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>
-        <a href="/" className="text-blue-500 hover:text-blue-700 underline">
-          Return to Home
-        </a>
+        <img src={shpokoMascot} alt="" className="mx-auto w-28 h-28 object-contain" />
+        <h1 className="mt-4 text-5xl font-black text-foreground">404</h1>
+        <p className="mt-2 text-xl font-bold text-muted-foreground">{t("notFound.title")}</p>
+        <DuoButton asChild size="lg" className="mt-6">
+          <Link to="/">{t("notFound.home")}</Link>
+        </DuoButton>
       </div>
     </div>
   );

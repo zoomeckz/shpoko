@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Exercise } from "@/data/course";
 import type { Json } from "@/integrations/supabase/types";
 import { DuoButton } from "@/components/duolingo/DuoButton";
+import { useT } from "@/i18n";
 
 export const REPORT_REASONS = [
   { id: "answer", label: "My answer should be accepted" },
@@ -32,6 +33,7 @@ export function ReportProblemSheet({
   exerciseIndex: number;
   exercise: Exercise;
 }) {
+  const t = useT();
   const [reason, setReason] = useState<ReportReason | null>(null);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -63,10 +65,10 @@ export function ReportProblemSheet({
     });
     setSending(false);
     if (error) {
-      toast.error("Couldn't send your report. Please try again.");
+      toast.error(t("report.failed"));
       return;
     }
-    toast.success("Thanks! Your report was sent.");
+    toast.success(t("report.sent"));
     onClose();
   };
 
@@ -92,11 +94,11 @@ export function ReportProblemSheet({
           >
             <div className="max-w-[600px] mx-auto px-6 py-8">
               <h2 id="report-title" className="text-2xl font-extrabold text-foreground">
-                Report a problem
+                {t("report.title")}
               </h2>
-              <p className="mt-1 font-semibold text-muted-foreground">What's wrong with this exercise?</p>
+              <p className="mt-1 font-semibold text-muted-foreground">{t("report.question")}</p>
 
-              <div className="mt-5 space-y-2" role="radiogroup" aria-label="Problem">
+              <div className="mt-5 space-y-2" role="radiogroup" aria-label={t("report.question")}>
                 {REPORT_REASONS.map((r) => {
                   const selected = reason === r.id;
                   return (
@@ -121,30 +123,30 @@ export function ReportProblemSheet({
                       >
                         {selected && <Check className="w-4 h-4" strokeWidth={4} />}
                       </span>
-                      {r.label}
+                      {t(`report.${r.id}`)}
                     </button>
                   );
                 })}
               </div>
 
               <label htmlFor="report-message" className="mt-5 block text-sm font-extrabold uppercase tracking-widest text-muted-foreground">
-                Tell us more (optional)
+                {t("report.more")}
               </label>
               <textarea
                 id="report-message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value.slice(0, 1000))}
                 rows={3}
-                placeholder="For example: “This should also accept …”"
+                placeholder={t("report.placeholder")}
                 className="mt-2 w-full rounded-2xl border-2 border-border bg-card px-4 py-3 font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
               />
 
               <div className="mt-6 flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
                 <DuoButton variant="ghost" size="lg" onClick={onClose}>
-                  Cancel
+                  {t("common.cancel")}
                 </DuoButton>
                 <DuoButton size="lg" disabled={!reason || sending} onClick={send}>
-                  {sending ? "Sending…" : "Send report"}
+                  {sending ? t("report.sending") : t("report.send")}
                 </DuoButton>
               </div>
             </div>

@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Target } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 /** "12 / 20 XP" progress toward today's goal. */
 export function DailyGoalCard({
@@ -19,6 +20,7 @@ export function DailyGoalCard({
   showTitle?: boolean;
   className?: string;
 }) {
+  const t = useT();
   const reached = today >= goal;
   const pct = Math.min(100, Math.round((today / Math.max(1, goal)) * 100));
 
@@ -26,10 +28,10 @@ export function DailyGoalCard({
     <div className={cn("duo-card p-5", className)}>
       {showTitle && (
         <div className="mb-4 flex items-center justify-between gap-3">
-          <p className="text-lg font-extrabold text-foreground">Daily goal</p>
+          <p className="text-lg font-extrabold text-foreground">{t("goal.title")}</p>
           {showLink && (
             <Link to="/profile" className="text-sm font-extrabold uppercase tracking-wide text-primary hover:brightness-110">
-              Edit goal
+              {t("goal.edit")}
             </Link>
           )}
         </div>
@@ -46,7 +48,7 @@ export function DailyGoalCard({
         </span>
         <div className="flex-1 min-w-0">
           <p className="font-bold text-foreground">
-            {reached ? "Goal reached today!" : `Earn ${goal} XP today`}
+            {reached ? t("goal.reached") : t("goal.earn", { goal })}
           </p>
           <div
             className="mt-2 relative h-4 rounded-full bg-muted overflow-hidden"
@@ -54,7 +56,7 @@ export function DailyGoalCard({
             aria-valuenow={today}
             aria-valuemin={0}
             aria-valuemax={goal}
-            aria-label="XP earned today"
+            aria-label={t("goal.aria")}
           >
             <motion.div
               className={cn("h-full rounded-full", reached ? "bg-warning" : "bg-primary")}

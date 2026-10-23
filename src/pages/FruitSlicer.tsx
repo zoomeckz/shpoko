@@ -8,6 +8,8 @@ import { useSfx } from "@/hooks/useSfx";
 import { useSoundSettings } from "@/contexts/SoundSettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { syncAchievements } from "@/lib/achievements";
+import { useT } from "@/i18n";
+import { achievementText } from "@/lib/achievementText";
 import { toast } from "sonner";
 import { FruitSlicerEngine, LETTERS, type GameLetter, type GameResult, type HudState } from "@/games/fruitSlicer";
 import shpokoMascot from "@/assets/shpoko-mascot.webp";
@@ -29,6 +31,10 @@ export default function FruitSlicer() {
   const sfx = useSfx();
   const { soundEnabled, toggleSound } = useSoundSettings();
   const { user } = useAuth();
+  const t = useT();
+  // The game engine is created once; it reads the current language through this.
+  const tRef = useRef(t);
+  tRef.current = t;
   // The engine's callbacks are set up once; read the current user through a ref.
   const userIdRef = useRef(user?.id);
   userIdRef.current = user?.id;
@@ -49,6 +55,11 @@ export default function FruitSlicer() {
     if (!canvasRef.current) return;
     const engine = new FruitSlicerEngine(canvasRef.current, {
       sfx: new Proxy({} as typeof sfx, { get: (_, key: keyof typeof sfx) => sfxRef.current[key] }),
+      texts: {
+        combo: (n, bonus) => tRef.current("game.combo", { n, bonus }),
+        wrongLetter: (char, sound) => tRef.current("game.wrongLetter", { char, sound }),
+        missed: (char) => tRef.current("game.missed", { char }),
+      },
       onUpdate: setHud,
       onNewTarget: (letter) => {
         setBanner(letter);
@@ -74,8 +85,8 @@ export default function FruitSlicer() {
                 .filter((e) => e.achievement.id === "slicer")
                 .slice(-1)
                 .forEach(({ achievement, level }) =>
-                  toast.success(`${achievement.icon} Achievement unlocked: ${achievement.title}`, {
-                    description: achievement.describe(achievement.tiers[level - 1]),
+                  toast.success(tRef.current("ach.toast", { icon: achievement.icon, title: achievementText(tRef.current, achievement).title }), {
+                    description: achievementText(tRef.current, achievement).describe(achievement.tiers[level - 1]),
                   })
                 )
             );
@@ -120,13 +131,13 @@ export default function FruitSlicer() {
         <button
           type="button"
           onClick={() => navigate("/")}
-          aria-label="Leave the game"
+          aria-label={t("game.leave")}
           className="w-10 h-10 rounded-xl flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10"
         >
           <X className="w-6 h-6" strokeWidth={3} />
         </button>
 
-        <div className="flex items-center gap-1" aria-label={`${hud?.lives ?? 3} lives left`}>
+        <div className="flex items-center gap-1" aria-label={t("game.lives", { n: hud?.lives ?? 3 })}>
           {[0, 1, 2].map((i) => (
             <motion.span key={i} animate={{ scale: (hud?.lives ?? 3) > i ? 1 : 0.8 }} transition={{ type: "spring", stiffness: 400 }}>
               <Heart
@@ -140,7 +151,7 @@ export default function FruitSlicer() {
         <div className="absolute left-1/2 -translate-x-1/2 top-2 flex flex-col items-center">
           {phase === "playing" && hud && (
             <>
-              <span className="text-[11px] font-extrabold uppercase tracking-widest text-white/60">Slice the sound</span>
+              <span className="text-[11px] font-extrabold uppercase tracking-widest text-white/60">{t("game.sliceSound")}</span>
               <motion.span
                 key={hud.target.sound}
                 initial={{ scale: 0.6, opacity: 0 }}
@@ -150,7 +161,7 @@ export default function FruitSlicer() {
               >
                 “{hud.target.sound}”
               </motion.span>
-              <span className="mt-1 flex gap-1" aria-label={`${hud.untilNext} more before the sound changes`}>
+              <span className="mt-1 flex gap-1" aria-label={t("game.untilNext", { n: hud.untilNext })}>
                 {Array.from({ length: 5 }, (_, i) => (
                   <span key={i} className={cn("w-2 h-2 rounded-full", i < 5 - hud.untilNext ? "bg-[#ffd84d]" : "bg-white/20")} />
                 ))}
@@ -161,13 +172,13 @@ export default function FruitSlicer() {
 
         <div className="ml-auto flex items-center gap-3">
           <div className="text-right">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-white/60">Score</p>
+            <p className="text-[11px] font-extrabold uppercase tracking-widest text-white/60">{t("game.score")}</p>
             <p className="text-2xl font-black tabular-nums text-[#ffd84d] leading-none">{hud?.score ?? 0}</p>
           </div>
           <button
             type="button"
             onClick={toggleSound}
-            aria-label={soundEnabled ? "Mute sound effects" : "Turn on sound effects"}
+            aria-label={soundEnabled ? t("sound.mute") : t("sound.unmute")}
             className="w-10 h-10 rounded-xl flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10"
           >
             {soundEnabled ? <Volume2 className="w-6 h-6" /> : <VolumeX className="w-6 h-6" />}
@@ -177,7 +188,7 @@ export default function FruitSlicer() {
 
       {/* Board */}
       <div className="relative flex-1">
-        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full touch-none cursor-crosshair" aria-label="Fruit slicing board" />
+        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full touch-none cursor-crosshair" aria-label={t("game.board")} />
 
         {/* New target banner */}
         <AnimatePresence>
@@ -189,7 +200,7 @@ export default function FruitSlicer() {
               exit={{ y: -10, opacity: 0 }}
               className="pointer-events-none absolute left-1/2 top-6 -translate-x-1/2 rounded-2xl bg-[#ffd84d] px-5 py-2 text-lg font-black text-[#3b2a00] shadow-[0_4px_0_0_#c9a400]"
             >
-              New sound! Slice “{banner.sound}”
+              {t("game.newSound", { s: banner.sound })}
             </motion.div>
           )}
         </AnimatePresence>
@@ -209,21 +220,20 @@ export default function FruitSlicer() {
                 className="w-full max-w-md rounded-3xl border-2 border-white/10 bg-[hsl(198_30%_13%)] p-6 sm:p-8 text-center shadow-2xl"
               >
                 <img src={shpokoMascot} alt="" className="mx-auto w-24 h-24 object-contain" />
-                <h1 className="mt-3 text-3xl font-black">Fruit Slicer</h1>
+                <h1 className="mt-3 text-3xl font-black">{t("game.title")}</h1>
                 <p className="mt-2 font-bold text-white/70">
-                  Fruits fly up with letters on them. Swipe through every fruit whose letter makes the sound at the top.
-                  Leave the others!
+                  {t("game.intro")}
                 </p>
                 <ul className="mt-5 space-y-2 text-left text-sm font-bold text-white/80">
-                  <li>🍉 Slice the right letters for points. Slice several in one swipe for a combo.</li>
-                  <li>💔 A wrong letter, or a right one you let fall, costs a heart.</li>
-                  <li>🔄 Every 5 right slices the sound changes. Look out for look-alikes!</li>
+                  <li>{t("game.rule1")}</li>
+                  <li>{t("game.rule2")}</li>
+                  <li>{t("game.rule3")}</li>
                 </ul>
                 <DuoButton size="xl" fullWidth className="mt-6" onClick={start}>
-                  Play
+                  {t("game.play")}
                 </DuoButton>
-                {best > 0 && <p className="mt-3 text-sm font-extrabold text-white/60">Your best: {best}</p>}
-                <p className="mt-3 text-xs font-semibold text-white/40">Hold the mouse button and swipe, or swipe with your finger.</p>
+                {best > 0 && <p className="mt-3 text-sm font-extrabold text-white/60">{t("game.yourBest", { n: best })}</p>}
+                <p className="mt-3 text-xs font-semibold text-white/40">{t("game.howTo")}</p>
               </motion.div>
             </motion.div>
           )}
@@ -244,14 +254,14 @@ export default function FruitSlicer() {
                 transition={{ type: "spring", stiffness: 260, damping: 20 }}
                 className="w-full max-w-md rounded-3xl border-2 border-white/10 bg-[hsl(198_30%_13%)] p-6 sm:p-8 text-center shadow-2xl"
               >
-                <h2 className="text-3xl font-black">{newBest ? "New best score! 🏆" : "Game over"}</h2>
+                <h2 className="text-3xl font-black">{newBest ? t("game.newBest") : t("game.over")}</h2>
                 <p className="mt-2 text-6xl font-black text-[#ffd84d] tabular-nums">{result.score}</p>
-                {!newBest && best > 0 && <p className="text-sm font-extrabold text-white/60">Best: {best}</p>}
+                {!newBest && best > 0 && <p className="text-sm font-extrabold text-white/60">{t("game.best", { n: best })}</p>}
                 <div className="mt-6 grid grid-cols-3 gap-3">
                   {[
-                    ["Sliced", String(result.correct)],
-                    ["Accuracy", `${accuracy}%`],
-                    ["Best combo", result.bestCombo >= 2 ? `${result.bestCombo}×` : "—"],
+                    [t("game.sliced"), String(result.correct)],
+                    [t("game.accuracy"), `${accuracy}%`],
+                    [t("game.bestCombo"), result.bestCombo >= 2 ? `${result.bestCombo}×` : "—"],
                   ].map(([label, value]) => (
                     <div key={label} className="rounded-2xl bg-white/5 py-3">
                       <p className="text-[11px] font-extrabold uppercase tracking-widest text-white/50">{label}</p>
@@ -259,7 +269,7 @@ export default function FruitSlicer() {
                     </div>
                   ))}
                 </div>
-                <p className="mt-5 text-sm font-bold text-white/60">Sounds you practised</p>
+                <p className="mt-5 text-sm font-bold text-white/60">{t("game.soundsPractised")}</p>
                 <div className="mt-2 flex flex-wrap justify-center gap-2">
                   {[...new Set(result.sounds)].map((s) => {
                     const letter = LETTERS.find((l) => l.sound === s);
@@ -272,10 +282,10 @@ export default function FruitSlicer() {
                 </div>
                 <div className="mt-6 flex flex-col gap-3">
                   <DuoButton size="xl" fullWidth onClick={start}>
-                    Play again
+                    {t("game.playAgain")}
                   </DuoButton>
                   <DuoButton variant="ghost" size="lg" fullWidth className="text-white/80 hover:bg-white/10" onClick={() => navigate("/")}>
-                    Back to learning
+                    {t("game.backToLearning")}
                   </DuoButton>
                 </div>
               </motion.div>

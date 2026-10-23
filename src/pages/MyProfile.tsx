@@ -22,6 +22,8 @@ import { DuoButton } from "@/components/duolingo/DuoButton";
 import { DailyGoalCard } from "@/components/profile/DailyGoalCard";
 import { Switch } from "@/components/ui/switch";
 import shpokoMascot from "@/assets/shpoko-mascot.webp";
+import { useI18n, useT, type TFunction } from "@/i18n";
+import { achievementText } from "@/lib/achievementText";
 
 const AVATAR_COLORS = ["bg-primary", "bg-accent-strong", "bg-warning", "bg-success", "bg-info"];
 const DEFAULT_REMINDER = "19:00";
@@ -46,13 +48,14 @@ function StatCard({ icon, value, label, dim = false }: { icon: string; value: st
 
 /** Bars for XP per day over the last week, with the daily goal as a line. */
 function WeekChart({ days, goal }: { days: { day: string; xp: number }[]; goal: number }) {
+  const { t, locale } = useI18n();
   const max = Math.max(goal, ...days.map((d) => d.xp), 1);
   const goalPct = (goal / max) * 100;
   return (
     <div className="duo-card p-5">
       <div className="relative h-40 flex items-end gap-2 sm:gap-3">
         <div className="pointer-events-none absolute inset-x-0 border-t-2 border-dashed border-warning/60" style={{ bottom: `${goalPct}%` }}>
-          <span className="absolute right-0 -top-6 text-xs font-extrabold text-warning">Goal {goal}</span>
+          <span className="absolute right-0 -top-6 text-xs font-extrabold text-warning">{t("profile.goalLine", { xp: goal })}</span>
         </div>
         {days.map((d, i) => {
           const pct = (d.xp / max) * 100;
@@ -80,8 +83,8 @@ function WeekChart({ days, goal }: { days: { day: string; xp: number }[]; goal: 
             )}
           >
             {i === days.length - 1
-              ? "Today"
-              : new Date(`${d.day}T12:00:00`).toLocaleDateString("en-GB", { weekday: "short" })}
+              ? t("profile.today")
+              : new Date(`${d.day}T12:00:00`).toLocaleDateString(locale, { weekday: "short" })}
           </span>
         ))}
       </div>
@@ -90,6 +93,8 @@ function WeekChart({ days, goal }: { days: { day: string; xp: number }[]; goal: 
 }
 
 function AchievementRow({ achievement, level, value }: { achievement: Achievement; level: number; value: number | null }) {
+  const t = useT();
+  const text = achievementText(t, achievement);
   const maxed = level >= achievement.tiers.length;
   const next = achievement.tiers[Math.min(level, achievement.tiers.length - 1)];
   const oneOff = achievement.tiers.length === 1;
@@ -117,13 +122,13 @@ function AchievementRow({ achievement, level, value }: { achievement: Achievemen
         </span>
         {!oneOff && (
           <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-background border-2 border-border px-1.5 text-[10px] font-extrabold uppercase text-foreground">
-            Lvl {level}
+            {t("profile.level", { n: level })}
           </span>
         )}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <p className="text-lg font-extrabold text-foreground">{achievement.title}</p>
+          <p className="text-lg font-extrabold text-foreground">{text.title}</p>
           {!maxed && !oneOff && value !== null && (
             <span className="text-sm font-extrabold text-muted-foreground tabular-nums">
               {Math.min(value, next)}/{next}
@@ -131,7 +136,7 @@ function AchievementRow({ achievement, level, value }: { achievement: Achievemen
           )}
         </div>
         <p className="font-semibold text-muted-foreground">
-          {maxed ? (oneOff ? achievement.describe(next) : `All levels done! ${achievement.describe(next)}`) : achievement.describe(next)}
+          {maxed ? (oneOff ? text.describe(next) : t("profile.allLevels", { desc: text.describe(next) })) : text.describe(next)}
         </p>
         {!oneOff && (
           <div className="mt-2 h-3 rounded-full bg-muted overflow-hidden">
@@ -145,7 +150,7 @@ function AchievementRow({ achievement, level, value }: { achievement: Achievemen
         )}
         {oneOff && level > 0 && (
           <p className="mt-1 flex items-center gap-1 text-sm font-extrabold text-success">
-            <Check className="w-4 h-4" strokeWidth={3} /> Unlocked
+            <Check className="w-4 h-4" strokeWidth={3} /> {t("profile.unlocked")}
           </p>
         )}
       </div>
@@ -154,7 +159,7 @@ function AchievementRow({ achievement, level, value }: { achievement: Achievemen
 }
 
 /** A repeating calendar event, since the site can't send notifications itself. */
-function downloadReminder(time: string) {
+function downloadReminder(time: string, t: TFunction) {
   const [h, m] = time.split(":").map(Number);
   const start = new Date();
   start.setHours(h, m, 0, 0);
@@ -175,12 +180,12 @@ function downloadReminder(time: string) {
     `DTSTART:${local}`,
     "DURATION:PT10M",
     "RRULE:FREQ=DAILY",
-    "SUMMARY:Shpoko: time for some Bulgarian!",
-    `DESCRIPTION:A few minutes keeps your streak going! ${site}`,
+    `SUMMARY:${t("ics.summary")}`,
+    `DESCRIPTION:${t("ics.description")} ${site}`,
     `URL:${site}`,
     "BEGIN:VALARM",
     "ACTION:DISPLAY",
-    "DESCRIPTION:Time for Shpoko!",
+    `DESCRIPTION:${t("ics.alarm")}`,
     "TRIGGER:PT0M",
     "END:VALARM",
     "END:VEVENT",
@@ -196,19 +201,20 @@ function downloadReminder(time: string) {
 }
 
 function GuestProfile() {
+  const t = useT();
   return (
     <div className="duo-card mt-8 p-8 text-center">
       <img src={shpokoMascot} alt="" className="mx-auto w-28 h-28 object-contain" />
-      <h1 className="mt-4 text-2xl font-extrabold text-foreground">Make Shpoko yours</h1>
+      <h1 className="mt-4 text-2xl font-extrabold text-foreground">{t("profile.guestTitle")}</h1>
       <p className="mt-2 font-semibold text-muted-foreground">
-        Create a free profile to set a daily goal, keep your streak, collect achievements and save your progress.
+        {t("profile.guestBody")}
       </p>
       <div className="mt-6 flex flex-col gap-3 max-w-xs mx-auto">
         <DuoButton asChild size="lg" fullWidth>
-          <Link to="/auth?mode=signup">Create a profile</Link>
+          <Link to="/auth?mode=signup">{t("common.createProfile")}</Link>
         </DuoButton>
         <DuoButton asChild variant="white" size="lg" fullWidth>
-          <Link to="/auth">Log in</Link>
+          <Link to="/auth">{t("common.logIn")}</Link>
         </DuoButton>
       </div>
     </div>
@@ -216,6 +222,7 @@ function GuestProfile() {
 }
 
 export default function MyProfile() {
+  const { t, locale } = useI18n();
   const { user, profile, loading, refreshProfile, signOut } = useAuth();
   const { units } = useCourseAccess();
   const { byDay, today, goal } = useDailyXp(7);
@@ -238,7 +245,7 @@ export default function MyProfile() {
     if (!user) return false;
     const { error } = await supabase.from("profiles").update(changes).eq("id", user.id);
     if (error) {
-      toast.error("Couldn't save that. Please try again.");
+      toast.error(t("profile.saveFailed"));
       return false;
     }
     await refreshProfile();
@@ -248,7 +255,7 @@ export default function MyProfile() {
   const chooseGoal = async (xp: number) => {
     if (await saveProfile({ daily_goal: xp })) {
       setEditingGoal(false);
-      toast.success(`Daily goal set to ${xp} XP`);
+      toast.success(t("profile.goalSet", { xp }));
     }
   };
 
@@ -272,7 +279,7 @@ export default function MyProfile() {
   const name = profile?.username ?? "Learner";
   const avatarColor = AVATAR_COLORS[[...name].reduce((n, c) => n + c.charCodeAt(0), 0) % AVATAR_COLORS.length];
   const joined = profile?.created_at
-    ? new Date(profile.created_at).toLocaleDateString("en-GB", { month: "long", year: "numeric" })
+    ? new Date(profile.created_at).toLocaleDateString(locale, { month: "long", year: "numeric" })
     : null;
 
   return (
@@ -299,7 +306,7 @@ export default function MyProfile() {
                   </span>
                   <div className="min-w-0">
                     <h1 className="text-3xl font-extrabold text-foreground break-words">{name}</h1>
-                    {joined && <p className="mt-1 font-bold text-muted-foreground">Joined {joined}</p>}
+                    {joined && <p className="mt-1 font-bold text-muted-foreground">{t("profile.joined", { date: joined })}</p>}
                     <p className="mt-3 inline-flex items-center gap-2 rounded-xl border-2 border-border px-3 py-1 text-sm font-extrabold text-foreground">
                       {/* Drawn, because Windows shows flag emojis as plain letters */}
                       <span className="inline-flex w-5 h-3.5 flex-col overflow-hidden rounded-[3px]" aria-hidden="true">
@@ -307,37 +314,37 @@ export default function MyProfile() {
                         <span className="flex-1 bg-[#00966e]" />
                         <span className="flex-1 bg-[#d62612]" />
                       </span>
-                      Learning Bulgarian
+                      {t("profile.learning")}
                     </p>
                   </div>
                 </section>
 
                 {/* Statistics */}
                 <section>
-                  <SectionTitle>Statistics</SectionTitle>
+                  <SectionTitle>{t("profile.stats")}</SectionTitle>
                   <div className="mt-4 grid grid-cols-2 gap-3">
-                    <StatCard icon="🔥" value={String(streak)} label="Day streak" dim={streak === 0} />
-                    <StatCard icon="⚡" value={String(profile.xp)} label="Total XP" />
+                    <StatCard icon="🔥" value={String(streak)} label={t("profile.streak")} dim={streak === 0} />
+                    <StatCard icon="⚡" value={String(profile.xp)} label={t("profile.totalXp")} />
                     <StatCard
                       icon="📘"
                       value={achievements ? `${achievements.stats.lessons}/${lessonTotal}` : "…"}
-                      label="Lessons finished"
+                      label={t("profile.lessons")}
                     />
-                    <StatCard icon="🏅" value={String(longest)} label="Longest streak" dim={longest === 0} />
+                    <StatCard icon="🏅" value={String(longest)} label={t("profile.longest")} dim={longest === 0} />
                   </div>
                 </section>
 
                 {/* Daily goal */}
                 <section>
                   <div className="flex items-center justify-between gap-3">
-                    <SectionTitle>Daily goal</SectionTitle>
+                    <SectionTitle>{t("goal.title")}</SectionTitle>
                     <button
                       type="button"
                       onClick={() => setEditingGoal((v) => !v)}
                       className="text-sm font-extrabold uppercase tracking-wide text-primary hover:brightness-110"
                       aria-expanded={editingGoal}
                     >
-                      {editingGoal ? "Done" : "Change"}
+                      {editingGoal ? t("profile.done") : t("profile.change")}
                     </button>
                   </div>
                   <DailyGoalCard today={today} goal={goal} showTitle={false} className="mt-4" />
@@ -347,7 +354,7 @@ export default function MyProfile() {
                       animate={{ opacity: 1, y: 0 }}
                       className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2"
                       role="radiogroup"
-                      aria-label="Daily goal"
+                      aria-label={t("goal.title")}
                     >
                       {GOAL_OPTIONS.map((o) => (
                         <button
@@ -363,8 +370,8 @@ export default function MyProfile() {
                               : "border-border bg-card text-foreground hover:bg-muted"
                           )}
                         >
-                          <span className="block font-extrabold">{o.label}</span>
-                          <span className="block text-sm font-bold text-muted-foreground">{o.xp} XP a day</span>
+                          <span className="block font-extrabold">{t(o.label)}</span>
+                          <span className="block text-sm font-bold text-muted-foreground">{t("goal.perDay", { xp: o.xp })}</span>
                         </button>
                       ))}
                     </motion.div>
@@ -373,7 +380,7 @@ export default function MyProfile() {
 
                 {/* This week */}
                 <section>
-                  <SectionTitle>This week</SectionTitle>
+                  <SectionTitle>{t("profile.thisWeek")}</SectionTitle>
                   <div className="mt-4">
                     <WeekChart days={byDay} goal={goal} />
                   </div>
@@ -381,21 +388,21 @@ export default function MyProfile() {
 
                 {/* Reminders */}
                 <section>
-                  <SectionTitle>Reminders</SectionTitle>
+                  <SectionTitle>{t("profile.reminders")}</SectionTitle>
                   <div className="duo-card mt-4 p-5 space-y-4">
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
                         <Bell className="w-6 h-6 text-primary shrink-0" />
                         <div>
-                          <p className="font-extrabold text-foreground">Daily practice reminder</p>
-                          <p className="text-sm font-semibold text-muted-foreground">Pick the time that suits you best.</p>
+                          <p className="font-extrabold text-foreground">{t("profile.reminderTitle")}</p>
+                          <p className="text-sm font-semibold text-muted-foreground">{t("profile.reminderSub")}</p>
                         </div>
                       </div>
-                      <Switch checked={remindersOn} onCheckedChange={toggleReminders} aria-label="Daily practice reminder" />
+                      <Switch checked={remindersOn} onCheckedChange={toggleReminders} aria-label={t("profile.reminderTitle")} />
                     </div>
                     <div className={cn("flex flex-col sm:flex-row sm:items-center gap-3", !remindersOn && "opacity-50")}>
                       <label className="flex items-center gap-3 font-bold text-foreground">
-                        Remind me at
+                        {t("profile.remindAt")}
                         <input
                           type="time"
                           value={reminderTime}
@@ -408,22 +415,22 @@ export default function MyProfile() {
                         variant="white"
                         size="md"
                         disabled={!remindersOn}
-                        onClick={() => downloadReminder(reminderTime)}
+                        onClick={() => downloadReminder(reminderTime, t)}
                         className="sm:ml-auto"
                       >
                         <CalendarPlus className="w-4 h-4" />
-                        Add to calendar
+                        {t("profile.addCalendar")}
                       </DuoButton>
                     </div>
                     <p className="text-sm font-semibold text-muted-foreground">
-                      This adds a daily event to the calendar on your phone or computer, so it reminds you at this time.
+                      {t("profile.reminderNote")}
                     </p>
                   </div>
                 </section>
 
                 {/* Achievements */}
                 <section>
-                  <SectionTitle>Achievements</SectionTitle>
+                  <SectionTitle>{t("profile.achievements")}</SectionTitle>
                   <ul className="duo-card mt-4 divide-y-2 divide-border overflow-hidden">
                     {ACHIEVEMENTS.map((a) => (
                       <AchievementRow
@@ -436,8 +443,10 @@ export default function MyProfile() {
                   </ul>
                   {achievements && (
                     <p className="mt-3 text-center text-sm font-bold text-muted-foreground">
-                      {ACHIEVEMENTS.filter((a) => (achievements.levels[a.id] ?? 0) > 0 || levelFor(a, achievements.stats) > 0).length} of{" "}
-                      {ACHIEVEMENTS.length} unlocked
+                      {t("profile.unlockedCount", {
+                        n: ACHIEVEMENTS.filter((a) => (achievements.levels[a.id] ?? 0) > 0 || levelFor(a, achievements.stats) > 0).length,
+                        total: ACHIEVEMENTS.length,
+                      })}
                     </p>
                   )}
                 </section>
@@ -445,7 +454,7 @@ export default function MyProfile() {
                 <div className="lg:hidden">
                   <DuoButton variant="ghost" size="lg" fullWidth className="text-error hover:bg-error/10" onClick={signOut}>
                     <LogOut className="w-5 h-5" />
-                    Log out
+                    {t("common.logOut")}
                   </DuoButton>
                 </div>
               </div>

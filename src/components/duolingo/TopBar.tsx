@@ -11,6 +11,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { isAdminEmail } from "@/hooks/useAdminAuth";
 import { Wordmark } from "@/components/landing/Wordmark";
 import { SHOW_LEGACY, isLive } from "@/config/features";
+import { useT, type TKey } from "@/i18n";
+import { LanguageSelect } from "@/components/LanguageSelect";
+
+// Menu labels that are part of the live site, with their translations.
+const LABEL_KEYS: Partial<Record<string, TKey>> = {
+  Learn: "nav.learn",
+  "My words": "nav.words",
+  Profile: "nav.profile",
+  "Fruit Slicer": "nav.fruitSlicer",
+};
 
 interface TopBarProps {
   className?: string;
@@ -37,6 +47,8 @@ export const TopBar = ({ className }: TopBarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, user, signOut } = useAuth();
+  const t = useT();
+  const tl = (label: string) => (LABEL_KEYS[label] ? t(LABEL_KEYS[label]!) : label);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -111,7 +123,7 @@ export const TopBar = ({ className }: TopBarProps) => {
           {/* Menu button */}
           <button
             onClick={() => setMobileMenuOpen(true)}
-            aria-label="Open menu"
+            aria-label={t("nav.openMenu")}
             className="p-2 hover:bg-accent rounded-lg transition-colors"
           >
             <Menu className="w-6 h-6" />
@@ -137,7 +149,7 @@ export const TopBar = ({ className }: TopBarProps) => {
                 )}
               >
                 <Icon className="w-6 h-6" />
-                <span className="text-xs font-semibold">{item.label}</span>
+                <span className="text-xs font-semibold">{tl(item.label)}</span>
               </Link>
             );
           })}
@@ -162,7 +174,7 @@ export const TopBar = ({ className }: TopBarProps) => {
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  aria-label="Close menu"
+                  aria-label={t("nav.closeMenu")}
                   className="p-2 hover:bg-accent rounded-lg"
                 >
                   <X className="w-6 h-6" />
@@ -207,7 +219,7 @@ export const TopBar = ({ className }: TopBarProps) => {
                       )}
                     >
                       <Icon className="w-6 h-6" />
-                      <span>{item.label}</span>
+                      <span>{tl(item.label)}</span>
                     </Link>
                   );
                 })}
@@ -254,7 +266,7 @@ export const TopBar = ({ className }: TopBarProps) => {
                 <div className="px-4 py-2">
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                     <Gamepad2 className="w-4 h-4" />
-                    Games
+                    {t("nav.games")}
                   </p>
                 </div>
                 
@@ -275,7 +287,7 @@ export const TopBar = ({ className }: TopBarProps) => {
                       )}
                     >
                       <Icon className="w-6 h-6" />
-                      <span>{item.label}</span>
+                      <span>{tl(item.label)}</span>
                     </Link>
                   );
                 })}
@@ -310,7 +322,7 @@ export const TopBar = ({ className }: TopBarProps) => {
                       )}
                     >
                       <Shield className="w-6 h-6" />
-                      <span>Admin Panel</span>
+                      <span>{t("nav.admin")}</span>
                     </Link>
                   </>
                 )}
@@ -328,16 +340,19 @@ export const TopBar = ({ className }: TopBarProps) => {
                     )}
                   >
                     <User className="w-5 h-5" />
-                    Profile
+                    {t("nav.profile")}
                   </Link>
                 )}
                 <div className="flex items-center justify-between px-4 py-3">
-                  <span className="font-semibold">Dark Mode</span>
+                  <span className="font-semibold">{t("nav.darkMode")}</span>
                   <DarkModeToggle />
                 </div>
                 <div className="flex items-center justify-between px-4 py-3">
-                  <span className="font-semibold">Sound effects</span>
+                  <span className="font-semibold">{t("nav.sound")}</span>
                   <SoundToggle />
+                </div>
+                <div className="px-4 py-3">
+                  <LanguageSelect className="text-base" />
                 </div>
                 {user ? (
                 <button
@@ -345,7 +360,7 @@ export const TopBar = ({ className }: TopBarProps) => {
                   className="flex items-center gap-4 px-4 py-3 rounded-xl font-bold text-error hover:bg-error/10 transition-colors w-full"
                 >
                   <LogOut className="w-6 h-6" />
-                  <span>Log out</span>
+                  <span>{t("common.logOut")}</span>
                 </button>
                 ) : (
                   <div className="space-y-2 px-1">
@@ -354,14 +369,14 @@ export const TopBar = ({ className }: TopBarProps) => {
                       onClick={() => setMobileMenuOpen(false)}
                       className="block w-full rounded-2xl bg-primary py-3 text-center font-extrabold uppercase tracking-wide text-primary-foreground shadow-[0_4px_0_0_hsl(var(--primary-dark))]"
                     >
-                      Create a profile
+                      {t("common.createProfile")}
                     </Link>
                     <Link
                       to="/auth"
                       onClick={() => setMobileMenuOpen(false)}
                       className="block w-full py-3 text-center font-extrabold uppercase tracking-wide text-primary"
                     >
-                      Log in
+                      {t("common.logIn")}
                     </Link>
                   </div>
                 )}

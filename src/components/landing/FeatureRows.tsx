@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Check, Lock, Star, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TryItCard } from "./TryItCard";
+import { useT } from "@/i18n";
 
 function Row({
   title,
@@ -36,6 +37,7 @@ function Row({
 
 // Illustration: a short winding lesson path.
 function PathVisual() {
+  const t = useT();
   const nodes = [
     { state: "done", offset: "translate-x-0" },
     { state: "done", offset: "translate-x-14" },
@@ -46,7 +48,7 @@ function PathVisual() {
   return (
     <div className="relative mx-auto w-full max-w-sm py-4 flex flex-col items-center gap-6" aria-hidden="true">
       <span className="absolute top-0 right-2 inline-flex items-center gap-1.5 rounded-full bg-primary/15 text-primary px-3 py-1.5 text-sm font-extrabold">
-        <Timer className="w-4 h-4" /> ~3 min
+        <Timer className="w-4 h-4" /> {t("landing.minutes")}
       </span>
       {nodes.map((node, i) => (
         <div key={i} className={cn("relative", node.offset, node.state === "current" && "mt-12")}>
@@ -56,7 +58,7 @@ function PathVisual() {
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
             >
-              Start
+              {t("path.start")}
             </motion.span>
           )}
           <span
@@ -79,7 +81,8 @@ function PathVisual() {
 
 // Illustration: everything is included, no price tag.
 function FreeVisual() {
-  const items = ["Every lesson", "Every exercise", "Every unit", "Today and always"];
+  const t = useT();
+  const items = [t("landing.freeItem1"), t("landing.freeItem2"), t("landing.freeItem3"), t("landing.freeItem4")];
   return (
     <div className="relative mx-auto w-full max-w-sm" aria-hidden="true">
       <div className="duo-card p-6 pt-10">
@@ -106,25 +109,26 @@ interface FeatureRowsProps {
 }
 
 export function FeatureRows({ onStart }: FeatureRowsProps) {
+  const t = useT();
   return (
     <section className="max-w-5xl mx-auto px-4 sm:px-6 py-16 sm:py-24 space-y-24 sm:space-y-32">
       <Row
-        title="free. fun. fast."
+        title={t("landing.freeTitle")}
         titleClass="text-primary"
-        body="Learning with Shpoko is 100% free, at all times. Bite-sized lessons teach you to read Cyrillic in no time, then the everyday Bulgarian you'll actually use: asking how someone is, ordering a coffee, finding your way."
+        body={t("landing.freeBody")}
         visual={<FreeVisual />}
       />
       <Row
         flip
-        title="learn by playing"
+        title={t("landing.playTitle")}
         titleClass="text-primary"
-        body="Every lesson is a quick little game: tap, match, fill the gaps and build sentences. Go on, try it."
+        body={t("landing.playBody")}
         visual={<TryItCard onStart={onStart} />}
       />
       <Row
-        title="a little every day"
+        title={t("landing.dailyTitle")}
         titleClass="text-primary"
-        body="Lessons take about three minutes, and your path grows with everything you learn."
+        body={t("landing.dailyBody")}
         visual={<PathVisual />}
       />
     </section>

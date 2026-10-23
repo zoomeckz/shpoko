@@ -33,9 +33,11 @@ import { questionOf } from "@/lib/exerciseSummary";
 import { localDateKey } from "@/lib/dates";
 import { supabase } from "@/integrations/supabase/client";
 import { Confetti } from "@/components/Confetti";
+import { useT, type TKey } from "@/i18n";
+import { achievementText } from "@/lib/achievementText";
 import shpokoMascot from "@/assets/shpoko-mascot.webp";
 
-const PRAISE = ["Nice!", "Great job!", "Correct!", "Awesome!", "You got it!"];
+const PRAISE: TKey[] = ["lesson.praise1", "lesson.praise2", "lesson.praise3", "lesson.praise4", "lesson.praise5"];
 const EMPTY_ANSWER: AnswerState = { ready: false, correct: false, solution: "" };
 
 type Phase = "answering" | "checked" | "finished";
@@ -56,6 +58,7 @@ function LessonPlayer({
   practice?: Mistake[];
 }) {
   const exercises = lesson.exercises!;
+  const t = useT();
   // Unit tests: no second chances, and a pass mark.
   const isTest = lesson.kind === "test";
   const passMark = lesson.passAccuracy ?? 80;
@@ -239,8 +242,8 @@ function LessonPlayer({
           newlyEarned.slice(-2).forEach(({ achievement, level }, i) =>
             setTimeout(
               () =>
-                toast.success(`${achievement.icon} Achievement unlocked: ${achievement.title}`, {
-                  description: achievement.describe(achievement.tiers[level - 1]),
+                toast.success(t("ach.toast", { icon: achievement.icon, title: achievementText(t, achievement).title }), {
+                  description: achievementText(t, achievement).describe(achievement.tiers[level - 1]),
                 }),
               900 + i * 700
             )
@@ -306,7 +309,7 @@ function LessonPlayer({
         <button
           type="button"
           onClick={() => (done.size > 0 ? setConfirmExit(true) : navigate("/"))}
-          aria-label="Quit lesson"
+          aria-label={t("lesson.quit")}
           className="text-muted-foreground hover:text-foreground transition-colors"
         >
           <X className="w-7 h-7" strokeWidth={3} />
@@ -328,14 +331,14 @@ function LessonPlayer({
           </motion.div>
         </div>
         {preview && (
-          <span className="rounded-lg bg-warning/15 px-2 py-1 text-xs font-extrabold uppercase tracking-wide text-warning">Preview</span>
+          <span className="rounded-lg bg-warning/15 px-2 py-1 text-xs font-extrabold uppercase tracking-wide text-warning">{t("lesson.preview")}</span>
         )}
         {user && (
           <button
             type="button"
             onClick={() => setReportOpen(true)}
-            aria-label="Report a problem with this exercise"
-            title="Report a problem"
+            aria-label={t("lesson.reportAria")}
+            title={t("report.title")}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <Flag className="w-6 h-6" />
@@ -344,7 +347,7 @@ function LessonPlayer({
         <button
           type="button"
           onClick={toggleSound}
-          aria-label={soundEnabled ? "Mute sound effects" : "Turn on sound effects"}
+          aria-label={soundEnabled ? t("sound.mute") : t("sound.unmute")}
           aria-pressed={!soundEnabled}
           className="text-muted-foreground hover:text-foreground transition-colors"
         >
@@ -353,7 +356,8 @@ function LessonPlayer({
       </header>
 
       {/* Exercise */}
-      <main className="flex-1 w-full max-w-[600px] mx-auto px-4 sm:px-6 pt-8 sm:pt-14 pb-10">
+      {/* Lesson content is Bulgarian and English, so it reads left to right in every interface language. */}
+      <main dir="ltr" className="flex-1 w-full max-w-[600px] mx-auto px-4 sm:px-6 pt-8 sm:pt-14 pb-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={exerciseKey}
@@ -398,8 +402,8 @@ function LessonPlayer({
                   {lastCorrect ? <Check className="w-9 h-9" strokeWidth={4} /> : <X className="w-9 h-9" strokeWidth={4} />}
                 </span>
                 <div className={lastCorrect ? "text-success" : "text-error"}>
-                  <p className="text-2xl font-extrabold">{lastCorrect ? praise : "Correct solution:"}</p>
-                  {!lastCorrect && <p className="text-lg font-bold">{answer.solution}</p>}
+                  <p className="text-2xl font-extrabold">{lastCorrect ? t(praise) : t("lesson.correctSolution")}</p>
+                  {!lastCorrect && <p dir="ltr" className="text-lg font-bold">{answer.solution}</p>}
                   {"explain" in exercise && exercise.explain && (
                     <p className="text-base font-bold opacity-90">{exercise.explain}</p>
                   )}
@@ -415,7 +419,7 @@ function LessonPlayer({
             onClick={onPrimary}
             className="w-full sm:w-[200px]"
           >
-            {phase === "checked" || isIntro ? "Continue" : "Check"}
+            {phase === "checked" || isIntro ? t("common.continue") : t("common.check")}
           </DuoButton>
         </div>
       </footer>
@@ -447,14 +451,14 @@ function LessonPlayer({
             >
               <div className="max-w-[600px] mx-auto px-6 py-8 text-center">
                 <img src={shpokoMascot} alt="" className="w-24 h-24 mx-auto object-contain" />
-                <p className="mt-3 text-2xl font-extrabold text-foreground">Wait, don't go!</p>
-                <p className="mt-1 font-semibold text-muted-foreground">You'll lose your progress if you quit now.</p>
+                <p className="mt-3 text-2xl font-extrabold text-foreground">{t("lesson.dontGo")}</p>
+                <p className="mt-1 font-semibold text-muted-foreground">{t("lesson.loseProgress")}</p>
                 <div className="mt-6 flex flex-col gap-3">
                   <DuoButton size="lg" fullWidth onClick={() => setConfirmExit(false)}>
-                    Keep learning
+                    {t("lesson.keepLearning")}
                   </DuoButton>
                   <DuoButton variant="ghost" size="lg" fullWidth className="text-error hover:bg-error/10" onClick={() => navigate("/")}>
-                    End session
+                    {t("lesson.endSession")}
                   </DuoButton>
                 </div>
               </div>
@@ -538,6 +542,7 @@ function LessonComplete({
   onPractice?: () => void;
   onContinue: () => void;
 }) {
+  const t = useT();
   const { profile } = useAuth();
   const chips = (learned.includes(",") ? learned.split(",") : learned.split(" ")).map((s) => s.trim()).filter(Boolean);
   const onlyLetters = chips.every((c) => c.length === 1);
@@ -552,12 +557,12 @@ function LessonComplete({
   }, [onContinue]);
 
   const title = testedOut
-    ? "You tested out! 🚀"
+    ? t("finish.testedOut")
     : isTest
-      ? "Unit complete! 🏆"
+      ? t("finish.unitComplete")
       : isPractice
-        ? "Practice complete! 💪"
-        : "Lesson complete!";
+        ? t("finish.practiceComplete")
+        : t("finish.lessonComplete");
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -565,7 +570,7 @@ function LessonComplete({
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 text-center">
         <motion.img
           src={shpokoMascot}
-          alt="Shpoko celebrating"
+          alt={t("finish.mascotAlt")}
           className="w-40 h-40 object-contain"
           initial={{ scale: 0.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1, y: [0, -10, 0] }}
@@ -574,29 +579,29 @@ function LessonComplete({
         <h1 className="mt-5 text-3xl font-extrabold text-warning">{title}</h1>
         {testedOut ? (
           <p className="mt-2 max-w-sm text-lg font-bold text-muted-foreground">
-            The whole unit is marked as done. On to the next one!
+            {t("finish.testedOutBody")}
           </p>
         ) : isTest ? (
           <p className="mt-2 max-w-sm text-lg font-bold text-muted-foreground">
-            You passed the test. {testMessage ?? "Great work!"}
+            {t("finish.passed")} {testMessage ?? t("finish.greatWork")}
           </p>
         ) : isPractice ? (
           <p className="mt-2 max-w-sm text-lg font-bold text-muted-foreground">
-            {missed.length ? "Nice work. The ones you got right won't come back." : "All right first time. Those mistakes are gone!"}
+            {missed.length ? t("finish.practiceSome") : t("finish.practiceAll")}
           </p>
         ) : (
           <p className="mt-2 text-lg font-bold text-muted-foreground">
             {learnedFont === "italic"
-              ? "You can read these in italics now:"
+              ? t("finish.readItalic")
               : learnedFont === "handwriting"
-                ? "You can read these handwritten now:"
+                ? t("finish.readHand")
                 : onlyLetters
-                  ? "New letters you can read now:"
-                  : "You can read these now:"}
+                  ? t("finish.newLetters")
+                  : t("finish.readThese")}
           </p>
         )}
         {!isTest && !isPractice && (
-          <div className="mt-3 flex flex-wrap justify-center gap-2">
+          <div dir="ltr" className="mt-3 flex flex-wrap justify-center gap-2">
             {chips.map((letter, i) => (
               <motion.span
                 key={letter}
@@ -615,9 +620,9 @@ function LessonComplete({
           </div>
         )}
         <div className="mt-7 w-full max-w-md flex gap-3">
-          <StatTile label="Total XP" value={preview ? "Preview" : xp === null ? "…" : `+${shownXp}`} tone="yellow" />
-          <StatTile label="Accuracy" value={`${accuracy}%`} tone="blue" />
-          <StatTile label="Time" value={time} tone="pink" />
+          <StatTile label={t("finish.totalXp")} value={preview ? t("finish.previewTile") : xp === null ? "…" : `+${shownXp}`} tone="yellow" />
+          <StatTile label={t("finish.accuracy")} value={`${accuracy}%`} tone="blue" />
+          <StatTile label={t("finish.time")} value={time} tone="pink" />
         </div>
         {streakToday > 0 && !preview && (
           <motion.p
@@ -626,13 +631,13 @@ function LessonComplete({
             transition={{ delay: 1, type: "spring", stiffness: 300, damping: 14 }}
             className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#ff9600]/15 px-4 py-2 text-lg font-extrabold text-[#ff9600]"
           >
-            🔥 {streakToday} day streak!
+            {t("finish.streak", { n: streakToday })}
           </motion.p>
         )}
 
         {missed.length > 0 && (
-          <section className="mt-7 w-full max-w-md text-left" aria-label="Worth another look">
-            <p className="text-sm font-extrabold uppercase tracking-widest text-muted-foreground">Worth another look</p>
+          <section dir="ltr" className="mt-7 w-full max-w-md text-left" aria-label={t("finish.worthLook")}>
+            <p className="text-sm font-extrabold uppercase tracking-widest text-muted-foreground">{t("finish.worthLook")}</p>
             <ul className="mt-2 space-y-2">
               {missed.slice(0, 5).map((m, i) => (
                 <li key={i} className="duo-card px-4 py-3">
@@ -645,7 +650,7 @@ function LessonComplete({
               ))}
             </ul>
             {missed.length > 5 && (
-              <p className="mt-2 text-sm font-bold text-muted-foreground">…and {missed.length - 5} more.</p>
+              <p className="mt-2 text-sm font-bold text-muted-foreground">{t("finish.andMore", { n: missed.length - 5 })}</p>
             )}
           </section>
         )}
@@ -655,11 +660,11 @@ function LessonComplete({
           {onPractice && (
             <DuoButton variant="white" size="xl" className="w-full sm:w-auto" onClick={onPractice}>
               <Dumbbell className="w-5 h-5" />
-              Practise these
+              {t("finish.practise")}
             </DuoButton>
           )}
           <DuoButton size="xl" className="w-full sm:w-[200px]" onClick={onContinue}>
-            Continue
+            {t("common.continue")}
           </DuoButton>
         </div>
       </footer>
@@ -680,6 +685,7 @@ function TestFailed({
   onExit: () => void;
   onPractice?: () => void;
 }) {
+  const t = useT();
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <main className="flex-1 flex flex-col items-center justify-center px-4 text-center">
@@ -691,9 +697,9 @@ function TestFailed({
           animate={{ scale: 1, opacity: 1, rotate: 0 }}
           transition={{ type: "spring", stiffness: 200, damping: 14 }}
         />
-        <h1 className="mt-6 text-3xl font-extrabold text-foreground">So close!</h1>
+        <h1 className="mt-6 text-3xl font-extrabold text-foreground">{t("fail.title")}</h1>
         <p className="mt-2 max-w-sm text-lg font-bold text-muted-foreground">
-          You got <span className="text-primary">{accuracy}%</span>. You need {passMark}% to pass. Have another go, you've got this.
+          {t("fail.body", { acc: accuracy, pass: passMark })}
         </p>
         <div className="mt-6 w-full max-w-xs h-4 rounded-full bg-muted overflow-hidden relative">
           <motion.div
@@ -711,17 +717,17 @@ function TestFailed({
             className="mt-6 inline-flex items-center gap-2 rounded-xl px-4 py-2 font-extrabold uppercase tracking-wide text-primary hover:bg-primary/10"
           >
             <Dumbbell className="w-5 h-5" />
-            Practise your mistakes first
+            {t("fail.practise")}
           </button>
         )}
       </main>
       <footer className="border-t-2 border-border">
         <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-5 sm:py-8 flex flex-col-reverse sm:flex-row gap-3 sm:justify-between">
           <DuoButton variant="white" size="xl" className="w-full sm:w-[200px]" onClick={onExit}>
-            Back to path
+            {t("fail.back")}
           </DuoButton>
           <DuoButton size="xl" className="w-full sm:w-[200px]" onClick={onRetry}>
-            Try again
+            {t("fail.retry")}
           </DuoButton>
         </div>
       </footer>
@@ -731,6 +737,7 @@ function TestFailed({
 
 /** "Practise your mistakes": loads the learner's mistakes and plays them as a lesson. */
 function PracticeSession() {
+  const t = useT();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [round, setRound] = useState<ReturnType<typeof buildPractice> | null>(null);
@@ -742,7 +749,7 @@ function PracticeSession() {
     loadMistakes(user?.id ?? null).then((list) => {
       if (cancelled) return;
       if (!list.length) {
-        toast.success("No mistakes to practise. Nice!");
+        toast.success(t("practice.none"));
         navigate("/", { replace: true });
         return;
       }

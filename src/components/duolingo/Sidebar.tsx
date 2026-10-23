@@ -14,6 +14,16 @@ import { DuoButton } from "@/components/duolingo/DuoButton";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { SoundToggle } from "@/components/SoundToggle";
 import { SHOW_LEGACY, isLive } from "@/config/features";
+import { useT, type TKey } from "@/i18n";
+import { LanguageSelect } from "@/components/LanguageSelect";
+
+// Menu labels that are part of the live site, with their translations.
+const LABEL_KEYS: Partial<Record<string, TKey>> = {
+  Learn: "nav.learn",
+  "My words": "nav.words",
+  Games: "nav.games",
+  "Fruit Slicer": "nav.fruitSlicer",
+};
 
 interface SidebarProps {
   className?: string;
@@ -56,6 +66,8 @@ export const Sidebar = ({ className }: SidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, user, signOut } = useAuth();
+  const t = useT();
+  const tl = (label: string) => (LABEL_KEYS[label] ? t(LABEL_KEYS[label]!) : label);
 
   // Only show what's part of the rebuilt site (see src/config/features.ts).
   const liveMainItems = mainNavItems.filter((item) => isLive(item.path));
@@ -168,7 +180,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
         )}>
           <div className="flex items-center gap-4">
             <Icon className="w-6 h-6" />
-            <span>{title}</span>
+            <span>{tl(title)}</span>
           </div>
           <motion.div
             animate={{ rotate: (isOpen || isActive) ? 180 : 0 }}
@@ -209,7 +221,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
                     )}
                   >
                     <ItemIcon className="w-5 h-5" />
-                    <span>{item.label}</span>
+                    <span>{tl(item.label)}</span>
                   </Link>
                 </motion.div>
               );
@@ -251,7 +263,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
               )}
             >
               <Icon className="w-6 h-6" />
-              <span>{item.label}</span>
+              <span>{tl(item.label)}</span>
             </Link>
           );
         })}
@@ -291,7 +303,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
               )}
             >
               <Icon className="w-6 h-6" />
-              <span>{item.label}</span>
+              <span>{tl(item.label)}</span>
             </Link>
           );
         })}
@@ -365,7 +377,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
               )}
             >
               <Shield className="w-6 h-6" />
-              <span>Admin Panel</span>
+              <span>{t("nav.admin")}</span>
             </Link>
           </>
         )}
@@ -407,7 +419,7 @@ export const Sidebar = ({ className }: SidebarProps) => {
       <div className="mt-4 space-y-3">
         {!user && (
           <DuoButton asChild size="md" fullWidth className="xl:hidden">
-            <Link to="/auth?mode=signup">Create a profile</Link>
+            <Link to="/auth?mode=signup">{t("common.createProfile")}</Link>
           </DuoButton>
         )}
         {isLive("/profile") && (
@@ -422,16 +434,19 @@ export const Sidebar = ({ className }: SidebarProps) => {
             )}
           >
             <User className="w-5 h-5" />
-            Profile
+            {t("nav.profile")}
           </Link>
         )}
         <div className="flex items-center justify-between rounded-2xl border-2 border-border px-4 py-2">
-          <span className="text-sm font-bold text-muted-foreground">Dark mode</span>
+          <span className="text-sm font-bold text-muted-foreground">{t("nav.darkMode")}</span>
           <DarkModeToggle />
         </div>
         <div className="flex items-center justify-between rounded-2xl border-2 border-border px-4 py-2">
-          <span className="text-sm font-bold text-muted-foreground">Sound effects</span>
+          <span className="text-sm font-bold text-muted-foreground">{t("nav.sound")}</span>
           <SoundToggle />
+        </div>
+        <div className="rounded-2xl border-2 border-border px-4 py-2">
+          <LanguageSelect />
         </div>
         {user ? (
           <button
@@ -439,14 +454,14 @@ export const Sidebar = ({ className }: SidebarProps) => {
             className="flex w-full items-center gap-3 rounded-xl px-4 py-2 text-sm font-bold text-muted-foreground hover:bg-muted transition-colors"
           >
             <LogOut className="w-5 h-5" />
-            Log out
+            {t("common.logOut")}
           </button>
         ) : (
           <Link
             to="/auth"
             className="block w-full rounded-xl px-4 py-2 text-center text-sm font-extrabold uppercase tracking-wide text-primary hover:bg-muted transition-colors"
           >
-            Log in
+            {t("common.logIn")}
           </Link>
         )}
       </div>

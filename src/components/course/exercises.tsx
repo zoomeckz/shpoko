@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import type { Exercise, SignColor, TextFont } from "@/data/course";
 import { useSfx } from "@/hooks/useSfx";
 import { SoundButton } from "./SoundButton";
+import { useT } from "@/i18n";
 
 export interface AnswerState {
   ready: boolean;
@@ -101,6 +102,7 @@ function TeachingPill({ children, tone = "pink" }: { children: React.ReactNode; 
 
 export function TipExercise({ exercise, onChange }: BaseProps & { exercise: Extract<Exercise, { type: "tip" }> }) {
   const sfx = useSfx();
+  const t = useT();
   useEffect(() => {
     onChange({ ready: true, correct: true, solution: "" });
     sfx.reveal();
@@ -108,7 +110,7 @@ export function TipExercise({ exercise, onChange }: BaseProps & { exercise: Extr
 
   return (
     <div>
-      <TeachingPill tone="blue">Tip</TeachingPill>
+      <TeachingPill tone="blue">{t("ex.tip")}</TeachingPill>
       <h1 className="mt-4 text-2xl sm:text-[28px] font-extrabold text-foreground">{exercise.title}</h1>
       <p className="mt-2 text-lg font-bold text-muted-foreground">{exercise.text}</p>
       {exercise.items && (
@@ -137,6 +139,7 @@ export function TipExercise({ exercise, onChange }: BaseProps & { exercise: Extr
 
 export function WordExercise({ exercise, onChange }: BaseProps & { exercise: Extract<Exercise, { type: "word" }> }) {
   const sfx = useSfx();
+  const t = useT();
   useEffect(() => {
     onChange({ ready: true, correct: true, solution: "" });
     sfx.reveal();
@@ -144,7 +147,7 @@ export function WordExercise({ exercise, onChange }: BaseProps & { exercise: Ext
 
   return (
     <div className="flex flex-col items-center text-center">
-      <TeachingPill>New word</TeachingPill>
+      <TeachingPill>{t("ex.newWord")}</TeachingPill>
       <motion.div
         initial={{ scale: 0.85, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -175,6 +178,7 @@ export function WordExercise({ exercise, onChange }: BaseProps & { exercise: Ext
 
 export function PhraseExercise({ exercise, onChange }: BaseProps & { exercise: Extract<Exercise, { type: "phrase" }> }) {
   const sfx = useSfx();
+  const t = useT();
   // Which word's meaning bubble is showing. New words start out explained.
   const [open, setOpen] = useState<number | null>(() => {
     const first = exercise.words.findIndex((w) => w.isNew);
@@ -187,7 +191,7 @@ export function PhraseExercise({ exercise, onChange }: BaseProps & { exercise: E
 
   return (
     <div className="flex flex-col items-center text-center">
-      <TeachingPill>New phrase</TeachingPill>
+      <TeachingPill>{t("ex.newPhrase")}</TeachingPill>
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -243,7 +247,7 @@ export function PhraseExercise({ exercise, onChange }: BaseProps & { exercise: E
             )}
           >
             <span className="font-black">{w.bg.replace(/[.,!?]+$/, "")}</span> = {w.en}
-            {w.isNew && <span className="ml-2 text-[10px] font-extrabold uppercase tracking-wider text-primary">New</span>}
+            {w.isNew && <span className="ml-2 text-[10px] font-extrabold uppercase tracking-wider text-primary">{t("ex.newBadge")}</span>}
           </span>
         ))}
       </div>
@@ -257,6 +261,7 @@ export function PhraseExercise({ exercise, onChange }: BaseProps & { exercise: E
 function SayItThreeTimes() {
   const [said, setSaid] = useState(0);
   const sfx = useSfx();
+  const t = useT();
   const say = () => {
     if (said >= 3) return;
     const next = said + 1;
@@ -267,10 +272,10 @@ function SayItThreeTimes() {
   return (
     <div className="mt-6 w-full rounded-2xl border-2 border-dashed border-warning/60 bg-warning/10 px-4 py-4">
       <p className="font-extrabold text-foreground">
-        {said >= 3 ? "Nice and smooth! 🎉" : "🗣️ Say it out loud, 3 times"}
+        {said >= 3 ? t("ex.sayDone") : t("ex.sayTitle")}
       </p>
       <p className="text-sm font-bold text-muted-foreground">
-        {said >= 3 ? "Keep going, it gets easier every time." : "Tap after each time. A little faster every time!"}
+        {said >= 3 ? t("ex.sayKeepGoing") : t("ex.sayHint")}
       </p>
       <div className="mt-3 flex justify-center gap-3">
         {[0, 1, 2].map((i) => (
@@ -281,7 +286,7 @@ function SayItThreeTimes() {
             disabled={said >= 3}
             animate={{ scale: i < said ? [1, 1.25, 1] : 1 }}
             transition={{ duration: 0.25 }}
-            aria-label={i < said ? `Said ${i + 1} time${i ? "s" : ""}` : "I said it"}
+            aria-label={i < said ? t("ex.saidAria", { n: i + 1 }) : t("ex.iSaidIt")}
             className={cn(
               "w-12 h-12 rounded-full border-2 text-xl font-black flex items-center justify-center transition-colors",
               i < said
@@ -306,6 +311,7 @@ export function FillExercise({
 }: BaseProps & { exercise: Extract<Exercise, { type: "fill" }> }) {
   const [selected, setSelected] = useState<string | null>(null);
   const sfx = useSfx();
+  const t = useT();
   const [before, after = ""] = exercise.sentence.split("___");
   // Punctuation right after the gap sticks to it ("съм," not "съм ,").
   const stuck = /^[.,!?]+/.exec(after)?.[0] ?? "";
@@ -335,7 +341,7 @@ export function FillExercise({
 
   return (
     <div>
-      <Prompt>Fill in the blank</Prompt>
+      <Prompt>{t("ex.fillBlank")}</Prompt>
       <div className="mt-8 duo-card px-5 py-6 text-center">
         <p className="text-3xl sm:text-4xl font-black text-foreground leading-relaxed">
           {before}
@@ -378,20 +384,21 @@ export function FillExercise({
 
 export function ShapeExercise({ exercise, onChange }: BaseProps & { exercise: Extract<Exercise, { type: "shape" }> }) {
   const sfx = useSfx();
+  const t = useT();
   useEffect(() => {
     onChange({ ready: true, correct: true, solution: "" });
     sfx.reveal();
   }, [onChange, sfx]);
 
-  const styleName = exercise.font === "italic" ? "In italics" : "Handwritten";
-  const lead = exercise.font === "italic" ? "In italics" : "When handwritten";
+  const styleName = exercise.font === "italic" ? t("ex.inItalics") : t("ex.handwritten");
+  const lead = exercise.font === "italic" ? t("ex.inItalics") : t("ex.whenHandwritten");
 
   return (
     <div className="flex flex-col items-center text-center">
-      <TeachingPill>Same letter, new look</TeachingPill>
+      <TeachingPill>{t("ex.sameLetter")}</TeachingPill>
       <div className="mt-8 flex items-center gap-4">
         <div className="duo-card w-32 sm:w-36 py-5">
-          <p className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">Print</p>
+          <p className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground">{t("ex.print")}</p>
           <p className="mt-1 text-7xl font-black text-foreground">{exercise.letter}</p>
         </div>
         <span className="text-3xl font-black text-muted-foreground" aria-hidden="true">→</span>
@@ -420,6 +427,7 @@ export function FamiliarExercise({
   onChange,
 }: BaseProps & { exercise: Extract<Exercise, { type: "familiar" }> }) {
   const sfx = useSfx();
+  const t = useT();
 
   useEffect(() => {
     onChange({ ready: true, correct: true, solution: "" });
@@ -429,7 +437,7 @@ export function FamiliarExercise({
   return (
     <div>
       <span className="rounded-full bg-primary/15 px-4 py-1.5 text-sm font-extrabold uppercase tracking-widest text-primary">
-        Good news
+        {t("ex.goodNews")}
       </span>
       <h1 className="mt-4 text-2xl sm:text-[28px] font-extrabold text-foreground">{exercise.title}</h1>
       <p className="mt-2 font-bold text-muted-foreground">{exercise.note}</p>
@@ -469,6 +477,7 @@ export function IntroExercise({
   onChange,
 }: BaseProps & { exercise: Extract<Exercise, { type: "intro" }> }) {
   const sfx = useSfx();
+  const t = useT();
 
   useEffect(() => {
     onChange({ ready: true, correct: true, solution: "" });
@@ -478,7 +487,7 @@ export function IntroExercise({
   return (
     <div className="flex flex-col items-center text-center">
       <span className="rounded-full bg-accent-strong/15 px-4 py-1.5 text-sm font-extrabold uppercase tracking-widest text-accent-strong">
-        New letter
+        {t("ex.newLetter")}
       </span>
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
@@ -493,7 +502,7 @@ export function IntroExercise({
             transition={{ delay: 0.35, type: "spring", stiffness: 300, damping: 14 }}
             className="absolute -top-4 -right-3 rounded-xl bg-error px-3 py-1.5 text-sm font-extrabold text-error-foreground shadow-[0_3px_0_0_hsl(var(--error-dark))]"
           >
-            Not “{exercise.looksLike}”!
+            {t("ex.notLike", { x: exercise.looksLike })}
           </motion.span>
         )}
         <p className="text-[96px] leading-none font-black text-foreground">
@@ -502,12 +511,12 @@ export function IntroExercise({
         </p>
         <div className="mt-6 flex items-center justify-center gap-3">
           <SoundButton src={exercise.audio} />
-          <p className="text-2xl font-extrabold text-primary">sounds like “{exercise.sound}”</p>
+          <p className="text-2xl font-extrabold text-primary">{t("ex.soundsLike", { sound: exercise.sound })}</p>
         </div>
       </motion.div>
       {exercise.looksLike && (
         <p className="mt-6 text-lg font-extrabold text-foreground">
-          Looks like {exercise.looksLikeName ?? `an English ${exercise.looksLike}`}, but it isn't one.
+          {t("ex.looksLikeBut", { name: exercise.looksLikeName ?? t("ex.anEnglish", { x: exercise.looksLike }) })}
         </p>
       )}
       <p className={cn("text-lg font-bold text-muted-foreground", exercise.looksLike ? "mt-1" : "mt-6")}>{exercise.hint}</p>
@@ -526,6 +535,7 @@ export function ChoiceExercise({
   const letters = exercise.optionStyle === "letters";
   const signs = exercise.optionStyle === "signs";
   const sfx = useSfx();
+  const t = useT();
 
   const choose = (label: string) => {
     if (checked) return;
@@ -619,6 +629,7 @@ export function MatchExercise({
   const [matched, setMatched] = useState<string[]>([]);
   const [flash, setFlash] = useState<{ left: string; right: string; ok: boolean } | null>(null);
   const sfx = useSfx();
+  const t = useT();
   const reported = useRef(false);
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
@@ -724,6 +735,7 @@ export function BuildExercise({
   // Letter tiles are square; word tiles are as wide as their word.
   const tileSize = exercise.words ? "h-14 px-4 text-xl" : "w-14 h-16 text-3xl";
   const sfx = useSfx();
+  const t = useT();
 
   useEffect(() => {
     const sep = exercise.words ? " " : "";

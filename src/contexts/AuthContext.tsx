@@ -5,6 +5,7 @@ import { calculateLevel } from "@/lib/levelUtils";
 import { daysAgo, localDateKey } from "@/lib/dates";
 import { loginEmailFor } from "@/lib/accounts";
 import { toast } from "sonner";
+import { useT } from "@/i18n";
 
 /** Access rules an admin set for this account (null = normal account, no limits). */
 export interface AccountAccess {
@@ -61,6 +62,7 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const t = useT();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -208,7 +210,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const check = () => {
       const expired = !!access.expires_at && Date.parse(access.expires_at) <= Date.now();
       if (!access.disabled && !expired) return;
-      toast.error(access.disabled ? "This account has been disabled." : "This account has expired.");
+      toast.error(access.disabled ? t("account.disabled") : t("account.expired"));
       supabase.auth.signOut();
       setProfile(null);
       setAccess(null);

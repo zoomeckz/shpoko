@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { DuoButton } from "@/components/duolingo/DuoButton";
 import shpokoMascot from "@/assets/shpoko-mascot.webp";
+import { useT } from "@/i18n";
 
 // Letter tiles that float around the mascot.
 const tiles = [
@@ -16,6 +17,7 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ onStart }: HeroSectionProps) {
+  const t = useT();
   return (
     <section className="max-w-5xl mx-auto px-4 sm:px-6 pt-10 pb-16 md:py-20 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
       <motion.div
@@ -27,7 +29,7 @@ export function HeroSection({ onStart }: HeroSectionProps) {
         <div className="absolute inset-[8%] rounded-full bg-primary/10" />
         <motion.img
           src={shpokoMascot}
-          alt="Shpoko the raccoon giving a thumbs up"
+          alt={t("landing.mascotAlt")}
           className="absolute inset-[10%] w-[80%] h-[80%] object-contain drop-shadow-[0_10px_0_hsl(var(--border))]"
           animate={{ y: [0, -8, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -52,15 +54,15 @@ export function HeroSection({ onStart }: HeroSectionProps) {
         className="text-center"
       >
         <h1 className="text-[28px] sm:text-[34px] leading-tight font-extrabold text-foreground max-w-md mx-auto">
-          The free, fun and fast way to learn everyday Bulgarian!
+          {t("landing.heroTitle")}
         </h1>
 
         <div className="mt-8 flex flex-col gap-3 max-w-[330px] mx-auto">
           <DuoButton size="xl" fullWidth onClick={onStart}>
-            Get started
+            {t("common.getStarted")}
           </DuoButton>
           <DuoButton asChild variant="white" size="xl" fullWidth>
-            <Link to="/auth">I already have an account</Link>
+            <Link to="/auth">{t("landing.haveAccount")}</Link>
           </DuoButton>
         </div>
       </motion.div>

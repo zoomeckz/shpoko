@@ -3,7 +3,7 @@ const ALPHABET = "А Б В Г Д Е Ж З И Й К Л М Н О П Р С Т У Ф
 // A slow, endless ribbon of the 30 Bulgarian letters.
 export function AlphabetStrip() {
   return (
-    <div className="border-y-2 border-border overflow-hidden py-5" aria-hidden="true">
+    <div dir="ltr" className="border-y-2 border-border overflow-hidden py-5" aria-hidden="true">
       <div className="flex w-max animate-marquee">
         {[...ALPHABET, ...ALPHABET].map((letter, i) => (
           <span

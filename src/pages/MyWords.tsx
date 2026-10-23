@@ -10,6 +10,7 @@ import { Sidebar } from "@/components/duolingo/Sidebar";
 import { TopBar } from "@/components/duolingo/TopBar";
 import { DuoButton } from "@/components/duolingo/DuoButton";
 import shpokoMascot from "@/assets/shpoko-mascot.webp";
+import { useT } from "@/i18n";
 
 type Tab = "words" | "phrases";
 
@@ -27,6 +28,7 @@ function Flashcards({ items, onClose }: { items: VocabItem[]; onClose: () => voi
   const [deck, setDeck] = useState(() => shuffle(items));
   const [flipped, setFlipped] = useState(false);
   const [known, setKnown] = useState(0);
+  const t = useT();
   const sfx = useSfx();
   const card = deck[0];
 
@@ -45,7 +47,7 @@ function Flashcards({ items, onClose }: { items: VocabItem[]; onClose: () => voi
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <button type="button" onClick={onClose} aria-label="Stop flashcards" className="text-muted-foreground hover:text-foreground">
+        <button type="button" onClick={onClose} aria-label={t("words.stop")} className="text-muted-foreground hover:text-foreground">
           <X className="w-7 h-7" strokeWidth={3} />
         </button>
         <div className="flex-1 h-4 rounded-full bg-muted overflow-hidden">
@@ -68,8 +70,8 @@ function Flashcards({ items, onClose }: { items: VocabItem[]; onClose: () => voi
               if (!flipped) sfx.reveal();
               setFlipped((f) => !f);
             }}
-            aria-label={flipped ? "Show the Bulgarian side" : "Show the answer"}
-            className="duo-card w-full min-h-[260px] px-6 py-8 flex flex-col items-center justify-center text-center"
+            aria-label={flipped ? t("words.showBulgarian") : t("words.showAnswer")}
+            dir="ltr" className="duo-card w-full min-h-[260px] px-6 py-8 flex flex-col items-center justify-center text-center"
           >
             <AnimatePresence mode="wait">
               <motion.div
@@ -88,7 +90,7 @@ function Flashcards({ items, onClose }: { items: VocabItem[]; onClose: () => voi
                 ) : (
                   <>
                     <p className="text-4xl sm:text-5xl font-black text-foreground break-words">{card.bg}</p>
-                    <p className="mt-4 text-sm font-extrabold uppercase tracking-widest text-muted-foreground">Tap to flip</p>
+                    <p className="mt-4 text-sm font-extrabold uppercase tracking-widest text-muted-foreground">{t("words.tapToFlip")}</p>
                   </>
                 )}
               </motion.div>
@@ -97,17 +99,17 @@ function Flashcards({ items, onClose }: { items: VocabItem[]; onClose: () => voi
           <div className="grid grid-cols-2 gap-3">
             <DuoButton variant="white" size="xl" onClick={() => answer(false)}>
               <RotateCcw className="w-5 h-5" />
-              Again
+              {t("words.again")}
             </DuoButton>
             <DuoButton variant="success" size="xl" onClick={() => answer(true)}>
-              Got it
+              {t("common.gotIt")}
             </DuoButton>
           </div>
         </>
       ) : (
         <div className="duo-card px-6 py-10 text-center">
           <p className="text-5xl" aria-hidden="true">🎉</p>
-          <p className="mt-3 text-2xl font-extrabold text-foreground">All {items.length} done!</p>
+          <p className="mt-3 text-2xl font-extrabold text-foreground">{t("words.allDone", { n: items.length })}</p>
           <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
             <DuoButton
               variant="white"
@@ -117,10 +119,10 @@ function Flashcards({ items, onClose }: { items: VocabItem[]; onClose: () => voi
                 setKnown(0);
               }}
             >
-              Go again
+              {t("words.goAgain")}
             </DuoButton>
             <DuoButton size="lg" onClick={onClose}>
-              Back to my words
+              {t("words.backToWords")}
             </DuoButton>
           </div>
         </div>
@@ -132,6 +134,7 @@ function Flashcards({ items, onClose }: { items: VocabItem[]; onClose: () => voi
 /** Every word and phrase from the lessons the learner has finished. */
 export default function MyWords() {
   const { isLessonCompleted, loading } = useUserProgress();
+  const t = useT();
   const [tab, setTab] = useState<Tab>("words");
   const [query, setQuery] = useState("");
   const [cards, setCards] = useState(false);
@@ -156,15 +159,15 @@ export default function MyWords() {
               <>
                 <div className="flex flex-wrap items-end justify-between gap-4">
                   <div>
-                    <h1 className="text-3xl font-extrabold text-foreground">My words</h1>
+                    <h1 className="text-3xl font-extrabold text-foreground">{t("words.title")}</h1>
                     <p className="mt-1 font-bold text-muted-foreground">
-                      {vocab.words.length} words and {vocab.phrases.length} phrases so far
+                      {t("words.summary", { w: vocab.words.length, p: vocab.phrases.length })}
                     </p>
                   </div>
                   {list.length > 0 && (
                     <DuoButton size="md" onClick={() => setCards(true)}>
                       <Layers className="w-4 h-4" />
-                      Flashcards
+                      {t("words.flashcards")}
                     </DuoButton>
                   )}
                 </div>
@@ -172,28 +175,28 @@ export default function MyWords() {
                 {empty ? (
                   <div className="duo-card mt-8 px-6 py-10 text-center">
                     <img src={shpokoMascot} alt="" className="mx-auto w-24 h-24 object-contain" />
-                    <p className="mt-3 text-xl font-extrabold text-foreground">Your word list is empty, for now</p>
-                    <p className="mt-1 font-semibold text-muted-foreground">Every lesson you finish adds its words here.</p>
+                    <p className="mt-3 text-xl font-extrabold text-foreground">{t("words.emptyTitle")}</p>
+                    <p className="mt-1 font-semibold text-muted-foreground">{t("words.emptyBody")}</p>
                     <DuoButton asChild size="lg" className="mt-6">
-                      <Link to="/">Start learning</Link>
+                      <Link to="/">{t("words.startLearning")}</Link>
                     </DuoButton>
                   </div>
                 ) : (
                   <>
-                    <div className="mt-6 flex gap-2" role="tablist" aria-label="Words or phrases">
-                      {(["words", "phrases"] as Tab[]).map((t) => (
+                    <div className="mt-6 flex gap-2" role="tablist" aria-label={t("words.tabsAria")}>
+                      {(["words", "phrases"] as Tab[]).map((tab2) => (
                         <button
-                          key={t}
+                          key={tab2}
                           type="button"
                           role="tab"
-                          aria-selected={tab === t}
-                          onClick={() => setTab(t)}
+                          aria-selected={tab === tab2}
+                          onClick={() => setTab(tab2)}
                           className={cn(
-                            "rounded-xl border-2 px-4 py-2 font-extrabold capitalize transition-colors",
-                            tab === t ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"
+                            "rounded-xl border-2 px-4 py-2 font-extrabold transition-colors",
+                            tab === tab2 ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-muted"
                           )}
                         >
-                          {t === "words" ? "Words" : "Phrases"} <span className="ml-1 text-sm opacity-70">{vocab[t].length}</span>
+                          {tab2 === "words" ? t("words.tabWords") : t("words.tabPhrases")} <span className="ml-1 text-sm opacity-70">{vocab[tab2].length}</span>
                         </button>
                       ))}
                     </div>
@@ -203,11 +206,11 @@ export default function MyWords() {
                         type="search"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search in Bulgarian or English"
+                        placeholder={t("words.search")}
                         className="flex-1 min-w-0 bg-transparent font-bold text-foreground placeholder:text-muted-foreground focus:outline-none"
                       />
                     </label>
-                    <ul className="mt-4 duo-card divide-y-2 divide-border overflow-hidden">
+                    <ul dir="ltr" className="mt-4 duo-card divide-y-2 divide-border overflow-hidden">
                       {shown.map((item) => (
                         <li key={item.bg} className="px-4 py-3">
                           <p className="text-xl font-black text-foreground break-words">{item.bg}</p>
@@ -218,7 +221,7 @@ export default function MyWords() {
                         </li>
                       ))}
                       {shown.length === 0 && (
-                        <li className="px-4 py-6 text-center font-bold text-muted-foreground">Nothing matches “{query}”.</li>
+                        <li className="px-4 py-6 text-center font-bold text-muted-foreground">{t("words.noMatch", { q: query })}</li>
                       )}
                     </ul>
                   </>

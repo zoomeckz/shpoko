@@ -4,32 +4,33 @@ import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DuoButton } from "@/components/duolingo/DuoButton";
 import { useSfx } from "@/hooks/useSfx";
+import { useT, type TKey } from "@/i18n";
 
 interface Question {
-  prompt: string;
+  prompt: TKey;
   options: string[];
   answer: string;
-  explain: string;
+  explain: TKey;
 }
 
 const QUESTIONS: Question[] = [
   {
-    prompt: "Which letter sounds like “zh” in pleasure?",
+    prompt: "tryit.q1",
     options: ["З", "Ж", "Ш", "Х"],
     answer: "Ж",
-    explain: "Ж says “zh”.",
+    explain: "tryit.q1Explain",
   },
   {
-    prompt: "How do you read КАФЕ?",
+    prompt: "tryit.q2",
     options: ["rafe", "kame", "kafe", "kaye"],
     answer: "kafe",
-    explain: "КАФЕ is “kafe”: coffee ☕",
+    explain: "tryit.q2Explain",
   },
   {
-    prompt: "Which letter sounds like “sht”?",
+    prompt: "tryit.q3",
     options: ["Ш", "Щ", "Ц", "Ч"],
     answer: "Щ",
-    explain: "Щ says “sht”.",
+    explain: "tryit.q3Explain",
   },
 ];
 
@@ -45,6 +46,7 @@ export function TryItCard({ onStart }: TryItCardProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>("choosing");
   const [correctCount, setCorrectCount] = useState(0);
+  const t = useT();
   const sfx = useSfx();
 
   const question = QUESTIONS[index];
@@ -97,24 +99,24 @@ export function TryItCard({ onStart }: TryItCardProps) {
         <div className="px-5 pt-8 pb-6 text-center">
           <p className="text-5xl" aria-hidden="true">🎉</p>
           <p className="mt-3 text-xl font-extrabold text-foreground">
-            {correctCount} of {QUESTIONS.length} right!
+            {t("tryit.score", { n: correctCount, total: QUESTIONS.length })}
           </p>
           <p className="mt-1 text-muted-foreground font-semibold">
-            You're already reading Bulgarian.
+            {t("tryit.reading")}
           </p>
           <div className="mt-6 flex flex-col gap-3">
             <DuoButton size="lg" fullWidth onClick={onStart}>
-              Keep going
+              {t("tryit.keepGoing")}
             </DuoButton>
             <DuoButton variant="ghost" size="sm" onClick={restart}>
-              Play again
+              {t("tryit.playAgain")}
             </DuoButton>
           </div>
         </div>
       ) : (
         <>
           <div className="px-5 pt-5 pb-5">
-            <p className="text-lg font-extrabold text-foreground min-h-[3.5rem]">{question.prompt}</p>
+            <p className="text-lg font-extrabold text-foreground min-h-[3.5rem]">{t(question.prompt)}</p>
             <div className="mt-4 grid grid-cols-2 gap-3">
               {question.options.map((option) => {
                 const isSelected = selected === option;
@@ -175,8 +177,8 @@ export function TryItCard({ onStart }: TryItCardProps) {
                     {isCorrect ? <Check className="w-5 h-5" strokeWidth={4} /> : <X className="w-5 h-5" strokeWidth={4} />}
                   </span>
                   <span>
-                    {isCorrect ? "Nice! " : "Not quite. "}
-                    <span className="font-bold">{question.explain}</span>
+                    {isCorrect ? t("tryit.nice") : t("tryit.notQuite")}{" "}
+                    <span className="font-bold">{t(question.explain)}</span>
                   </span>
                 </motion.div>
               )}
@@ -184,11 +186,11 @@ export function TryItCard({ onStart }: TryItCardProps) {
 
             {phase === "checked" ? (
               <DuoButton variant={isCorrect ? "success" : "danger"} size="lg" fullWidth onClick={next}>
-                Continue
+                {t("common.continue")}
               </DuoButton>
             ) : (
               <DuoButton size="lg" fullWidth disabled={!selected} onClick={check}>
-                Check
+                {t("common.check")}
               </DuoButton>
             )}
           </div>

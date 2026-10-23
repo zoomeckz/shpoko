@@ -11,6 +11,7 @@ import { SoundSettingsProvider } from "@/contexts/SoundSettingsContext";
 import { ThemeProvider } from "next-themes";
 import { RouteGate } from "@/components/RouteGate";
 import { SHOW_LEGACY } from "@/config/features";
+import { I18nProvider } from "@/i18n";
 import { lazy, Suspense, useEffect } from "react";
 import { initSmoothScroll } from "@/lib/smoothScroll";
 import Index from "./pages/Index";
@@ -133,6 +134,7 @@ const PageLoader = () => (
 );
 
 const App = () => (
+  <I18nProvider>
   <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -272,6 +274,7 @@ const App = () => (
       </TooltipProvider>
     </QueryClientProvider>
   </ThemeProvider>
+  </I18nProvider>
 );
 
 export default App;
